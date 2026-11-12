@@ -489,98 +489,32 @@
                         return;
                     }
 
-                    // 方案 2：标准 WebView / 浏览器环境 —— 在游戏画面内通过 Fetch 流式下载并实时渲染进度条
-                    let downloadedBlob = null;
-                    let usedUrl = apkCandidateUrls[0];
-
+                    // 方案 2：普通网页转 APK 工具（无 window.plus 原生安装权限）
+                    // 普通 WebView 壳由于安卓系统沙盒限制，无法将网页内存(Blob)直接写入手机安装器，遇到 .apk 必定转交系统下载器。
+                    // 因此这里直接秒测最快国内节点并一次性调起系统高速下载，避免“游戏内白下一遍、跳出去又下一遍”的双重下载！
+                    let bestUrl = apkCandidateUrls[0];
                     for (let i = 0; i < apkCandidateUrls.length; i++) {
-                        const url = apkCandidateUrls[i];
                         try {
-                            const res = await fetch(url, { cache: "no-store" });
-                            if (!res.ok) continue;
-                            usedUrl = url;
-                            const totalBytes = parseInt(res.headers.get("content-length") || "0", 10);
-                            if (!res.body || !res.body.getReader) {
-                                downloadedBlob = await res.blob();
-                                if (dlBar) dlBar.style.width = "100%";
+                            const ctrl = new AbortController();
+                            const tId = setTimeout(() => ctrl.abort(), 2500);
+                            const res = await fetch(apkCandidateUrls[i], { method: "HEAD", cache: "no-store", signal: ctrl.signal });
+                            clearTimeout(tId);
+                            if (res.ok) {
+                                bestUrl = apkCandidateUrls[i];
                                 break;
                             }
-                            const reader = res.body.getReader();
-                            const chunks = [];
-                            let receivedBytes = 0;
-                            while (true) {
-                                const { done, value } = await reader.read();
-                                if (done) break;
-                                if (value) {
-                                    chunks.push(value);
-                                    receivedBytes += value.length;
-                                    if (totalBytes > 0) {
-                                        const pct = Math.min(99, Math.round((receivedBytes / totalBytes) * 100));
-                                        const curMb = (receivedBytes / 1048576).toFixed(2);
-                                        const totMb = (totalBytes / 1048576).toFixed(2);
-                                        if (dlBar) dlBar.style.width = pct + "%";
-                                        if (dlStatus) dlStatus.innerText = `正在游戏内下载: ${pct}% (${curMb}MB / ${totMb}MB)`;
-                                    } else {
-                                        const curMb = (receivedBytes / 1048576).toFixed(2);
-                                        if (dlBar) dlBar.style.width = "75%";
-                                        if (dlStatus) dlStatus.innerText = `正在游戏内下载: 已接收 ${curMb}MB...`;
-                                    }
-                                }
-                            }
-                            downloadedBlob = new Blob(chunks, { type: "application/vnd.android.package-archive" });
-                            if (dlBar) dlBar.style.width = "100%";
-                            break;
-                        } catch (e) {
-                            // 自动切换下一个国内加速节点
-                        }
+                        } catch (e) {}
                     }
 
-                    if (downloadedBlob && downloadedBlob.size > 1024) {
-                        if (dlStatus) dlStatus.innerText = "下载完成 (100%)，正在调起安装程序...";
-                        try {
-                            const blobUrl = URL.createObjectURL(downloadedBlob);
-                            const a = document.createElement("a");
-                            a.href = blobUrl;
-                            a.download = "PixelStory.apk";
-                            a.style.display = "none";
-                            document.body.appendChild(a);
-                            a.click();
-                            setTimeout(() => {
-                                document.body.removeChild(a);
-                                URL.revokeObjectURL(blobUrl);
-                            }, 15000);
-                        } catch (e) {}
-
-                        // 若套壳 WebView 不支持 Blob 落盘，通过隐藏 iframe 触发 WebView 原生下载器接管，不主动调用 window.open 跳外部浏览器
-                        setTimeout(() => {
-                            let dlFrame = document.getElementById("hiddenApkDownloadFrame");
-                            if (!dlFrame) {
-                                dlFrame = document.createElement("iframe");
-                                dlFrame.id = "hiddenApkDownloadFrame";
-                                dlFrame.style.display = "none";
-                                document.body.appendChild(dlFrame);
-                            }
-                            dlFrame.src = usedUrl;
-                            isDownloading = false;
-                            confirmBtn.disabled = false;
-                            confirmBtn.style.opacity = "1";
-                            confirmBtn.innerText = "已下载完成 · 点击重新触发安装";
-                        }, 600);
-                    } else {
-                        if (dlStatus) dlStatus.innerText = "正在调起高速下载通道...";
-                        let dlFrame = document.getElementById("hiddenApkDownloadFrame");
-                        if (!dlFrame) {
-                            dlFrame = document.createElement("iframe");
-                            dlFrame.id = "hiddenApkDownloadFrame";
-                            dlFrame.style.display = "none";
-                            document.body.appendChild(dlFrame);
-                        }
-                        dlFrame.src = usedUrl;
+                    if (dlBar) dlBar.style.width = "100%";
+                    if (dlStatus) dlStatus.innerText = "已连接最快国内节点，正在调起系统下载安装...";
+                    window.location.href = bestUrl;
+                    setTimeout(() => {
                         isDownloading = false;
                         confirmBtn.disabled = false;
                         confirmBtn.style.opacity = "1";
-                        confirmBtn.innerText = "重新下载并安装";
-                    }
+                        confirmBtn.innerText = "重新下载新版安装包";
+                    }, 1500);
                 };
             }
         }
