@@ -1308,19 +1308,57 @@
         </div>
     </div>
 
-    <!-- 游戏公告弹窗（空弹窗容器，预留后续填写公告内容） -->
+    <!-- 游戏公告弹窗 -->
     <div id="announcementModal" class="hidden fixed inset-0 z-[56] bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 pointer-events-auto select-none" onclick="window.closeAnnouncementModal()">
-        <div class="pixel-box w-full max-w-lg h-[72vh] max-h-[420px] p-4 sm:p-5 border-2 border-amber-400 flex flex-col justify-between gap-3" onclick="event.stopPropagation()">
+        <div class="pixel-box w-full max-w-xl h-[82vh] max-h-[460px] p-4 sm:p-5 border-2 border-amber-400 flex flex-col justify-between gap-3" onclick="event.stopPropagation()">
             <div class="flex items-center justify-between border-b-2 border-slate-800 pb-2.5 shrink-0">
                 <div class="flex items-center gap-2">
                     <canvas class="ui-px-icon w-5 h-5" data-icon="notice" width="20" height="20"></canvas>
                     <h3 class="text-base sm:text-lg font-bold text-amber-300 tracking-wider">游戏公告</h3>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.5.0</span>
                 </div>
                 <button onclick="window.closeAnnouncementModal()" class="pixel-icon-btn px-3 py-1 text-xs font-bold text-slate-200 flex items-center gap-1">
                     <canvas class="ui-px-icon w-3 h-3" data-icon="close_x" width="12" height="12"></canvas><span>关闭</span>
                 </button>
             </div>
-            <div id="announcementBodyBox" class="flex-1 min-h-0 bg-[#0b0e17] border border-slate-800 p-3 sm:p-4 overflow-y-auto text-xs sm:text-sm text-slate-300 leading-relaxed"></div>
+            <div id="announcementBodyBox" class="flex-1 min-h-0 bg-[#0b0e17] border border-slate-800 p-3.5 sm:p-4 overflow-y-auto text-xs sm:text-sm text-slate-300 leading-relaxed space-y-3">
+                <div class="border-b border-slate-800 pb-2.5">
+                    <div class="text-sm sm:text-base font-bold text-amber-300 mb-1">【V0.5.0 版本公告】夜瞳降临 · 街区防线全面升级！</div>
+                    <p class="text-xs text-slate-300 leading-relaxed">亲爱的特工：<b class="text-white">《像素物语》V0.5.0 版本重磅来袭！</b>本次更新带来全新参战角色、强力首领、黑市武装体系以及在线热更新支持，欢迎前往封锁街区体验！</p>
+                </div>
+
+                <div class="bg-[#111624] border border-purple-500/40 p-2.5 space-y-1">
+                    <div class="flex items-center gap-1.5 text-purple-300 font-bold text-xs sm:text-sm">
+                        <canvas class="ui-px-icon w-4 h-4 shrink-0" data-icon="swap_hero" width="16" height="16"></canvas>
+                        <span>1. 全新英雄登场 ——「夜瞳 · Yomi」</span>
+                    </div>
+                    <p class="text-xs text-slate-300 pl-5 leading-relaxed">挥舞哥特十字蔷薇链刃的中近距离范围型特工正式参战！拥有独特的链刃横扫、飞爪穿刺聚怪与暗影刃阵爆发能力，在密集尸潮中尽享割草快感。</p>
+                </div>
+
+                <div class="bg-[#111624] border border-rose-500/40 p-2.5 space-y-1">
+                    <div class="flex items-center gap-1.5 text-rose-300 font-bold text-xs sm:text-sm">
+                        <canvas class="ui-px-icon w-4 h-4 shrink-0" data-icon="crown" width="16" height="16"></canvas>
+                        <span>2. 全新首领袭来 —— 终局强敌压境</span>
+                    </div>
+                    <p class="text-xs text-slate-300 pl-5 leading-relaxed">封锁街区深处迎来全新高阶首领挑战，多阶段弹幕矩阵与压迫感十足的专属技能机制，等待各位特工前往讨伐。</p>
+                </div>
+
+                <div class="bg-[#111624] border border-amber-400/40 p-2.5 space-y-1">
+                    <div class="flex items-center gap-1.5 text-amber-300 font-bold text-xs sm:text-sm">
+                        <canvas class="ui-px-icon w-4 h-4 shrink-0" data-icon="shop_bag" width="16" height="16"></canvas>
+                        <span>3. 黑市商店新体验 —— 遗物与饰品重构</span>
+                    </div>
+                    <p class="text-xs text-slate-300 pl-5 leading-relaxed">波次休整阶段黑市商店体验全面升级，支持自由选购【被动饰品】与双槽位【主动遗物】，搭配「幸运」品质加成，构筑属于你的专属流派。</p>
+                </div>
+
+                <div class="bg-[#111624] border border-sky-400/40 p-2.5 space-y-1">
+                    <div class="flex items-center gap-1.5 text-sky-300 font-bold text-xs sm:text-sm">
+                        <canvas class="ui-px-icon w-4 h-4 shrink-0" data-icon="bolt" width="16" height="16"></canvas>
+                        <span>4. 实装在线热更新系统</span>
+                    </div>
+                    <p class="text-xs text-slate-300 pl-5 leading-relaxed">启动游戏时支持自动检测并同步最新内容补丁，后续日常更新无需重新下载安装包即可直接体验。</p>
+                </div>
+            </div>
         </div>
     </div>
 
