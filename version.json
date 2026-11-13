@@ -1,7 +1,7 @@
 {
   "minApkVersion": 1,
-  "hotPatchVersion": 5,
+  "hotPatchVersion": 6,
   "apkUrl": "https://github.com/ssSharlyn/PixelStoryUpdate/raw/main/PixelStory.apk",
-  "bigUpdateLog": "【重大版本升级】\n请下载最新安装包覆盖安装！",
-  "smallUpdateLog": "正在下载最新补丁..."
+  "bigUpdateLog": "【重大版本升级】\n请下载最新安装包！",
+  "smallUpdateLog": "正在下载最新版本..."
 }
