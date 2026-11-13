@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>像素物语 V0.5.1</title>
+    <title>像素物语 V0.5.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root {
             --pixel-bg: #0f111a;
@@ -25,7 +25,7 @@
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
             background-color: #07080d; color: #f1f5f9;
-            font-family: 'DotGothic16', 'Courier New', monospace;
+            font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
             overflow: hidden; touch-action: none;
         }
         .crt-overlay {
@@ -147,38 +147,191 @@
 <script src="/_aistudio-iframe.js?v=1f94f900"></script></head>
 <body class="relative w-screen h-screen overflow-hidden select-none">
 
-    <!-- =================== GitHub 国内多路加速·双轨自适应更新引擎 =================== -->
-    <div id="bootEngineOverlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:#0b0e17; color:#fff; z-index:9999999; display:flex; flex-direction:column; justify-content:center; align-items:center; font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
-        <!-- 1. 小版本热更进度条 UI -->
-        <div id="smallPatchBox" style="display:flex; flex-direction:column; align-items:center;">
-            <div style="font-size:22px; color:#38bdf8; font-weight:bold; margin-bottom:20px; letter-spacing:2px;">像素物语 · 战术终端</div>
-            <div style="width:240px; height:10px; background:#1e293b; border-radius:5px; overflow:hidden; border:1px solid #334155;">
-                <div id="hotPatchBar" style="width:0%; height:100%; background:linear-gradient(90deg, #38bdf8, #818cf8); transition:width 0.2s;"></div>
+    <!-- =================== GitHub 国内多路加速·双轨自适应更新引擎（像素战术终端版） =================== -->
+    <div id="bootEngineOverlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:#0b0e17; background-image:linear-gradient(rgba(56,189,248,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.045) 1px, transparent 1px); background-size:16px 16px; color:#fff; z-index:9999999; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:16px; box-sizing:border-box;">
+        <!-- 1. 小版本热更进度条 UI（像素装甲框 + 分段能量格） -->
+        <div id="smallPatchBox" class="pixel-box" style="display:flex; flex-direction:column; align-items:center; width:100%; max-width:340px; padding:22px 24px; border:3px solid #38bdf8; background:#121726; box-shadow:0 8px 0 #05060a, 0 0 28px rgba(56,189,248,0.22), inset 0 2px 0 rgba(255,255,255,0.08); box-sizing:border-box;">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
+                <span class="font-pixel-en" style="background:#e11d48; color:#fff; font-size:8px; padding:2px 6px; font-weight:bold;">PIXEL STORY</span>
+                <span class="font-pixel-en" style="background:#fbbf24; color:#090d16; font-size:8px; padding:2px 6px; font-weight:bold;">PATCH SYNC</span>
             </div>
-            <div id="hotPatchTip" style="font-size:12px; color:#94a3b8; margin-top:10px;">正在检查版本更新...</div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+                <canvas id="bootTerminalPxIcon" width="20" height="20" style="width:20px; height:20px; image-rendering:pixelated;"></canvas>
+                <div style="font-size:18px; color:#f8fafc; font-weight:900; letter-spacing:2px; text-shadow:2px 2px 0 #05060a;">像素物语 · 战术终端</div>
+            </div>
+            <div style="width:100%; height:18px; background:#090c14; border:2px solid #38bdf8; padding:2px; box-sizing:border-box; box-shadow:inset 0 2px 0 #05060a;">
+                <div id="hotPatchBar" style="width:0%; height:100%; background:repeating-linear-gradient(90deg, #38bdf8 0px, #38bdf8 10px, #0284c7 10px, #0284c7 12px); box-shadow:inset 0 2px 0 rgba(255,255,255,0.45); transition:width 0.2s;"></div>
+            </div>
+            <div id="hotPatchTip" style="font-size:12px; color:#7dd3fc; margin-top:10px; font-weight:bold; letter-spacing:0.5px; text-align:center;">正在检查版本更新...</div>
         </div>
 
-        <!-- 2. 大版本整包更新弹窗 UI（含游戏内下载进度条） -->
-        <div id="bigApkModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.92); justify-content:center; align-items:center; padding:16px; box-sizing:border-box;">
-            <div style="background:#111827; border:2px solid #38bdf8; border-radius:12px; width:100%; max-width:340px; padding:20px; box-sizing:border-box; box-shadow:0 0 25px rgba(56,189,248,0.35);">
-                <div style="color:#38bdf8; font-size:17px; font-weight:bold; margin-bottom:10px; letter-spacing:0.5px;">版本更新提示</div>
-                <div id="bigUpdateLogText" style="font-size:13px; color:#e2e8f0; line-height:1.6; white-space:pre-wrap; max-height:150px; overflow-y:auto; margin-bottom:16px; background:#1e293b; padding:10px; border-radius:6px; border:1px solid #334155;"></div>
-                <!-- 游戏内下载进度条区域（默认隐藏，点击下载后显示） -->
-                <div id="apkInGameProgressWrap" style="display:none; margin-bottom:14px;">
-                    <div style="width:100%; height:12px; background:#1e293b; border-radius:6px; overflow:hidden; border:1px solid #38bdf8;">
-                        <div id="apkDownloadBar" style="width:0%; height:100%; background:linear-gradient(90deg, #38bdf8, #6366f1); transition:width 0.15s;"></div>
+        <!-- 2. 大版本整包更新弹窗 UI（像素硬边弹窗 + 分段下载进度条） -->
+        <div id="bigApkModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(7,9,15,0.92); justify-content:center; align-items:center; padding:16px; box-sizing:border-box;">
+            <div class="pixel-box" style="background:#121622; border:3px solid #fbbf24; width:100%; max-width:360px; padding:18px 20px; box-sizing:border-box; box-shadow:0 8px 0 #05060a, 0 0 32px rgba(251,191,36,0.28), inset 0 2px 0 rgba(255,255,255,0.08);">
+                <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #1e293b; padding-bottom:10px; margin-bottom:12px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <canvas id="apkModalPxIcon" width="20" height="20" style="width:20px; height:20px; image-rendering:pixelated;"></canvas>
+                        <div style="color:#fde047; font-size:16px; font-weight:900; letter-spacing:1px;">发现新版本安装包</div>
                     </div>
-                    <div id="apkDownloadStatusText" style="font-size:12px; color:#7dd3fc; margin-top:8px; text-align:center;">正在连接高速节点...</div>
+                    <span class="font-pixel-en" style="background:#fbbf24; color:#090d16; font-size:8px; padding:2px 6px; font-weight:bold;">APK UPDATE</span>
+                </div>
+                <div id="bigUpdateLogText" style="font-size:12px; color:#e2e8f0; line-height:1.65; white-space:pre-wrap; max-height:150px; overflow-y:auto; margin-bottom:14px; background:#0b0e17; padding:10px 12px; border:2px solid #1e293b; box-shadow:inset 0 2px 0 #05060a;"></div>
+                <!-- 游戏内下载进度条区域（默认隐藏，点击下载后显示） -->
+                <div id="apkInGameProgressWrap" style="display:none; margin-bottom:14px; background:#0b0e17; border:1px solid #1e293b; padding:10px;">
+                    <div style="width:100%; height:18px; background:#090c14; border:2px solid #34d399; padding:2px; box-sizing:border-box; box-shadow:inset 0 2px 0 #05060a;">
+                        <div id="apkDownloadBar" style="width:0%; height:100%; background:repeating-linear-gradient(90deg, #34d399 0px, #34d399 10px, #059669 10px, #059669 12px); box-shadow:inset 0 2px 0 rgba(255,255,255,0.45); transition:width 0.15s;"></div>
+                    </div>
+                    <div id="apkDownloadStatusText" style="font-size:11px; color:#6ee7b7; margin-top:8px; text-align:center; font-weight:bold; font-family:ui-monospace,monospace;">正在连接高速节点...</div>
                 </div>
                 <div id="bigModalBtnGroup" style="display:flex; flex-direction:column; gap:8px;">
-                    <button id="confirmBigUpdateBtn" style="background:linear-gradient(135deg, #38bdf8, #6366f1); color:#fff; font-weight:bold; border:none; padding:11px 16px; border-radius:6px; font-size:14px; width:100%; cursor:pointer; box-shadow:0 4px 12px rgba(56,189,248,0.3);">立即更新</button>
+                    <button id="confirmBigUpdateBtn" class="pixel-play-btn" style="color:#090d16; font-weight:900; padding:10px 16px; font-size:14px; width:100%; cursor:pointer; letter-spacing:1px;">立即下载更新</button>
                 </div>
             </div>
+        </div>
+
+        <!-- 预览调试控制条（仅在开发环境点击“预览更新UI”时显示，真实玩家不可见） -->
+        <div id="bootPreviewCtrlBar" style="display:none; margin-top:18px; gap:8px; align-items:center; z-index:10000000;">
+            <button id="btnPreviewSwitchSmall" class="pixel-icon-btn" style="padding:6px 12px; font-size:12px; font-weight:bold; color:#38bdf8; border-color:#38bdf8;">查看：热更进度界面</button>
+            <button id="btnPreviewSwitchBig" class="pixel-icon-btn" style="padding:6px 12px; font-size:12px; font-weight:bold; color:#fbbf24; border-color:#fbbf24;">查看：APK整包更新弹窗</button>
+            <button id="btnPreviewCloseOverlay" class="pixel-btn" style="padding:6px 14px; font-size:12px; font-weight:bold; color:#fff;">关闭预览</button>
         </div>
     </div>
 
     <script>
     (async function() {
+        // 绘制更新界面专属 10x10 点阵像素图标（无需外部图片资源，首屏毫秒级渲染）
+        function drawBootPixelIcons() {
+            const pal = { '.': null, 'o': '#090d16', 'w': '#ffffff', 'b': '#38bdf8', 'B': '#0284c7', 'y': '#facc15', 'Y': '#ca8a04', 'g': '#34d399' };
+            const renderMat = (id, mat) => {
+                const c = document.getElementById(id);
+                if (!c) return;
+                const ctx = c.getContext('2d');
+                ctx.clearRect(0, 0, c.width, c.height);
+                const s = 2;
+                for (let r = 0; r < mat.length; r++) {
+                    for (let col = 0; col < mat[r].length; col++) {
+                        const color = pal[mat[r][col]];
+                        if (color) { ctx.fillStyle = color; ctx.fillRect(col * s, r * s, s, s); }
+                    }
+                }
+            };
+            renderMat('bootTerminalPxIcon', [
+                "..oooooo..",
+                ".obbbbbbo.",
+                "obwBBBBwbo",
+                "obBggggBbo",
+                "obBgwwgBbo",
+                "obBggggBbo",
+                "obwBBBBwbo",
+                ".obbbbbbo.",
+                "..ooYYoo..",
+                ".oYYYYYYo."
+            ]);
+            renderMat('apkModalPxIcon', [
+                "....oo....",
+                "...oyyo...",
+                "..oywwyo..",
+                ".oyywwyyo.",
+                "oyy.ww.yyo",
+                ".oo.ww.oo.",
+                "....ww....",
+                ".o..oo..o.",
+                "oyyyyyyyyo",
+                ".oooooooo."
+            ]);
+        }
+        drawBootPixelIcons();
+
+        // 提供开发环境一键预览两套像素更新界面的方法
+        let previewTimerId = null;
+        window.__previewUpdateUI = function(mode = 'small') {
+            const ov = document.getElementById('bootEngineOverlay');
+            const smallBox = document.getElementById('smallPatchBox');
+            const bigM = document.getElementById('bigApkModal');
+            const ctrlBar = document.getElementById('bootPreviewCtrlBar');
+            const hBar = document.getElementById('hotPatchBar');
+            const hTip = document.getElementById('hotPatchTip');
+            const logEl = document.getElementById('bigUpdateLogText');
+            const pWrap = document.getElementById('apkInGameProgressWrap');
+            const dlBar = document.getElementById('apkDownloadBar');
+            const dlSt = document.getElementById('apkDownloadStatusText');
+            const cBtn = document.getElementById('confirmBigUpdateBtn');
+            if (!ov) return;
+            drawBootPixelIcons();
+            if (previewTimerId) { clearInterval(previewTimerId); previewTimerId = null; }
+            ov.style.display = 'flex';
+            if (ctrlBar) ctrlBar.style.display = 'flex';
+
+            if (mode === 'big') {
+                if (smallBox) smallBox.style.display = 'none';
+                if (bigM) bigM.style.display = 'flex';
+                if (logEl) logEl.innerText = "【V0.5.2 重大版本更新】\n· 重绘主菜单像素标题，统一全局中文字体\n· 模式选择升级为 2.5D 跟手滚轮\n· 局内重来与返回菜单增加防呆确认弹窗\n· 修复穿透升级项描述与五号Boss位移卡死";
+                if (pWrap) pWrap.style.display = 'none';
+                if (cBtn) {
+                    cBtn.disabled = false;
+                    cBtn.style.opacity = '1';
+                    cBtn.innerText = '立即下载更新';
+                    cBtn.onclick = () => {
+                        if (previewTimerId) clearInterval(previewTimerId);
+                        cBtn.disabled = true;
+                        cBtn.style.opacity = '0.65';
+                        cBtn.innerText = '正在游戏内下载更新...';
+                        if (pWrap) pWrap.style.display = 'block';
+                        let pct = 5;
+                        if (dlBar) dlBar.style.width = pct + '%';
+                        if (dlSt) dlSt.innerText = `正在游戏内下载: ${pct}% (0.85MB / 16.80MB)`;
+                        previewTimerId = setInterval(() => {
+                            pct = Math.min(100, pct + 15);
+                            const curMb = ((16.8 * pct) / 100).toFixed(2);
+                            if (dlBar) dlBar.style.width = pct + '%';
+                            if (pct < 100) {
+                                if (dlSt) dlSt.innerText = `正在游戏内下载: ${pct}% (${curMb}MB / 16.80MB)`;
+                            } else {
+                                clearInterval(previewTimerId);
+                                previewTimerId = null;
+                                if (dlSt) dlSt.innerText = '下载完成，正在调起系统安装器... (预览演示)';
+                                cBtn.disabled = false;
+                                cBtn.style.opacity = '1';
+                                cBtn.innerText = '重新演示下载';
+                            }
+                        }, 280);
+                    };
+                }
+            } else {
+                if (bigM) bigM.style.display = 'none';
+                if (smallBox) smallBox.style.display = 'flex';
+                let pct = 15;
+                if (hBar) hBar.style.width = pct + '%';
+                if (hTip) hTip.innerText = '正在连接高速节点检查 V0.5.2 补丁...';
+                previewTimerId = setInterval(() => {
+                    pct = Math.min(100, pct + 25);
+                    if (hBar) hBar.style.width = pct + '%';
+                    if (pct < 100) {
+                        if (hTip) hTip.innerText = `正在同步 V0.5.2 热更补丁 (${pct}%)...`;
+                    } else {
+                        clearInterval(previewTimerId);
+                        previewTimerId = null;
+                        if (hTip) hTip.innerText = '热更完成 (V0.5.2)，即将进入战场！';
+                    }
+                }, 400);
+            }
+        };
+
+        const btnSwSmall = document.getElementById('btnPreviewSwitchSmall');
+        const btnSwBig = document.getElementById('btnPreviewSwitchBig');
+        const btnClosePrev = document.getElementById('btnPreviewCloseOverlay');
+        if (btnSwSmall) btnSwSmall.onclick = () => window.__previewUpdateUI('small');
+        if (btnSwBig) btnSwBig.onclick = () => window.__previewUpdateUI('big');
+        if (btnClosePrev) btnClosePrev.onclick = () => {
+            if (previewTimerId) { clearInterval(previewTimerId); previewTimerId = null; }
+            const ov = document.getElementById('bootEngineOverlay');
+            const bigM = document.getElementById('bigApkModal');
+            const ctrlBar = document.getElementById('bootPreviewCtrlBar');
+            if (bigM) bigM.style.display = 'none';
+            if (ctrlBar) ctrlBar.style.display = 'none';
+            if (ov) ov.style.display = 'none';
+        };
+
         if (window.__GAME_ENGINE_BOOTED__) {
             window.__UPDATE_CHECK_PENDING__ = false;
             const oldOverlay = document.getElementById('bootEngineOverlay');
@@ -201,7 +354,17 @@
         const overlay = document.getElementById('bootEngineOverlay');
 
         function safeGetItem(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
-        function safeSetItem(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+        function safeSetItem(k, v) {
+            try {
+                if (k === "LOCAL_HOT_PATCH_CODE") {
+                    try { localStorage.removeItem(k); } catch (e) {}
+                }
+                localStorage.setItem(k, v);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
         function safeRemoveItem(k) { try { localStorage.removeItem(k); } catch (e) {} }
 
         // 若处于 AI Studio 在线预览开发环境（含 iframe / srcdoc / run.app / localhost），自动跳过热更检测并直接展示当前最新编辑画面
@@ -315,58 +478,107 @@
             throw new Error("Version check failed");
         }
 
-        // 2. 使用精确的 @commitSha 走国内高速 CDN 并发下载（因为每次提交 SHA 唯一，100% 零缓存延迟且国内满速）
+        // 2. 构建多路下载源：若未拿到精确 Commit SHA（如海外 VPN 触发 GitHub API 403 限流），优先走无分支缓存的 GitHub Raw 与 ghproxy，延迟 jsDelivr @main 防止抢先返回旧缓存
         function getMirrorUrls(filePath, refShaOrBranch, cacheBuster) {
             const ref = refShaOrBranch || GITHUB_BRANCH;
+            const hasExactSha = ref !== GITHUB_BRANCH;
             const q = cacheBuster ? ("?t=" + cacheBuster) : "";
             const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${ref}/${filePath}`;
+            if (hasExactSha) {
+                return [
+                    { url: `https://testingcf.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 0 },
+                    { url: `https://fastly.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 0 },
+                    { url: `https://gcore.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 0 },
+                    { url: `https://mirror.ghproxy.com/${rawUrl}${q}`, delay: 0 },
+                    { url: `${rawUrl}${q}`, delay: 0 }
+                ];
+            }
+            // 未拿到精确 SHA 时，raw 与 ghproxy 0ms 立即并发，jsdelivr @main 延后 1500ms 并配合内容新鲜度校验
             return [
-                `https://testingcf.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`,
-                `https://fastly.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`,
-                `https://gcore.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`,
-                `https://mirror.ghproxy.com/${rawUrl}${q}`,
-                `${rawUrl}${q}`
+                { url: `${rawUrl}${q}`, delay: 0 },
+                { url: `https://mirror.ghproxy.com/${rawUrl}${q}`, delay: 0 },
+                { url: `https://testingcf.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 1500 },
+                { url: `https://fastly.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 1500 },
+                { url: `https://gcore.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 1500 }
             ];
         }
 
-        function raceMirrors(filePath, refShaOrBranch, cacheBuster, timeoutMs) {
-            const urls = getMirrorUrls(filePath, refShaOrBranch, cacheBuster);
+        // 校验下载到的新补丁是否真正为新版本（纯自动比对代码内容，无需在 version.json 额外填写版本号字符）
+        function isFreshValidPatchHtml(htmlText) {
+            if (!htmlText || !htmlText.includes("<canvas") || !htmlText.includes("</html>")) return false;
+            // 1. 与本地已缓存的上一版热更代码比对：若版本号升级了但代码完全一模一样，说明 CDN 返回了旧缓存
+            const oldCachedCode = safeGetItem("LOCAL_HOT_PATCH_CODE");
+            if (oldCachedCode && htmlText.length === oldCachedCode.length && htmlText.trim() === oldCachedCode.trim()) {
+                return false;
+            }
+            // 2. 与当前正在运行的页面主脚本及标题比对：若标题和末尾主逻辑脚本与当前旧页面分毫不差，说明是旧包
+            try {
+                const curTitle = document.title || "";
+                const titleMatch = htmlText.match(/<title>([^<]*)<\/title>/i);
+                const newTitle = titleMatch ? titleMatch[1].trim() : "";
+                const scripts = document.getElementsByTagName("script");
+                const lastScript = scripts.length > 1 ? (scripts[scripts.length - 1].textContent || "").trim() : "";
+                if (curTitle && newTitle === curTitle && lastScript.length > 50000 && htmlText.includes(lastScript)) {
+                    return false;
+                }
+            } catch (e) {}
+            return true;
+        }
+
+        function raceMirrors(filePath, refShaOrBranch, cacheBuster, timeoutMs, validateFn) {
+            const entries = getMirrorUrls(filePath, refShaOrBranch, cacheBuster);
             return new Promise((resolve, reject) => {
                 let settled = false;
                 let failCount = 0;
                 const controllers = [];
+                const delayTimers = [];
                 const timer = setTimeout(() => {
                     if (!settled) {
                         settled = true;
+                        delayTimers.forEach(t => clearTimeout(t));
                         controllers.forEach(c => { try { c.abort(); } catch (e) {} });
                         reject(new Error("Timeout"));
                     }
                 }, timeoutMs);
 
-                urls.forEach(url => {
-                    const ctrl = new AbortController();
-                    controllers.push(ctrl);
-                    fetch(url, { cache: "no-store", signal: ctrl.signal })
-                        .then(res => {
-                            if (!res.ok) throw new Error("HTTP " + res.status);
-                            return res.text();
-                        })
-                        .then(text => {
-                            if (!settled && text) {
-                                settled = true;
-                                clearTimeout(timer);
-                                controllers.forEach(c => { try { c.abort(); } catch (e) {} });
-                                resolve(text);
-                            }
-                        })
-                        .catch(() => {
-                            failCount++;
-                            if (!settled && failCount >= urls.length) {
-                                settled = true;
-                                clearTimeout(timer);
-                                reject(new Error("All mirrors failed"));
-                            }
-                        });
+                entries.forEach(entry => {
+                    const startFetch = () => {
+                        if (settled) return;
+                        const ctrl = new AbortController();
+                        controllers.push(ctrl);
+                        fetch(entry.url, { cache: "no-store", signal: ctrl.signal })
+                            .then(res => {
+                                if (!res.ok) throw new Error("HTTP " + res.status);
+                                return res.text();
+                            })
+                            .then(text => {
+                                if (!text) throw new Error("Empty body");
+                                if (typeof validateFn === "function" && !validateFn(text)) {
+                                    throw new Error("Stale or invalid patch content");
+                                }
+                                if (!settled) {
+                                    settled = true;
+                                    clearTimeout(timer);
+                                    delayTimers.forEach(t => clearTimeout(t));
+                                    controllers.forEach(c => { try { c.abort(); } catch (e) {} });
+                                    resolve(text);
+                                }
+                            })
+                            .catch(() => {
+                                failCount++;
+                                if (!settled && failCount >= entries.length) {
+                                    settled = true;
+                                    clearTimeout(timer);
+                                    delayTimers.forEach(t => clearTimeout(t));
+                                    reject(new Error("All mirrors failed"));
+                                }
+                            });
+                    };
+                    if (entry.delay > 0) {
+                        delayTimers.push(setTimeout(startFetch, entry.delay));
+                    } else {
+                        startFetch();
+                    }
                 });
             });
         }
@@ -394,12 +606,20 @@
                 if (tip) tip.innerText = config.smallUpdateLog || `正在同步 V${config.hotPatchVersion} 热更补丁...`;
 
                 fetch(`https://purge.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/game.html`).catch(() => {});
-                const newGameCode = await raceMirrors("game.html", commitSha, config.hotPatchVersion + "_" + Date.now(), 10000);
+                const newGameCode = await raceMirrors(
+                    "game.html",
+                    commitSha,
+                    config.hotPatchVersion + "_" + Date.now(),
+                    12000,
+                    (txt) => isFreshValidPatchHtml(txt, config)
+                );
 
-                // 安全完整性校验：确认下载的是完整游戏 HTML 才写入缓存
-                if (newGameCode && newGameCode.includes("<canvas") && newGameCode.includes("</html>")) {
-                    safeSetItem("LOCAL_HOT_PATCH_CODE", newGameCode);
-                    safeSetItem("LOCAL_HOT_PATCH_VER", config.hotPatchVersion.toString());
+                // 安全完整性与防旧包校验通过后才写入缓存，且仅当代码成功写入 localStorage 后才更新版本号
+                if (newGameCode && isFreshValidPatchHtml(newGameCode, config)) {
+                    const wroteOk = safeSetItem("LOCAL_HOT_PATCH_CODE", newGameCode);
+                    if (wroteOk) {
+                        safeSetItem("LOCAL_HOT_PATCH_VER", config.hotPatchVersion.toString());
+                    }
                     if (bar) bar.style.width = "100%";
                     if (tip) tip.innerText = `热更完成 (Patch #${config.hotPatchVersion})，正在启动游戏！`;
                     setTimeout(() => runEngine(newGameCode), 350);
@@ -407,7 +627,7 @@
                 }
             }
         } catch (err) {
-            console.log("未检测到更新或处于离线环境，直接启动本地版本");
+            console.log("未检测到更新或当前节点缓存未刷新，本次先启动本地版本，下次启动将继续检测");
         }
 
         // ====== 分支 C：无更新或断网 -> 直接秒进游戏 ======
@@ -613,6 +833,14 @@
                             <div id="hudAmmoPips" class="flex items-center gap-1 flex-wrap"></div>
                         </div>
                     </div>
+                </div>
+                <!-- 轻量级性能与内存实时监测悬浮条（默认关闭，可在设置中开启） -->
+                <div id="hudPerfMonitor" class="hidden pointer-events-none select-none self-start bg-slate-950/80 border border-slate-700/80 px-2 py-0.5 flex items-center gap-1.5 text-[10px] font-mono leading-tight tracking-tight shadow-sm">
+                    <span class="flex items-center gap-1"><span class="text-slate-400">FPS</span><b id="perfFpsVal" class="text-emerald-400 tabular-nums">60</b></span>
+                    <span id="perfMemSep" class="text-slate-600">|</span>
+                    <span id="perfMemWrap" class="flex items-center gap-1"><span class="text-slate-400">MEM</span><b id="perfMemVal" class="text-sky-300 tabular-nums">--MB</b></span>
+                    <span class="text-slate-600">|</span>
+                    <span class="flex items-center gap-1"><span class="text-slate-400">实体</span><b id="perfEntVal" class="text-amber-300 tabular-nums">0</b></span>
                 </div>
             </div>
 
@@ -977,12 +1205,12 @@
         <div class="h-2"></div>
         <div class="flex flex-col items-center justify-center gap-6 sm:gap-9 my-auto">
             <div id="mainMenuTitleBox" class="pixel-box px-7 sm:px-12 py-4 sm:py-5 border-4 border-sky-400 bg-[#121726] flex flex-col items-center shadow-[0_8px_0_#05060a]">
-                <div class="flex items-center gap-2 mb-1.5">
+                <div class="flex items-center gap-2 mb-2">
                     <span class="bg-rose-600 text-white font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5">PIXEL STORY</span>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.5.1</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.5.2</span>
                 </div>
-                <h1 class="text-3xl sm:text-5xl font-bold text-white tracking-widest drop-shadow-[0_4px_0_#090d16]">像素物语</h1>
-                <p class="text-[11px] sm:text-xs text-sky-300 mt-1.5 tracking-wider">二次元点阵像素 · 街区生存激战</p>
+                <canvas id="mainMenuLogoCanvas" width="312" height="76" class="w-[218px] h-[53px] sm:w-[312px] sm:h-[76px] block pointer-events-none" aria-label="像素物语"></canvas>
+                <p class="text-[11px] sm:text-xs text-sky-300 mt-2 tracking-wider font-bold">二次元点阵像素 · 街区生存激战</p>
             </div>
             <button id="btnMainPlay" onclick="window.openModeSelectModal()" class="pixel-play-btn w-28 h-28 sm:w-32 sm:h-32 rounded-2xl flex items-center justify-center group" title="开始游戏">
                 <canvas id="iconCanvasPlay" width="48" height="48" class="w-12 h-12 sm:w-14 sm:h-14 translate-x-1 pointer-events-none group-hover:scale-105 transition"></canvas>
@@ -1072,7 +1300,14 @@
                     </div>
                     <button id="btnToggleShake" onclick="window.toggleSettingOption('shake')" class="pixel-btn px-3.5 py-1.5 font-bold text-xs text-white min-w-[72px] shrink-0">已开启</button>
                 </div>
-                <div class="pixel-box bg-[#101420] border-2 border-amber-500/70 p-3 sm:p-4 flex items-center justify-between gap-2 sm:col-span-2">
+                <div class="pixel-box bg-[#101420] border border-slate-700 p-3 sm:p-4 flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2.5">
+                        <canvas class="ui-px-icon w-6 h-6 shrink-0" data-icon="bolt" width="24" height="24"></canvas>
+                        <div><div class="font-bold text-white text-xs sm:text-sm">性能监测悬浮窗</div><div class="text-[11px] text-slate-400 mt-0.5">血条下方显示实时FPS、内存与实体数</div></div>
+                    </div>
+                    <button id="btnTogglePerf" onclick="window.toggleSettingOption('perf')" class="pixel-icon-btn px-3.5 py-1.5 font-bold text-xs text-slate-400 min-w-[72px] shrink-0">已关闭</button>
+                </div>
+                <div class="pixel-box bg-[#101420] border-2 border-amber-500/70 p-3 sm:p-4 flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2.5">
                         <canvas class="ui-px-icon w-6 h-6 shrink-0" data-icon="layout" width="24" height="24"></canvas>
                         <div><div class="font-bold text-amber-300 text-xs sm:text-sm">游戏布局与视野设置</div><div class="text-[11px] text-slate-400 mt-0.5">调整按键、视野大小与双圈透明度</div></div>
@@ -1362,69 +1597,36 @@
                 <div class="flex items-center gap-2">
                     <canvas class="ui-px-icon w-5 h-5" data-icon="notice" width="20" height="20"></canvas>
                     <h3 class="text-base sm:text-lg font-bold text-amber-300 tracking-wider">游戏公告</h3>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.5.1</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.5.2</span>
                 </div>
                 <button onclick="window.closeAnnouncementModal()" class="pixel-icon-btn px-3 py-1 text-xs font-bold text-slate-200 flex items-center gap-1">
                     <canvas class="ui-px-icon w-3 h-3" data-icon="close_x" width="12" height="12"></canvas><span>关闭</span>
                 </button>
             </div>
             <div id="announcementBodyBox" class="flex-1 min-h-0 bg-[#0b0e17] border border-slate-800 p-3.5 sm:p-4 overflow-y-auto text-xs sm:text-sm text-slate-300 leading-relaxed space-y-3">
-                <div class="border-b border-slate-800 pb-2.5">
-                    <div class="text-sm sm:text-base font-bold text-amber-300 mb-1">【V0.5.1 版本更新】首领智能 AI 与视听体验全面升级！</div>
-                    <p class="text-xs text-slate-300 leading-relaxed">亲爱的特工：<b class="text-white">《像素物语》V0.5.1 版本已正式实装！</b>本次更新重点优化了首领技能释放逻辑，并带来全新动态背景音乐与拟真打击音效。</p>
+                <div class="bg-[#111624] border border-amber-400/50 p-3 space-y-1.5">
+                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.5.2 更新内容】</div>
+                    <ul class="text-xs text-slate-200 space-y-1 list-disc list-inside">
+                        <li><b>界面与字体</b>：重绘主菜单像素标题，统一全局中文字体。</li>
+                        <li><b>交互优化</b>：模式选择升级为跟手滚轮；所有滑动栏重开自动归位；局内重来与返回菜单增加确认弹窗；设置新增性能监测开关。</li>
+                        <li><b>问题修复</b>：修正穿透升级项数值描述；修复五号Boss位移技能偶发卡死；优化热更新版本校验。</li>
+                    </ul>
                 </div>
 
-                <div class="bg-[#111624] border border-rose-500/40 p-2.5 space-y-1">
-                    <div class="flex items-center gap-1.5 text-rose-300 font-bold text-xs sm:text-sm">
-                        <canvas class="ui-px-icon w-4 h-4 shrink-0" data-icon="crown" width="16" height="16"></canvas>
-                        <span>1. Boss 技能释放机制优化</span>
-                    </div>
-                    <p class="text-xs text-slate-300 pl-5 leading-relaxed">重构全体首领的战术 AI 决策系统，Boss 将根据交战距离、血量阶段与技能节奏更聪明地衔接招式，并优化了部分首领技能的判定范围与连段表现。</p>
+                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
+                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.1 往期更新】</div>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                        <li>重构首领技能释放 AI 与连段判定。</li>
+                        <li>优化全局战斗音效，新增动态 BGM 与音量调节滑块。</li>
+                    </ul>
                 </div>
 
-                <div class="bg-[#111624] border border-emerald-500/40 p-2.5 space-y-1">
-                    <div class="flex items-center gap-1.5 text-emerald-300 font-bold text-xs sm:text-sm">
-                        <canvas class="ui-px-icon w-4 h-4 shrink-0" data-icon="bolt" width="16" height="16"></canvas>
-                        <span>2. 音效全面优化 & 新增动态 BGM</span>
-                    </div>
-                    <p class="text-xs text-slate-300 pl-5 leading-relaxed">升级武器挥砍、技能释放、受击与暴击等多层拟音反馈，新增主菜单、常规波次与首领战专属动态合成 BGM，并在设置面板中新增 0% ~ 150% 音量百分比调节滑块。</p>
-                </div>
-
-                <div class="border-t border-slate-800/90 pt-3 mt-2">
-                    <div class="text-xs sm:text-sm font-bold text-slate-400 mb-1">【往期回顾 · V0.5.0】夜瞳降临 · 街区防线升级</div>
-                    <p class="text-xs text-slate-400 leading-relaxed">全新参战角色「夜瞳 · Yomi」、强力终局首领、黑市武装体系重构以及在线热更新支持。</p>
-                </div>
-
-                <div class="bg-[#111624] border border-purple-500/40 p-2.5 space-y-1">
-                    <div class="flex items-center gap-1.5 text-purple-300 font-bold text-xs sm:text-sm">
-                        <canvas class="ui-px-icon w-4 h-4 shrink-0" data-icon="swap_hero" width="16" height="16"></canvas>
-                        <span>1. 全新英雄登场 ——「夜瞳 · Yomi」</span>
-                    </div>
-                    <p class="text-xs text-slate-300 pl-5 leading-relaxed">挥舞哥特十字蔷薇链刃的中近距离范围型特工正式参战！拥有独特的链刃横扫、飞爪穿刺聚怪与暗影刃阵爆发能力，在密集尸潮中尽享割草快感。</p>
-                </div>
-
-                <div class="bg-[#111624] border border-rose-500/40 p-2.5 space-y-1">
-                    <div class="flex items-center gap-1.5 text-rose-300 font-bold text-xs sm:text-sm">
-                        <canvas class="ui-px-icon w-4 h-4 shrink-0" data-icon="crown" width="16" height="16"></canvas>
-                        <span>2. 全新首领袭来 —— 终局强敌压境</span>
-                    </div>
-                    <p class="text-xs text-slate-300 pl-5 leading-relaxed">封锁街区深处迎来全新高阶首领挑战，多阶段弹幕矩阵与压迫感十足的专属技能机制，等待各位特工前往讨伐。</p>
-                </div>
-
-                <div class="bg-[#111624] border border-amber-400/40 p-2.5 space-y-1">
-                    <div class="flex items-center gap-1.5 text-amber-300 font-bold text-xs sm:text-sm">
-                        <canvas class="ui-px-icon w-4 h-4 shrink-0" data-icon="shop_bag" width="16" height="16"></canvas>
-                        <span>3. 黑市商店新体验 —— 遗物与饰品重构</span>
-                    </div>
-                    <p class="text-xs text-slate-300 pl-5 leading-relaxed">波次休整阶段黑市商店体验全面升级，支持自由选购【被动饰品】与双槽位【主动遗物】，搭配「幸运」品质加成，构筑属于你的专属流派。</p>
-                </div>
-
-                <div class="bg-[#111624] border border-sky-400/40 p-2.5 space-y-1">
-                    <div class="flex items-center gap-1.5 text-sky-300 font-bold text-xs sm:text-sm">
-                        <canvas class="ui-px-icon w-4 h-4 shrink-0" data-icon="bolt" width="16" height="16"></canvas>
-                        <span>4. 实装在线热更新系统</span>
-                    </div>
-                    <p class="text-xs text-slate-300 pl-5 leading-relaxed">启动游戏时支持自动检测并同步最新内容补丁，后续日常更新无需重新下载安装包即可直接体验。</p>
+                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
+                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.0 往期更新】</div>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                        <li>新增角色「夜瞳 · Yomi」与五号首领「天穹炽天使」。</li>
+                        <li>重构黑市商店饰品与双槽位主动遗物，实装在线热更新。</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -1526,12 +1728,27 @@
                 <button onclick="window.openSettingsModal && window.openSettingsModal()" class="pixel-box px-3 py-2 font-bold text-sky-300 border-sky-500/60 hover:bg-sky-950/50 transition cursor-pointer flex items-center justify-center gap-1 text-xs sm:text-sm">
                     <canvas class="ui-px-icon w-3.5 h-3.5" data-icon="gear" width="14" height="14"></canvas><span>设置</span>
                 </button>
-                <button onclick="window.startPixelGame && window.startPixelGame()" class="pixel-box flex-1 py-2 font-bold text-rose-300 border-rose-500/60 hover:bg-rose-950/50 transition cursor-pointer flex items-center justify-center gap-1 text-xs sm:text-sm">
+                <button onclick="window.requestInGameConfirm && window.requestInGameConfirm('restart')" class="pixel-box flex-1 py-2 font-bold text-rose-300 border-rose-500/60 hover:bg-rose-950/50 transition cursor-pointer flex items-center justify-center gap-1 text-xs sm:text-sm">
                     <canvas class="ui-px-icon w-3.5 h-3.5" data-icon="reset" width="14" height="14"></canvas><span>重来</span>
                 </button>
-                <button onclick="window.backToMainMenu && window.backToMainMenu()" class="pixel-box px-3 py-2 font-bold text-slate-300 border-slate-600 hover:bg-slate-800 transition cursor-pointer flex items-center justify-center gap-1 text-xs sm:text-sm">
+                <button onclick="window.requestInGameConfirm && window.requestInGameConfirm('menu')" class="pixel-box px-3 py-2 font-bold text-slate-300 border-slate-600 hover:bg-slate-800 transition cursor-pointer flex items-center justify-center gap-1 text-xs sm:text-sm">
                     <canvas class="ui-px-icon w-3.5 h-3.5" data-icon="home" width="14" height="14"></canvas><span>菜单</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 局内重来 / 返回主菜单 防呆确认弹窗 -->
+    <div id="inGameConfirmModal" class="hidden fixed inset-0 z-[80] bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto select-none" onclick="window.cancelInGameConfirm && window.cancelInGameConfirm()">
+        <div id="inGameConfirmBox" class="pixel-box w-full max-w-sm p-5 border-2 border-amber-400 text-center space-y-4 bg-[#0d111c] shadow-[0_0_30px_rgba(0,0,0,0.9)]" onclick="event.stopPropagation()">
+            <div class="space-y-1">
+                <span id="inGameConfirmBadge" class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-2 py-0.5 font-bold">CONFIRM</span>
+                <h3 id="inGameConfirmTitle" class="text-base sm:text-lg font-bold text-amber-300 pt-1">确认重新开始？</h3>
+            </div>
+            <p id="inGameConfirmText" class="text-xs sm:text-sm text-slate-300 leading-relaxed">当前作战进度将会丢失，是否立即重新开始本局游戏？</p>
+            <div class="flex items-center gap-2.5 pt-1">
+                <button onclick="window.cancelInGameConfirm && window.cancelInGameConfirm()" class="pixel-icon-btn flex-1 py-2 text-xs sm:text-sm font-bold text-slate-200 border-slate-600 cursor-pointer">取消</button>
+                <button id="btnInGameConfirmExec" onclick="window.executeInGameConfirm && window.executeInGameConfirm()" class="pixel-btn flex-1 py-2 text-xs sm:text-sm font-bold text-white cursor-pointer">确认重来</button>
             </div>
         </div>
     </div>
@@ -1603,7 +1820,7 @@
         return null;
     }
 
-    let gameSettings = { sfx: true, bgm: true, sfxVolume: 1.0, bgmVolume: 1.0, crt: true, shake: true, fovScale: 1.0, circleOpacity: 1.0 };
+    let gameSettings = { sfx: true, bgm: true, sfxVolume: 1.0, bgmVolume: 1.0, crt: true, shake: true, perf: false, fovScale: 1.0, circleOpacity: 1.0 };
 
     const DEFAULT_KEYBINDS = {
         dodge:      { name: '闪避键',     btnId: 'btnActiveDodge',    dx: 0, dy: 0, scale: 1.0, opacity: 1.0 },
@@ -1644,6 +1861,7 @@
             if (typeof savedCfg.bgmVolume === 'number') gameSettings.bgmVolume = clampVal(savedCfg.bgmVolume, 0, 1.5);
             if (typeof savedCfg.crt === 'boolean') gameSettings.crt = savedCfg.crt;
             if (typeof savedCfg.shake === 'boolean') gameSettings.shake = savedCfg.shake;
+            if (typeof savedCfg.perf === 'boolean') gameSettings.perf = savedCfg.perf;
             if (typeof savedCfg.fovScale === 'number') gameSettings.fovScale = clampVal(savedCfg.fovScale, 0.6, 1.6);
             if (typeof savedCfg.circleOpacity === 'number') gameSettings.circleOpacity = clampVal(savedCfg.circleOpacity, 0, 2.0);
         }
@@ -1667,6 +1885,11 @@
         sfx.setBgmState(gameSettings.bgm, bgmVol);
         const crtEl = document.querySelector('.crt-overlay');
         if (crtEl) crtEl.style.display = gameSettings.crt ? 'block' : 'none';
+        const perfEl = document.getElementById('hudPerfMonitor');
+        if (perfEl) {
+            if (gameSettings.perf) perfEl.classList.remove('hidden');
+            else perfEl.classList.add('hidden');
+        }
         const updateBtnVisual = (id, isOn) => {
             const btn = document.getElementById(id);
             if (!btn) return;
@@ -1679,6 +1902,7 @@
         updateBtnVisual('btnToggleBgm', gameSettings.bgm && bgmVol > 0);
         updateBtnVisual('btnToggleCrt', gameSettings.crt);
         updateBtnVisual('btnToggleShake', gameSettings.shake);
+        updateBtnVisual('btnTogglePerf', Boolean(gameSettings.perf));
 
         const sfxSlider = document.getElementById('sfxVolumeSlider');
         const sfxText = document.getElementById('sfxVolumeValueText');
@@ -1718,6 +1942,13 @@
             el.style.transformOrigin = '0 0';
             el.style.transform = `translate3d(${cfg.dx}px, ${cfg.dy}px, 0) scale(${cfg.scale})`;
             el.style.opacity = String(cfg.opacity);
+            if (k === 'playerCard') {
+                const perfEl = document.getElementById('hudPerfMonitor');
+                if (perfEl) {
+                    perfEl.style.transformOrigin = '0 0';
+                    perfEl.style.transform = `translate3d(${cfg.dx}px, ${cfg.dy}px, 0)`;
+                }
+            }
             if (kbEditorState.active) {
                 el.style.transition = 'none';
                 el.style.cursor = 'move';
@@ -3262,9 +3493,159 @@
             wctx.imageSmoothingEnabled = false;
             wctx.drawImage(SPRITES.topWave, 0, 0, 16, 16);
         }
+        renderMainMenuPixelLogo();
         renderKbCollapseTriangleIcon();
         renderStaticModeSliceCanvases();
         updateHeroSpecificUIButtons(selectedHeroId);
+    }
+
+    function renderMainMenuPixelLogo() {
+        const c = document.getElementById('mainMenuLogoCanvas');
+        if (!c) return;
+        const lctx = c.getContext('2d');
+        lctx.imageSmoothingEnabled = false;
+        lctx.clearRect(0, 0, c.width, c.height);
+
+        // 手绘 16x16 标准点阵像素字模：【像】【素】【物】【语】四字笔触粗细与点阵骨骼 100% 统一
+        const GLYPHS_16 = [
+            // 像
+            [
+                "...11....11.....",
+                "..11....111111..",
+                ".11....11...11..",
+                "1111..111111111.",
+                ".11...11..11..11",
+                "..11..11..11..11",
+                "..11..111111111.",
+                "..11.....111....",
+                "..11...111111..1",
+                "..11.111..111.11",
+                "..11..1111.1111.",
+                "..11.11..11111..",
+                "..11....11.1111.",
+                "..11..111..11.11",
+                "..11.11..111...1",
+                "..11.....11....."
+            ],
+            // 素
+            [
+                ".......11.......",
+                "..111111111111..",
+                ".......11.......",
+                "...1111111111...",
+                ".......11.......",
+                ".11111111111111.",
+                ".....1111.......",
+                "...111..111.....",
+                "..11111111......",
+                ".....111..11....",
+                "..111111111111..",
+                ".......11...11..",
+                "...11..11..11...",
+                "..11...11...11..",
+                ".11...111....11.",
+                "......11........"
+            ],
+            // 物
+            [
+                "...11....11.....",
+                ".1.11...11......",
+                ".1.11..11111111.",
+                ".1111111..11.11.",
+                "11.11....11..11.",
+                "...11....111.11.",
+                "...11...11.1111.",
+                "...11.1.11.1111.",
+                ".11111..11.1111.",
+                "11.11..11..1111.",
+                "...11..11.11.11.",
+                "...11.11..11.11.",
+                "...11.11.11..11.",
+                "...11...11...11.",
+                "...11..11..1111.",
+                "...11.....111..."
+            ],
+            // 语
+            [
+                ".11.............",
+                "..11..111111111.",
+                ".........11.....",
+                ".........11.....",
+                "1111...1111111..",
+                "..11....11..11..",
+                "..11....11..11..",
+                "..11...11...11..",
+                "..11.11111111111",
+                "..11............",
+                "..11...11111111.",
+                "..11.1.11....11.",
+                "..111..11....11.",
+                "..11...11....11.",
+                ".......11111111.",
+                ".......11....11."
+            ]
+        ];
+
+        const S = 4; // 每个像素点阵缩放 4x4 px
+        const charAdvance = 19 * S; // 16格字宽 + 3格字距
+        const startX = 6, startY = 4;
+
+        // 1. 底层立体像素厚重投影 + 8方向纯黑闭合外描边
+        for (let gi = 0; gi < GLYPHS_16.length; gi++) {
+            const mat = GLYPHS_16[gi];
+            const ox = startX + gi * charAdvance;
+            for (let r = 0; r < 16; r++) {
+                for (let col = 0; col < 16; col++) {
+                    if (mat[r][col] !== '1') continue;
+                    const px = ox + col * S, py = startY + r * S;
+                    // 东南向深邃立体像素阴影
+                    lctx.fillStyle = '#05070e';
+                    lctx.fillRect(px - S, py - S, S * 3, S * 3 + 2);
+                }
+            }
+            for (let r = 0; r < 16; r++) {
+                for (let col = 0; col < 16; col++) {
+                    if (mat[r][col] !== '1') continue;
+                    const px = ox + col * S, py = startY + r * S;
+                    // 像素描边内框
+                    lctx.fillStyle = '#0f172a';
+                    lctx.fillRect(px - 2, py - 2, S + 4, S + 4);
+                }
+            }
+        }
+
+        // 2. 街机级立体渐变字面 + 顶部高光棱线 + 底部冰蓝折角
+        for (let gi = 0; gi < GLYPHS_16.length; gi++) {
+            const mat = GLYPHS_16[gi];
+            const ox = startX + gi * charAdvance;
+            for (let r = 0; r < 16; r++) {
+                for (let col = 0; col < 16; col++) {
+                    if (mat[r][col] !== '1') continue;
+                    const px = ox + col * S, py = startY + r * S;
+                    const topEmpty = (r === 0 || mat[r - 1][col] !== '1');
+                    const botEmpty = (r === 15 || mat[r + 1][col] !== '1');
+
+                    // 底部立体暗面折边
+                    if (botEmpty) {
+                        lctx.fillStyle = '#0284c7';
+                        lctx.fillRect(px, py + 2, S, S);
+                    }
+
+                    // 主字面垂直渐变色阶
+                    if (r <= 3) lctx.fillStyle = '#ffffff';
+                    else if (r <= 7) lctx.fillStyle = '#f8fafc';
+                    else if (r <= 11) lctx.fillStyle = '#e0f2fe';
+                    else lctx.fillStyle = '#7dd3fc';
+                    lctx.fillRect(px, py, S, S);
+
+                    // 笔画上沿 1px 纯白/金黄高光反光棱
+                    if (topEmpty) {
+                        lctx.fillStyle = (r <= 2) ? '#fef08a' : '#ffffff';
+                        lctx.fillRect(px, py, S, 1.5);
+                    }
+                }
+            }
+        }
     }
 
     function renderKbCollapseTriangleIcon() {
@@ -3724,6 +4105,22 @@
         }
     };
 
+    function resetScrollbarsIn(target) {
+        const root = typeof target === 'string' ? document.getElementById(target) : target;
+        if (!root) return;
+        const applyReset = () => {
+            root.scrollTop = 0;
+            root.scrollLeft = 0;
+            const scrollables = root.querySelectorAll('.overflow-y-auto, .overflow-x-auto, .overflow-auto');
+            for (let i = 0; i < scrollables.length; i++) {
+                scrollables[i].scrollTop = 0;
+                scrollables[i].scrollLeft = 0;
+            }
+        };
+        applyReset();
+        requestAnimationFrame(applyReset);
+    }
+
     window.showSkillDetailTooltip = function (title, badge, desc, iconUrl) {
         const modal = document.getElementById('longPressTooltip');
         if (!modal) return;
@@ -3732,6 +4129,7 @@
         document.getElementById('tooltipDescText').textContent = desc || '';
         document.getElementById('tooltipIconImg').src = iconUrl || '';
         modal.classList.remove('hidden');
+        resetScrollbarsIn(modal);
         sfx.pickupXp();
     };
 
@@ -3757,6 +4155,147 @@
     }
 
     const GAME_MODE_LIST = ['endless', 'boss_rush', 'training'];
+    const MODE_ACTIVE_THEMES = {
+        endless: { border: 'border-sky-400', bg: 'bg-[#121726]', shadow: 'shadow-[0_0_28px_rgba(56,189,248,0.4)]', dot: 'bg-sky-400', label: '无尽尸潮', badgeCls: 'bg-sky-400 text-slate-950' },
+        boss_rush: { border: 'border-rose-500', bg: 'bg-[#1a111a]', shadow: 'shadow-[0_0_28px_rgba(244,63,94,0.4)]', dot: 'bg-rose-500', label: '首领挑战', badgeCls: 'bg-rose-500 text-white' },
+        training: { border: 'border-emerald-400', bg: 'bg-[#0e1c24]', shadow: 'shadow-[0_0_28px_rgba(52,211,153,0.4)]', dot: 'bg-emerald-400', label: '战术训练营', badgeCls: 'bg-emerald-400 text-slate-950' }
+    };
+
+    const modeWheelState = {
+        pos: 0,
+        targetPos: 0,
+        velocity: 0,
+        isDragging: false,
+        rafId: 0,
+        lastTickIdx: 0,
+        suppressClickUntil: 0,
+        lastFrameTs: 0
+    };
+
+    function wrapWheelIndex(n) {
+        const count = GAME_MODE_LIST.length;
+        return ((Math.round(n) % count) + count) % count;
+    }
+
+    function getNearestWheelTarget(currentPos, targetIdx) {
+        const count = GAME_MODE_LIST.length;
+        const curMod = ((currentPos % count) + count) % count;
+        let diff = targetIdx - curMod;
+        if (diff > count * 0.5) diff -= count;
+        if (diff < -count * 0.5) diff += count;
+        return Math.round(currentPos + diff);
+    }
+
+    function renderModeWheelAtPosition(pos, playTickOnCross = false) {
+        const stageEl = document.getElementById('modeWheelStage');
+        if (stageEl && stageEl.style.perspective) {
+            stageEl.style.perspective = '';
+        }
+        const btnText = document.getElementById('btnConfirmModeText');
+        const heroModeBadge = document.getElementById('heroSelectModeBadge');
+
+        const count = GAME_MODE_LIST.length;
+        const nearestIdx = wrapWheelIndex(pos);
+        if (playTickOnCross && nearestIdx !== modeWheelState.lastTickIdx) {
+            modeWheelState.lastTickIdx = nearestIdx;
+            sfx.init();
+            sfx.pickupXp();
+        } else {
+            modeWheelState.lastTickIdx = nearestIdx;
+        }
+        selectedGameMode = GAME_MODE_LIST[nearestIdx] || 'endless';
+
+        GAME_MODE_LIST.forEach((m, idx) => {
+            const card = document.getElementById(`modeCard_${m}`);
+            const dot = document.getElementById(`wheelDot_${m}`);
+            const th = MODE_ACTIVE_THEMES[m] || MODE_ACTIVE_THEMES.endless;
+
+            let rel = ((idx - pos) % count + count) % count;
+            if (rel > count * 0.5) rel -= count;
+
+            const isFront = (idx === nearestIdx);
+            const absRel = Math.abs(rel);
+
+            if (card) {
+                if (absRel > 1.5) {
+                    card.style.transition = 'none';
+                    card.style.opacity = '0';
+                    card.style.pointerEvents = 'none';
+                    card.style.zIndex = '1';
+                    card.style.transform = 'translate3d(0%, 10px, 0) scale(0.70)';
+                } else {
+                    const theta = rel * ((Math.PI * 2) / 3);
+                    const sinT = Math.sin(theta);
+                    const cosT = Math.cos(theta);
+                    const depth01 = Math.max(0, Math.min(1, (cosT + 1) * 0.5));
+
+                    const shiftPct = (sinT / 0.8660254) * 62;
+                    const scale = 0.72 + 0.32 * Math.pow(depth01, 0.78);
+                    let opacity = 0.18 + 0.82 * Math.pow(depth01, 0.72);
+                    if (count > 3 && absRel > 1.25) {
+                        opacity *= Math.max(0, (1.5 - absRel) / 0.25);
+                    }
+                    const liftY = (1 - depth01) * 6;
+                    const zIdx = Math.round(5 + depth01 * 25);
+
+                    card.style.transition = 'none';
+                    card.style.pointerEvents = 'auto';
+                    card.style.transform = `translate3d(${shiftPct.toFixed(2)}%, ${liftY.toFixed(1)}px, 0) scale(${scale.toFixed(3)})`;
+                    card.style.zIndex = String(zIdx);
+                    card.style.opacity = opacity.toFixed(3);
+                    if (isFront) {
+                        card.className = `mode-wheel-card absolute w-[240px] sm:w-[310px] h-[185px] sm:h-[235px] pixel-box ${th.bg} border-2 ${th.border} ${th.shadow} p-2 sm:p-3 flex flex-col justify-between cursor-pointer select-none`;
+                    } else {
+                        card.className = 'mode-wheel-card absolute w-[240px] sm:w-[310px] h-[185px] sm:h-[235px] pixel-box bg-[#101420] border-2 border-slate-700 p-2 sm:p-3 flex flex-col justify-between cursor-pointer select-none';
+                    }
+                }
+            }
+            if (dot) {
+                dot.className = isFront ? `w-6 h-1.5 ${th.dot} transition-all` : 'w-2 h-1.5 bg-slate-700 transition-all';
+            }
+        });
+
+        const curTh = MODE_ACTIVE_THEMES[selectedGameMode] || MODE_ACTIVE_THEMES.endless;
+        if (btnText) btnText.textContent = `进入【${curTh.label}】 · 选择特工`;
+        if (heroModeBadge) {
+            heroModeBadge.textContent = curTh.label;
+            heroModeBadge.className = `${curTh.badgeCls} font-pixel-en text-[9px] px-1.5 py-0.5 font-bold`;
+        }
+    }
+
+    function stepModeWheelAnimation(now) {
+        if (modeWheelState.isDragging) {
+            modeWheelState.rafId = 0;
+            return;
+        }
+        const dt = Math.min(0.05, Math.max(0.004, (now - (modeWheelState.lastFrameTs || now)) * 0.001));
+        modeWheelState.lastFrameTs = now;
+
+        const diff = modeWheelState.targetPos - modeWheelState.pos;
+        if (Math.abs(diff) < 0.002 && Math.abs(modeWheelState.velocity) < 0.01) {
+            modeWheelState.pos = modeWheelState.targetPos;
+            modeWheelState.velocity = 0;
+            modeWheelState.rafId = 0;
+            renderModeWheelAtPosition(modeWheelState.pos, false);
+            return;
+        }
+
+        // 弹簧阻尼平滑归位（兼顾手指甩动惯性与精准吸附）
+        const springStiffness = 140;
+        const springDamping = 22;
+        const accel = diff * springStiffness - modeWheelState.velocity * springDamping;
+        modeWheelState.velocity += accel * dt;
+        modeWheelState.pos += modeWheelState.velocity * dt;
+
+        renderModeWheelAtPosition(modeWheelState.pos, true);
+        modeWheelState.rafId = requestAnimationFrame(stepModeWheelAnimation);
+    }
+
+    function startModeWheelSpring() {
+        if (modeWheelState.rafId) cancelAnimationFrame(modeWheelState.rafId);
+        modeWheelState.lastFrameTs = performance.now();
+        modeWheelState.rafId = requestAnimationFrame(stepModeWheelAnimation);
+    }
 
     window.openModeSelectModal = function () {
         sfx.init(); sfx.pickupXp();
@@ -3771,74 +4310,46 @@
         document.getElementById('mainMenuModal').classList.add('hidden');
         document.getElementById('startModal').classList.add('hidden');
         document.getElementById('modeSelectModal').classList.remove('hidden');
-        window.selectGameMode(selectedGameMode);
+        resetScrollbarsIn('modeSelectModal');
+        window.selectGameMode(selectedGameMode, true);
     };
 
     window.cycleGameMode = function (delta = 1) {
         sfx.init(); sfx.pickupXp();
-        const curIdx = Math.max(0, GAME_MODE_LIST.indexOf(selectedGameMode));
-        const nextIdx = (curIdx + delta + GAME_MODE_LIST.length) % GAME_MODE_LIST.length;
-        window.selectGameMode(GAME_MODE_LIST[nextIdx]);
+        modeWheelState.targetPos = Math.round(modeWheelState.targetPos) + delta;
+        modeWheelState.lastTickIdx = wrapWheelIndex(modeWheelState.targetPos);
+        startModeWheelSpring();
     };
 
-    window.selectGameMode = function (modeId) {
-        selectedGameMode = GAME_MODE_LIST.includes(modeId) ? modeId : 'endless';
-        const cards = {
-            endless: document.getElementById('modeCard_endless'),
-            boss_rush: document.getElementById('modeCard_boss_rush'),
-            training: document.getElementById('modeCard_training')
-        };
-        const dots = {
-            endless: document.getElementById('wheelDot_endless'),
-            boss_rush: document.getElementById('wheelDot_boss_rush'),
-            training: document.getElementById('wheelDot_training')
-        };
-        const btnText = document.getElementById('btnConfirmModeText');
-        const heroModeBadge = document.getElementById('heroSelectModeBadge');
-
-        const curIdx = GAME_MODE_LIST.indexOf(selectedGameMode);
-        const activeTheme = {
-            endless: { border: 'border-sky-400', bg: 'bg-[#121726]', shadow: 'shadow-[0_0_28px_rgba(56,189,248,0.4)]', dot: 'bg-sky-400', label: '无尽尸潮', badgeCls: 'bg-sky-400 text-slate-950' },
-            boss_rush: { border: 'border-rose-500', bg: 'bg-[#1a111a]', shadow: 'shadow-[0_0_28px_rgba(244,63,94,0.4)]', dot: 'bg-rose-500', label: '首领挑战', badgeCls: 'bg-rose-500 text-white' },
-            training: { border: 'border-emerald-400', bg: 'bg-[#0e1c24]', shadow: 'shadow-[0_0_28px_rgba(52,211,153,0.4)]', dot: 'bg-emerald-400', label: '战术训练营', badgeCls: 'bg-emerald-400 text-slate-950' }
-        };
-
-        GAME_MODE_LIST.forEach((m, idx) => {
-            const card = cards[m], dot = dots[m], th = activeTheme[m];
-            let rel = idx - curIdx;
-            if (rel > 1) rel -= 3;
-            if (rel < -1) rel += 3;
-            if (card) {
-                if (rel === 0) {
-                    card.style.transform = 'translate3d(0%, 0, 0) scale(1.04)';
-                    card.style.zIndex = '25';
-                    card.style.opacity = '1';
-                    card.className = `mode-wheel-card absolute w-[240px] sm:w-[310px] h-[185px] sm:h-[235px] pixel-box ${th.bg} border-2 ${th.border} ${th.shadow} p-2 sm:p-3 flex flex-col justify-between cursor-pointer transition-all duration-300`;
-                } else {
-                    const shiftX = rel < 0 ? '-62%' : '62%';
-                    card.style.transform = `translate3d(${shiftX}, 0, 0) scale(0.82)`;
-                    card.style.zIndex = '10';
-                    card.style.opacity = '0.48';
-                    card.className = 'mode-wheel-card absolute w-[240px] sm:w-[310px] h-[185px] sm:h-[235px] pixel-box bg-[#101420] border-2 border-slate-700 p-2 sm:p-3 flex flex-col justify-between cursor-pointer transition-all duration-300';
-                }
+    window.selectGameMode = function (modeId, immediate = false) {
+        const validMode = GAME_MODE_LIST.includes(modeId) ? modeId : 'endless';
+        selectedGameMode = validMode;
+        const targetIdx = GAME_MODE_LIST.indexOf(validMode);
+        if (immediate) {
+            if (modeWheelState.rafId) {
+                cancelAnimationFrame(modeWheelState.rafId);
+                modeWheelState.rafId = 0;
             }
-            if (dot) {
-                dot.className = rel === 0 ? `w-6 h-1.5 ${th.dot} transition-all` : 'w-2 h-1.5 bg-slate-700 transition-all';
-            }
-        });
-
-        const curTh = activeTheme[selectedGameMode];
-        if (btnText) btnText.textContent = `进入【${curTh.label}】 · 选择特工`;
-        if (heroModeBadge) {
-            heroModeBadge.textContent = curTh.label;
-            heroModeBadge.className = `${curTh.badgeCls} font-pixel-en text-[9px] px-1.5 py-0.5 font-bold`;
+            modeWheelState.pos = targetIdx;
+            modeWheelState.targetPos = targetIdx;
+            modeWheelState.velocity = 0;
+            modeWheelState.lastTickIdx = targetIdx;
+            renderModeWheelAtPosition(targetIdx, false);
+        } else {
+            modeWheelState.targetPos = getNearestWheelTarget(modeWheelState.pos, targetIdx);
+            modeWheelState.lastTickIdx = targetIdx;
+            startModeWheelSpring();
         }
     };
 
     window.onClickModeCard = function (modeId) {
+        if (performance.now() < modeWheelState.suppressClickUntil || modeWheelState.isDragging) return;
         sfx.init(); sfx.pickupXp();
-        if (selectedGameMode === modeId) window.confirmModeAndOpenHeroSelect();
-        else window.selectGameMode(modeId);
+        if (selectedGameMode === modeId && Math.abs(modeWheelState.targetPos - modeWheelState.pos) < 0.12) {
+            window.confirmModeAndOpenHeroSelect();
+        } else {
+            window.selectGameMode(modeId, false);
+        }
     };
 
     window.confirmModeAndOpenHeroSelect = function () {
@@ -3846,34 +4357,117 @@
         window.__trainingHeroSwitchPending = false;
         document.getElementById('modeSelectModal').classList.add('hidden');
         document.getElementById('startModal').classList.remove('hidden');
+        resetScrollbarsIn('startModal');
         window.selectHeroType(selectedHeroId);
     };
 
     (function setupModeSwipeGesture() {
-        let startX = null, startY = null;
+        let startX = 0, startY = 0, lastX = 0, lastTs = 0, totalMoved = 0, lockedHorizontal = null;
+
+        function getDragSpanPx() {
+            return window.innerWidth < 640 ? 175 : 225;
+        }
+
+        function onPointerStart(clientX, clientY, targetEl) {
+            if (targetEl && targetEl.closest && targetEl.closest('button')) return false;
+            if (modeWheelState.rafId) {
+                cancelAnimationFrame(modeWheelState.rafId);
+                modeWheelState.rafId = 0;
+            }
+            modeWheelState.isDragging = true;
+            modeWheelState.velocity = 0;
+            startX = lastX = clientX;
+            startY = clientY;
+            lastTs = performance.now();
+            totalMoved = 0;
+            lockedHorizontal = null;
+            return true;
+        }
+
+        function onPointerMove(clientX, clientY, ev) {
+            if (!modeWheelState.isDragging) return;
+            const totalDx = clientX - startX;
+            const totalDy = clientY - startY;
+            if (lockedHorizontal === null && (Math.abs(totalDx) > 5 || Math.abs(totalDy) > 5)) {
+                lockedHorizontal = Math.abs(totalDx) >= Math.abs(totalDy) * 0.7;
+            }
+            if (lockedHorizontal === false) return;
+            if (ev && ev.cancelable) ev.preventDefault();
+
+            const now = performance.now();
+            const dt = Math.max(0.004, (now - lastTs) * 0.001);
+            const dx = clientX - lastX;
+            lastX = clientX;
+            lastTs = now;
+            totalMoved += Math.abs(dx);
+
+            const deltaPos = -dx / getDragSpanPx();
+            modeWheelState.pos += deltaPos;
+            const instVel = deltaPos / dt;
+            modeWheelState.velocity = modeWheelState.velocity * 0.45 + instVel * 0.55;
+
+            renderModeWheelAtPosition(modeWheelState.pos, true);
+        }
+
+        function onPointerEnd() {
+            if (!modeWheelState.isDragging) return;
+            modeWheelState.isDragging = false;
+            if (totalMoved > 8) {
+                modeWheelState.suppressClickUntil = performance.now() + 90;
+            }
+            const stale = (performance.now() - lastTs) > 90;
+            const vel = stale ? 0 : clampVal(modeWheelState.velocity, -6.5, 6.5);
+            modeWheelState.velocity = vel;
+            const projected = modeWheelState.pos + clampVal(vel * 0.16, -0.85, 0.85);
+            modeWheelState.targetPos = Math.round(projected);
+            startModeWheelSpring();
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             const modalEl = document.getElementById('modeSelectModal');
             if (!modalEl) return;
+
             modalEl.addEventListener('touchstart', (e) => {
-                if (e.touches && e.touches[0]) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }
-            }, { passive: true });
-            modalEl.addEventListener('touchend', (e) => {
-                if (startX === null || !e.changedTouches || !e.changedTouches[0]) return;
-                const dx = e.changedTouches[0].clientX - startX, dy = e.changedTouches[0].clientY - startY;
-                if (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy)) {
-                    window.cycleGameMode(dx < 0 ? 1 : -1);
+                if (e.touches && e.touches[0]) {
+                    onPointerStart(e.touches[0].clientX, e.touches[0].clientY, e.target);
                 }
-                startX = null; startY = null;
             }, { passive: true });
-            modalEl.addEventListener('mousedown', (e) => { startX = e.clientX; startY = e.clientY; });
-            modalEl.addEventListener('mouseup', (e) => {
-                if (startX === null) return;
-                const dx = e.clientX - startX, dy = e.clientY - startY;
-                if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
-                    window.cycleGameMode(dx < 0 ? 1 : -1);
+
+            modalEl.addEventListener('touchmove', (e) => {
+                if (e.touches && e.touches[0]) {
+                    onPointerMove(e.touches[0].clientX, e.touches[0].clientY, e);
                 }
-                startX = null; startY = null;
+            }, { passive: false });
+
+            modalEl.addEventListener('touchend', () => { onPointerEnd(); }, { passive: true });
+            modalEl.addEventListener('touchcancel', () => { onPointerEnd(); }, { passive: true });
+
+            modalEl.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                onPointerStart(e.clientX, e.clientY, e.target);
             });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!modeWheelState.isDragging) return;
+                onPointerMove(e.clientX, e.clientY, e);
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (!modeWheelState.isDragging) return;
+                onPointerEnd();
+            });
+
+            let wheelCooldown = 0;
+            modalEl.addEventListener('wheel', (e) => {
+                if (modalEl.classList.contains('hidden')) return;
+                e.preventDefault();
+                const now = performance.now();
+                if (now - wheelCooldown < 140) return;
+                const dominant = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+                if (Math.abs(dominant) < 6) return;
+                wheelCooldown = now;
+                window.cycleGameMode(dominant > 0 ? 1 : -1);
+            }, { passive: false });
         });
     })();
 
@@ -3882,18 +4476,68 @@
         document.getElementById('mainMenuModal').classList.add('hidden');
         document.getElementById('modeSelectModal').classList.add('hidden');
         document.getElementById('startModal').classList.remove('hidden');
+        resetScrollbarsIn('startModal');
         window.selectHeroType(selectedHeroId);
+    };
+
+    let pendingInGameConfirmAction = null;
+
+    window.requestInGameConfirm = function (actionType) {
+        sfx.init(); sfx.pickupXp();
+        pendingInGameConfirmAction = actionType === 'restart' ? 'restart' : 'menu';
+        const modal = document.getElementById('inGameConfirmModal');
+        const box = document.getElementById('inGameConfirmBox');
+        const badge = document.getElementById('inGameConfirmBadge');
+        const title = document.getElementById('inGameConfirmTitle');
+        const text = document.getElementById('inGameConfirmText');
+        const execBtn = document.getElementById('btnInGameConfirmExec');
+        if (!modal) return;
+        if (pendingInGameConfirmAction === 'restart') {
+            if (box) box.className = 'pixel-box w-full max-w-sm p-5 border-2 border-rose-500 text-center space-y-4 bg-[#0d111c] shadow-[0_0_30px_rgba(0,0,0,0.9)]';
+            if (badge) { badge.textContent = 'RESTART'; badge.className = 'bg-rose-500 text-white font-pixel-en text-[9px] px-2 py-0.5 font-bold'; }
+            if (title) { title.textContent = '确认重新开始？'; title.className = 'text-base sm:text-lg font-bold text-rose-300 pt-1'; }
+            if (text) text.textContent = '当前作战进度将会丢失，是否立即重新开始本局游戏？';
+            if (execBtn) execBtn.textContent = '确认重来';
+        } else {
+            if (box) box.className = 'pixel-box w-full max-w-sm p-5 border-2 border-amber-400 text-center space-y-4 bg-[#0d111c] shadow-[0_0_30px_rgba(0,0,0,0.9)]';
+            if (badge) { badge.textContent = 'MAIN MENU'; badge.className = 'bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-2 py-0.5 font-bold'; }
+            if (title) { title.textContent = '确认返回主菜单？'; title.className = 'text-base sm:text-lg font-bold text-amber-300 pt-1'; }
+            if (text) text.textContent = '当前作战进度将会丢失，是否退出本局并返回主菜单？';
+            if (execBtn) execBtn.textContent = '返回主菜单';
+        }
+        modal.classList.remove('hidden');
+    };
+
+    window.cancelInGameConfirm = function () {
+        sfx.pickupXp();
+        pendingInGameConfirmAction = null;
+        const modal = document.getElementById('inGameConfirmModal');
+        if (modal) modal.classList.add('hidden');
+    };
+
+    window.executeInGameConfirm = function () {
+        const act = pendingInGameConfirmAction;
+        pendingInGameConfirmAction = null;
+        const modal = document.getElementById('inGameConfirmModal');
+        if (modal) modal.classList.add('hidden');
+        if (act === 'restart') {
+            if (window.startPixelGame) window.startPixelGame();
+        } else if (act === 'menu') {
+            if (window.backToMainMenu) window.backToMainMenu();
+        }
     };
 
     window.backToMainMenu = function () {
         sfx.pickupXp();
         window.__trainingHeroSwitchPending = false;
+        pendingInGameConfirmAction = null;
         gameState = 'START';
-        ['modeSelectModal', 'startModal', 'codexModal', 'settingsModal', 'keybindEditorModal', 'pauseModal', 'gameOverModal', 'levelUpModal', 'waveShopModal', 'trainingTopBar', 'trainingSkillsModal', 'trainingShopModal', 'announcementModal'].forEach(id => {
+        ['modeSelectModal', 'startModal', 'codexModal', 'settingsModal', 'keybindEditorModal', 'pauseModal', 'inGameConfirmModal', 'gameOverModal', 'levelUpModal', 'waveShopModal', 'trainingTopBar', 'trainingSkillsModal', 'trainingShopModal', 'announcementModal'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.classList.add('hidden');
         });
         document.getElementById('mainMenuModal').classList.remove('hidden');
+        resetScrollbarsIn('mainMenuModal');
     };
 
     let settingsReturnModalId = 'mainMenuModal';
@@ -3909,6 +4553,7 @@
         }
         applySettingsToDOM();
         document.getElementById('settingsModal').classList.remove('hidden');
+        resetScrollbarsIn('settingsModal');
     };
 
     window.closeSettingsModal = function () {
@@ -3919,7 +4564,10 @@
         applyCustomKeybindsToDOM();
         document.getElementById('settingsModal').classList.add('hidden');
         const retEl = document.getElementById(settingsReturnModalId);
-        if (retEl) retEl.classList.remove('hidden');
+        if (retEl) {
+            retEl.classList.remove('hidden');
+            resetScrollbarsIn(retEl);
+        }
     };
 
     window.toggleSettingOption = function (optKey) {
@@ -3939,6 +4587,8 @@
         } else if (optKey === 'shake') {
             gameSettings.shake = !gameSettings.shake;
             if (!gameSettings.shake) screenShake = 0;
+        } else if (optKey === 'perf') {
+            gameSettings.perf = !gameSettings.perf;
         }
         applySettingsToDOM();
         savePersistentData(STORAGE_KEY_SETTINGS, gameSettings);
@@ -4131,6 +4781,7 @@
         if (player) updateHeroSpecificUIButtons(player.heroId);
         gameState = kbEditorState.prevGameState || 'START';
         document.getElementById('settingsModal').classList.remove('hidden');
+        resetScrollbarsIn('settingsModal');
         updateHUD(true);
         sfx.pickupXp();
     }
@@ -4169,7 +4820,10 @@
     window.openAnnouncementModal = function () {
         sfx.init(); sfx.pickupXp();
         const modal = document.getElementById('announcementModal');
-        if (modal) modal.classList.remove('hidden');
+        if (modal) {
+            modal.classList.remove('hidden');
+            resetScrollbarsIn(modal);
+        }
     };
     window.closeAnnouncementModal = function () {
         sfx.pickupXp();
@@ -4241,9 +4895,13 @@
 
     window.openCodexModal = function (defaultTab = 'hero') {
         sfx.init(); sfx.pickupXp();
+        codexSelectedHero = 'rinne';
+        codexSelectedBoss = 'boss';
+        codexSelectedZombie = 'walker';
         document.getElementById('mainMenuModal').classList.add('hidden');
         document.getElementById('codexModal').classList.remove('hidden');
         window.switchCodexTab(defaultTab);
+        resetScrollbarsIn('codexModal');
     };
     window.closeCodexModal = function () {
         sfx.pickupXp();
@@ -4261,6 +4919,7 @@
             }
         });
         renderCodexTabContent();
+        resetScrollbarsIn('codexModal');
     };
 
     function isSkillAllowedForHero(sk, heroId) {
@@ -4300,6 +4959,7 @@
             gridEl.appendChild(cell);
         });
         modal.classList.remove('hidden');
+        resetScrollbarsIn(modal);
     };
 
     window.closeHeroUpgradesSubModal = function () {
@@ -4484,6 +5144,7 @@
                 });
             }
         }
+        resetScrollbarsIn(container);
     }
 
     window.selectCodexHero = function (id) { codexSelectedHero = id; renderCodexTabContent(); };
@@ -4709,7 +5370,7 @@
         { id: 'multishot', heroOnly: 'rinne', name: '多重弹道', category: '枪械改造', catColor: 'text-emerald-300 border-emerald-500/60 bg-emerald-950/50', order: 401, maxLv: 5, hasCd: false, iconMatrix: [".yy.yy.yy.", ".yy.yy.yy.", ".oo.oo.oo.", ".YY.YY.YY.", ".YY.YY.YY.", ".YY.YY.YY.", ".oo.oo.oo.", "..........", "..........", ".........."], getDesc(l) { return `普攻子弹数量+1（${1 + l}发；同时命中同一目标第2发40%、第3发起20%伤害）。`; } },
         { id: 'mag_size', excludeHeroes: ['sakura', 'yomi'], name: '扩容弹匣', category: '枪械改造', catColor: 'text-emerald-300 border-emerald-500/60 bg-emerald-950/50', order: 402, maxLv: 5, hasCd: false, iconMatrix: ["..oooooo..", ".oAAAAAao.", ".oAyyyyAo.", ".oAaaaaAo.", ".oAyyyyAo.", ".oAaaaaAo.", ".oAyyyyAo.", ".oAAAAAAo.", "..oooooo..", ".........."], getDesc(l) { const baseMag = (player && player.heroId === 'chinatsu') ? 2 : 6; return `弹匣容量+1（${baseMag + l}发）。`; } },
         { id: 'reload_speed', excludeHeroes: ['sakura', 'yomi'], name: '快速装填', category: '枪械改造', catColor: 'text-emerald-300 border-emerald-500/60 bg-emerald-950/50', order: 403, maxLv: 5, hasCd: false, iconMatrix: ["..oooooo..", ".obbbbbbo.", "obwyyyywbo", "obyooooYbo", "obyo..oYbo", "obyooooYbo", "obwyyyywbo", ".obbbbbbo.", "..oooooo..", ".........."], getDesc(l) { return `换弹时间-10%（-${l * 10}%）。`; } },
-        { id: 'pierce_up', excludeHeroes: ['sakura', 'yomi'], name: '钨芯穿甲弹', category: '枪械改造', catColor: 'text-emerald-300 border-emerald-500/60 bg-emerald-950/50', order: 404, maxLv: 5, hasCd: false, iconMatrix: [".......bb.", "......bwwb", ".....bwwwb", "....bwwwb.", "...bwwwb..", "..byyyb...", ".byyyb....", "byyyb.....", "ooo.......", ".........."], getDesc(l) { return `子弹穿透数量+1（${1 + l}只；每次穿透伤害-20%，最低保留50%）。`; } },
+        { id: 'pierce_up', excludeHeroes: ['sakura', 'yomi'], name: '钨芯穿甲弹', category: '枪械改造', catColor: 'text-emerald-300 border-emerald-500/60 bg-emerald-950/50', order: 404, maxLv: 5, hasCd: false, iconMatrix: [".......bb.", "......bwwb", ".....bwwwb", "....bwwwb.", "...bwwwb..", "..byyyb...", ".byyyb....", "byyyb.....", "ooo.......", ".........."], getDesc(l) { return `子弹穿透数量+1（${l}只；每次穿透伤害-20%，最低保留50%）。`; } },
         { id: 'xp_magnet', name: '晶核磁力仪', category: '战术体能', catColor: 'text-slate-200 border-slate-500/60 bg-slate-800/70', order: 406, maxLv: 5, hasCd: false, iconMatrix: [".rrr..bbb.", ".rrr..bbb.", ".www..www.", ".aaaaaaaa.", ".aaaaaaaa.", "..aaaaaa..", "...oooo...", "..........", "..........", ".........."], getDesc(l) { return `拾取范围与经验获取+10%（+${l * 10}%）。`; } },
         { id: 'exec_ammo', name: '处决弹头', category: '战术体能', catColor: 'text-slate-200 border-slate-500/60 bg-slate-800/70', order: 407, maxLv: 5, hasCd: false, iconMatrix: ["..oooooo..", ".orrrrrro.", "orwwwwwwro", "orwroorwro", "orwwwwwwro", ".orrrrrro.", "..orw.wro.", "...ooooo..", "..........", ".........."], getDesc(l) { return `对生命值低于25%的敌人伤害提高${l * 5}%；击败敌人有${l * 8}%概率引发80%攻击力的尸爆。`; } },
 
@@ -5247,7 +5908,7 @@
                 bctx.fillRect(cr.x + Math.cos(s * 1.7) * (cr.r + 12), cr.y + Math.sin(s * 2.3) * (cr.r + 10), 4, 2);
             }
         });
-        bctx.font = "bold 18px 'DotGothic16', monospace";
+        bctx.font = "bold 18px 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif";
         bctx.textAlign = 'left';
         bctx.fillStyle = 'rgba(234, 179, 8, 0.38)';
         bctx.fillText('ZONE-01 // MILITARY LOCKDOWN [DEFCON-2]', -855, -245);
@@ -5299,10 +5960,10 @@
             bctx.fillStyle = '#ffffff';
             bctx.fillRect(nr.x2 - 3, nr.y2 - 3, 6, 6);
         });
-        bctx.font = "bold 18px 'DotGothic16', monospace";
+        bctx.font = "bold 18px 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif";
         bctx.textAlign = 'right';
         bctx.fillStyle = 'rgba(34, 211, 238, 0.45)';
-        bctx.fillText('ZONE-02 // NEON CYBER ARCADE [電脳街]', 880, -245);
+        bctx.fillText('ZONE-02 // NEON CYBER ARCADE [电脑街]', 880, -245);
 
         // --- 【左下 SW：生化基因隔离区（地下荧光绿培养液河道 + 真正六边形蜂巢金属网格地板 + 黄色 BIOHAZARD 巨型标识）】---
         bctx.fillStyle = '#091411';
@@ -5367,7 +6028,7 @@
         bctx.strokeStyle = '#10b981'; bctx.lineWidth = 3; bctx.stroke();
         bctx.restore();
         drawHazardStripeRect(bctx, -880, 225, 620, 12, 12, '#eab308', '#091411');
-        bctx.font = "bold 18px 'DotGothic16', monospace";
+        bctx.font = "bold 18px 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif";
         bctx.textAlign = 'left';
         bctx.fillStyle = 'rgba(52, 211, 153, 0.48)';
         bctx.fillText('ZONE-03 // BIO-QUARANTINE LAB [LEVEL-4]', -855, 212);
@@ -5426,7 +6087,7 @@
                 for (let gy = ct.y + 18; gy < ct.y + ct.h - 12; gy += 36) bctx.fillRect(ct.x, gy, ct.w, 10);
             }
         });
-        bctx.font = "bold 18px 'DotGothic16', monospace";
+        bctx.font = "bold 18px 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif";
         bctx.textAlign = 'right';
         bctx.fillStyle = 'rgba(251, 146, 60, 0.48)';
         bctx.fillText('ZONE-04 // PLASMA SUBSTATION [HIGH-VOLTAGE]', 880, 212);
@@ -5657,7 +6318,7 @@
             }
             bctx.strokeStyle = v.color; bctx.lineWidth = 2.5;
             bctx.beginPath(); bctx.arc(0, 0, 24, 0, Math.PI * 2); bctx.stroke();
-            bctx.font = "bold 10px 'DotGothic16', monospace";
+            bctx.font = "bold 10px 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif";
             bctx.textAlign = 'center';
             bctx.fillStyle = '#e2e8f0';
             bctx.fillText(v.code, 0, 49);
@@ -6199,10 +6860,10 @@
             ctx.fillRect(cx - 36, cy - 28 + holoBob, 72, 18);
             ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.8;
             ctx.strokeRect(cx - 36, cy - 28 + holoBob, 72, 18);
-            ctx.font = "bold 10px 'DotGothic16', monospace";
+            ctx.font = "bold 10px 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif";
             ctx.textAlign = 'center';
             ctx.fillStyle = '#ffffff';
-            ctx.fillText('電脳 NEON', cx, cy - 15 + holoBob);
+            ctx.fillText('电脑 NEON', cx, cy - 15 + holoBob);
             ctx.restore();
             return;
         }
@@ -6245,7 +6906,7 @@
             ctx.fillRect(ob.x + 12, topY + 7, ob.w - 24, roofH - 14);
             ctx.strokeStyle = '#f472b6'; ctx.lineWidth = 2;
             ctx.strokeRect(ob.x + 14, topY + 9, ob.w - 28, roofH - 18);
-            ctx.font = "bold 11px 'DotGothic16', monospace";
+            ctx.font = "bold 11px 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif";
             ctx.textAlign = 'center';
             ctx.fillStyle = (Math.floor(globalTime * 4) % 2 === 0) ? '#67e8f9' : '#f472b6';
             ctx.fillText('★ CYBER BAR ★', ob.x + ob.w * 0.5, topY + roofH * 0.5 + 4);
@@ -6388,7 +7049,7 @@
             ctx.fillRect(cx - 28, cy - 13, 56, 26);
             ctx.strokeStyle = '#34d399'; ctx.lineWidth = 2.5;
             ctx.strokeRect(cx - 28, cy - 13, 56, 26);
-            ctx.font = "bold 10px 'DotGothic16', monospace";
+            ctx.font = "bold 10px 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif";
             ctx.textAlign = 'center';
             ctx.fillStyle = '#4ade80';
             ctx.fillText('BIO-LOCK', cx, cy + 4);
@@ -6797,7 +7458,7 @@
             bulletPierce: 1 + s.pierce_up,
             maxAmmo: (isSakura || isYomi) ? 1 : ((isChinatsu ? 2 : 6) + (s.mag_size || 0)),
             reloadStrikeCount: 1 + reloadLv,
-            reloadStrikePierce: 1 + reloadLv,
+            reloadStrikePierce: 2 + reloadLv,
             reloadStrikeDmgMult: 1.50 + reloadLv * 0.20,
             grenadeCount: 1 + grenadeLv,
             grenadeMaxCd: round1((isYomi ? 16.0 : (isSakura ? (20.0 * (1 - skSkillLv * 0.05)) : (isChinatsu ? (15.0 * (1 - sgSkillLv * 0.05)) : (p.grenadeBaseCd * (1 - grenadeLv * 0.05))))) * quantumWatchMult),
@@ -9220,7 +9881,7 @@
                         spawnFloatingText(player.x, player.y - 42, '星落震击!', '#f472b6', 13, -40);
                     }
                 }
-                attackRings.push({ x: boss.x, y: boss.y, r: 24, maxR: 140, color: '#f472b6', life: 0.30, maxLife: 0.30 });
+                hazardZones.push({ type: 'explosion_ring_fx', x: boss.x, y: boss.y, radius: 140, timer: 0, duration: 0.30, color: '#f472b6' });
                 screenShake = Math.max(screenShake, 9);
                 const ringCount = 14;
                 for (let k = 0; k < ringCount; k++) {
@@ -9861,6 +10522,7 @@
         rollWaveShopOffers();
         renderWaveShopModal();
         document.getElementById('waveShopModal').classList.remove('hidden');
+        resetScrollbarsIn('waveShopModal');
         sfx.levelUp();
     }
 
@@ -10326,6 +10988,7 @@
         sfx.levelUp();
         renderLevelUpCards();
         document.getElementById('levelUpModal').classList.remove('hidden');
+        resetScrollbarsIn('levelUpModal');
     }
 
     function renderLevelUpCards() {
@@ -10702,6 +11365,7 @@
         if (trainingConfig.gmOpen) trainingConfig.dpsOpen = false;
         syncTrainingDrawersDOM();
         syncTrainingCheatSwitchUI();
+        if (trainingConfig.gmOpen) resetScrollbarsIn('gmDrawerPanel');
         sfx.pickupXp();
     };
     window.toggleTrainingGmConsole = window.toggleTrainingGmDrawer;
@@ -10710,7 +11374,10 @@
         trainingConfig.dpsOpen = !trainingConfig.dpsOpen;
         if (trainingConfig.dpsOpen) trainingConfig.gmOpen = false;
         syncTrainingDrawersDOM();
-        if (trainingConfig.dpsOpen) updateTrainingDpsHud(true);
+        if (trainingConfig.dpsOpen) {
+            updateTrainingDpsHud(true);
+            resetScrollbarsIn('dpsDrawerPanel');
+        }
         sfx.pickupXp();
     };
 
@@ -10987,6 +11654,7 @@
             heroModeBadge.className = 'bg-emerald-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold';
         }
         document.getElementById('startModal').classList.remove('hidden');
+        resetScrollbarsIn('startModal');
         sfx.pickupXp();
     };
 
@@ -11113,13 +11781,14 @@
         syncTrainingDrawersDOM();
         snapshotAutoCruiseBeforeModal();
         gameState = 'PAUSED';
-        if (tabId) trainingConfig.skillsTab = tabId;
+        trainingConfig.skillsTab = tabId || 'all';
         const modal = document.getElementById('trainingSkillsModal');
         if (modal) {
             modal.classList.remove('hidden');
             if (window.renderUiPxIconsIn) window.renderUiPxIconsIn(modal);
         }
-        window.switchTrainingSkillsTab(trainingConfig.skillsTab || 'all');
+        window.switchTrainingSkillsTab(trainingConfig.skillsTab);
+        resetScrollbarsIn('trainingSkillsModal');
         sfx.pickupXp();
     };
 
@@ -11147,6 +11816,7 @@
             else tierBar.classList.add('hidden');
         }
         renderTrainingSkillsModalContent();
+        resetScrollbarsIn('trainingSkillsModal');
     };
 
     window.trainingResetSkills = function () {
@@ -11365,13 +12035,14 @@
         snapshotAutoCruiseBeforeModal();
         player.gold = 99999;
         gameState = 'PAUSED';
-        if (tabId === 'trinket' || tabId === 'relic') trainingConfig.shopTab = tabId;
+        trainingConfig.shopTab = (tabId === 'trinket' || tabId === 'relic') ? tabId : 'trinket';
         const modal = document.getElementById('trainingShopModal');
         if (modal) {
             modal.classList.remove('hidden');
             if (window.renderUiPxIconsIn) window.renderUiPxIconsIn(modal);
         }
-        window.switchTrainingShopTab(trainingConfig.shopTab || 'trinket');
+        window.switchTrainingShopTab(trainingConfig.shopTab);
+        resetScrollbarsIn('trainingShopModal');
         sfx.pickupXp();
     };
 
@@ -11406,6 +12077,7 @@
             }
         });
         renderTrainingShopModalContent();
+        resetScrollbarsIn('trainingShopModal');
     };
 
     window.trainingResetShopItems = function () {
@@ -13854,7 +14526,7 @@
                 ctx.beginPath(); ctx.arc(hz.x, hz.y, coreR * 0.55, 0, Math.PI * 2); ctx.fill();
 
                 const remSec = Math.max(0, hz.duration - hz.timer).toFixed(1);
-                ctx.font = "bold 13px 'DotGothic16', monospace";
+                ctx.font = "bold 13px 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif";
                 ctx.textAlign = 'center';
                 ctx.fillStyle = '#090d16';
                 ctx.fillText(`⚠ 熔核自爆 ${remSec}s ⚠`, hz.x + 1.5, hz.y - 28 + 1.5);
@@ -16233,7 +16905,7 @@
         ctx.textAlign = 'center';
         for (let i = 0; i < floatingTexts.length; i++) {
             const ft = floatingTexts[i];
-            ctx.font = `bold ${ft.size}px 'DotGothic16', monospace`;
+            ctx.font = `bold ${ft.size}px 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif`;
             ctx.fillStyle = '#090d16'; ctx.fillText(ft.text, ft.x + 1.5, ft.y + 1.5);
             ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y);
         }
@@ -16338,7 +17010,7 @@
 
         updateGlobalFlowField(player.x, player.y, true);
 
-        ['mainMenuModal', 'modeSelectModal', 'startModal', 'codexModal', 'levelUpModal', 'waveShopModal', 'pauseModal', 'gameOverModal', 'bossAlertBanner', 'waveClearBanner', 'btnActiveRelic', 'btnActiveRelic2', 'trainingSkillsModal', 'trainingShopModal'].forEach(id => {
+        ['mainMenuModal', 'modeSelectModal', 'startModal', 'codexModal', 'levelUpModal', 'waveShopModal', 'pauseModal', 'inGameConfirmModal', 'gameOverModal', 'bossAlertBanner', 'waveClearBanner', 'btnActiveRelic', 'btnActiveRelic2', 'trainingSkillsModal', 'trainingShopModal'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.classList.add('hidden');
         });
@@ -16676,7 +17348,13 @@
             renderPlayer12StatsGrid('pauseStatsBox');
             renderOrderedSkillsHUD();
             document.getElementById('pauseModal').classList.remove('hidden');
+            resetScrollbarsIn('pauseModal');
         } else if (gameState === 'PAUSED') {
+            const confirmModalEl = document.getElementById('inGameConfirmModal');
+            if (confirmModalEl && !confirmModalEl.classList.contains('hidden')) {
+                confirmModalEl.classList.add('hidden');
+            }
+            pendingInGameConfirmAction = null;
             kbEditorState.active = false;
             kbEditorState.draggingKey = null;
             kbEditorState.panelDragging = false;
@@ -16708,6 +17386,7 @@
             summary.innerHTML = `<div class="flex justify-between border-b border-slate-800 pb-1.5"><span>作战阶段:</span><span class="text-amber-400 font-bold">20波街区全歼通关</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>通关用时:</span><span class="text-sky-300 font-mono">${mm}:${ss}</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>最终等级:</span><span class="text-white font-bold">LV.${player.level}</span></div><div class="flex justify-between"><span>累计击败:</span><span class="text-emerald-400 font-bold">${waveState.totalKills} 个</span></div>`;
         }
         document.getElementById('gameOverModal').classList.remove('hidden');
+        resetScrollbarsIn('gameOverModal');
     }
 
     window.continueEndlessAfterVictory = function () {
@@ -16751,6 +17430,7 @@
             summary.innerHTML = `<div class="flex justify-between border-b border-slate-800 pb-1.5"><span>挑战模式:</span><span class="text-amber-400 font-bold">首领挑战</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>通关用时:</span><span class="text-sky-300 font-mono">${mm}:${ss}</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>最终等级:</span><span class="text-white font-bold">LV.${player.level}</span></div><div class="flex justify-between"><span>击败首领:</span><span class="text-emerald-400 font-bold">${BOSS_RUSH_TOTAL_BOSSES} / ${BOSS_RUSH_TOTAL_BOSSES}</span></div>`;
         }
         document.getElementById('gameOverModal').classList.remove('hidden');
+        resetScrollbarsIn('gameOverModal');
     }
 
     function triggerGameOver() {
@@ -16775,6 +17455,7 @@
             summary.innerHTML = `<div class="flex justify-between border-b border-slate-800 pb-1.5"><span>作战阶段:</span><span class="text-amber-400 font-bold">${modeLabel}</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>存活时长:</span><span class="text-sky-300 font-mono">${mm}:${ss}</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>最终等级:</span><span class="text-white font-bold">LV.${player.level}</span></div><div class="flex justify-between"><span>累计击败:</span><span class="text-emerald-400 font-bold">${waveState.totalKills} 个</span></div>`;
         }
         document.getElementById('gameOverModal').classList.remove('hidden');
+        resetScrollbarsIn('gameOverModal');
     }
 
     window.addEventListener('keydown', (e) => {
@@ -16814,10 +17495,13 @@
             if (e.code === 'Digit2' || e.code === 'Numpad2') selectSkillUpgrade(1);
             if (e.code === 'Digit3' || e.code === 'Numpad3') selectSkillUpgrade(2);
         } else if (gameState === 'PAUSED') {
+            const confirmModalEl = document.getElementById('inGameConfirmModal');
             const skillsModalEl = document.getElementById('trainingSkillsModal');
             const shopModalEl = document.getElementById('trainingShopModal');
             const startModalEl = document.getElementById('startModal');
-            if (skillsModalEl && !skillsModalEl.classList.contains('hidden')) {
+            if (confirmModalEl && !confirmModalEl.classList.contains('hidden')) {
+                if (e.code === 'Escape') { e.preventDefault(); window.cancelInGameConfirm(); }
+            } else if (skillsModalEl && !skillsModalEl.classList.contains('hidden')) {
                 if (e.code === 'Escape') { e.preventDefault(); window.closeTrainingSkillsModal(); }
             } else if (shopModalEl && !shopModalEl.classList.contains('hidden')) {
                 if (e.code === 'Escape') { e.preventDefault(); window.closeTrainingShopModal(); }
@@ -16880,16 +17564,70 @@
     window.addEventListener('touchend', endTouchJoystick, { passive: true });
     window.addEventListener('touchcancel', endTouchJoystick, { passive: true });
 
+    let perfMonitorState = { frames: 0, lastSampleTime: performance.now(), domCached: false, fpsEl: null, memWrapEl: null, memSepEl: null, memValEl: null, entEl: null };
+
+    function updatePerfMonitorHUD(now) {
+        if (!gameSettings.perf) return;
+        perfMonitorState.frames++;
+        const elapsed = now - perfMonitorState.lastSampleTime;
+        if (elapsed < 500) return;
+        const fps = Math.min(240, Math.max(1, Math.round((perfMonitorState.frames * 1000) / elapsed)));
+        perfMonitorState.frames = 0;
+        perfMonitorState.lastSampleTime = now;
+
+        if (!perfMonitorState.domCached) {
+            perfMonitorState.fpsEl = document.getElementById('perfFpsVal');
+            perfMonitorState.memWrapEl = document.getElementById('perfMemWrap');
+            perfMonitorState.memSepEl = document.getElementById('perfMemSep');
+            perfMonitorState.memValEl = document.getElementById('perfMemVal');
+            perfMonitorState.entEl = document.getElementById('perfEntVal');
+            perfMonitorState.domCached = true;
+        }
+        if (perfMonitorState.fpsEl) {
+            perfMonitorState.fpsEl.textContent = String(fps);
+            perfMonitorState.fpsEl.className = fps >= 50
+                ? 'text-emerald-400 tabular-nums'
+                : (fps >= 30 ? 'text-amber-300 tabular-nums' : 'text-rose-400 tabular-nums');
+        }
+        const memInfo = (typeof performance !== 'undefined' && performance && performance.memory) ? performance.memory : null;
+        if (memInfo && typeof memInfo.usedJSHeapSize === 'number') {
+            const usedMb = Math.round(memInfo.usedJSHeapSize / 1048576);
+            if (perfMonitorState.memWrapEl) perfMonitorState.memWrapEl.classList.remove('hidden');
+            if (perfMonitorState.memSepEl) perfMonitorState.memSepEl.classList.remove('hidden');
+            if (perfMonitorState.memValEl) {
+                perfMonitorState.memValEl.textContent = `${usedMb}MB`;
+                perfMonitorState.memValEl.className = usedMb >= 300
+                    ? 'text-rose-400 tabular-nums'
+                    : (usedMb >= 180 ? 'text-amber-300 tabular-nums' : 'text-sky-300 tabular-nums');
+            }
+        } else {
+            if (perfMonitorState.memWrapEl) perfMonitorState.memWrapEl.classList.add('hidden');
+            if (perfMonitorState.memSepEl) perfMonitorState.memSepEl.classList.add('hidden');
+        }
+        if (perfMonitorState.entEl) {
+            const entCount = (Array.isArray(zombies) ? zombies.length : 0)
+                + (Array.isArray(bullets) ? bullets.length : 0)
+                + (Array.isArray(enemyProjectiles) ? enemyProjectiles.length : 0)
+                + (Array.isArray(particles) ? particles.length : 0);
+            perfMonitorState.entEl.textContent = String(entCount);
+        }
+    }
+
     function mainLoop(now) {
         if (canvas && !canvas.isConnected) return;
-        const dt = Math.min(0.05, Math.max(0.001, (now - lastFrameTime) / 1000));
-        lastFrameTime = now;
-        sfx.updateBgm(gameState, zombies, waveState);
-        if (gameState === 'PLAYING' && player) {
-            if (postUpgradeFreezeTimer > 0) postUpgradeFreezeTimer = Math.max(0, postUpgradeFreezeTimer - dt);
-            else updateGame(dt);
+        try {
+            const dt = Math.min(0.05, Math.max(0.001, (now - lastFrameTime) / 1000));
+            lastFrameTime = now;
+            updatePerfMonitorHUD(now);
+            sfx.updateBgm(gameState, zombies, waveState);
+            if (gameState === 'PLAYING' && player) {
+                if (postUpgradeFreezeTimer > 0) postUpgradeFreezeTimer = Math.max(0, postUpgradeFreezeTimer - dt);
+                else updateGame(dt);
+            }
+            if (player) renderGame();
+        } catch (err) {
+            console.error('Frame update error:', err);
         }
-        if (player) renderGame();
         requestAnimationFrame(mainLoop);
     }
 
