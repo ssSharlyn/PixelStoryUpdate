@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>像素物语 V0.5.3</title>
+    <title>像素物语 V0.5.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
@@ -126,24 +126,38 @@
             .skill-card .skill-icon-box { width: 32px !important; height: 32px !important; }
             .skill-card .skill-icon-box img { width: 22px !important; height: 22px !important; }
             .skill-card p { font-size: 11px !important; line-height: 1.25 !important; margin-top: 4px !important; padding-top: 4px !important; }
-            #mainMenuModal { padding: max(8px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)) !important; }
+            #mainMenuModal {
+                padding-top: max(8px, env(safe-area-inset-top)) !important;
+                padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
+                padding-left: max(16px, env(safe-area-inset-left), env(safe-area-inset-right)) !important;
+                padding-right: max(16px, env(safe-area-inset-left), env(safe-area-inset-right)) !important;
+            }
             #mainMenuCenterWrap { gap: 10px !important; }
             #mainMenuTitleBox { padding: 8px 20px !important; transform: none !important; margin: 0 !important; border-width: 3px !important; }
             #mainMenuLogoCanvas { width: 204px !important; height: 50px !important; }
             #mainMenuTitleBox p { margin-top: 4px !important; font-size: 11px !important; }
             #btnMainPlay { width: 78px !important; height: 78px !important; border-width: 3px !important; }
             #iconCanvasPlay { width: 36px !important; height: 36px !important; }
-            .corner-pixel-btn { width: 44px !important; height: 44px !important; }
+            .corner-pixel-btn { width: 46px !important; height: 46px !important; gap: 2px !important; padding: 2px !important; }
+            .corner-pixel-btn canvas { width: 18px !important; height: 18px !important; }
+            .corner-pixel-btn span { font-size: 10px !important; line-height: 1 !important; }
         }
         @media (max-height: 410px) {
-            #mainMenuModal { padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important; }
+            #mainMenuModal {
+                padding-top: max(6px, env(safe-area-inset-top)) !important;
+                padding-bottom: max(6px, env(safe-area-inset-bottom)) !important;
+                padding-left: max(14px, env(safe-area-inset-left), env(safe-area-inset-right)) !important;
+                padding-right: max(14px, env(safe-area-inset-left), env(safe-area-inset-right)) !important;
+            }
             #mainMenuCenterWrap { gap: 7px !important; }
             #mainMenuTitleBox { padding: 5px 16px !important; }
             #mainMenuLogoCanvas { width: 176px !important; height: 43px !important; }
             #mainMenuTitleBox p { margin-top: 2px !important; font-size: 10px !important; }
             #btnMainPlay { width: 68px !important; height: 68px !important; }
             #iconCanvasPlay { width: 32px !important; height: 32px !important; }
-            .corner-pixel-btn { width: 40px !important; height: 40px !important; }
+            .corner-pixel-btn { width: 42px !important; height: 42px !important; gap: 1px !important; padding: 2px !important; }
+            .corner-pixel-btn canvas { width: 16px !important; height: 16px !important; }
+            .corner-pixel-btn span { font-size: 9px !important; line-height: 1 !important; }
             .mode-wheel-card { width: 198px !important; height: 138px !important; padding: 5px !important; }
         }
         .pixel-icon-btn {
@@ -287,7 +301,7 @@
             if (mode === 'big') {
                 if (smallBox) smallBox.style.display = 'none';
                 if (bigM) bigM.style.display = 'flex';
-                if (logEl) logEl.innerText = "【V0.5.3 版本更新】\n· 实装像素风更新界面与手动检查更新功能\n· 优化手机横屏全页面自适应布局\n· 模式选择升级为 2.5D 跟手滚轮\n· 局内重来与返回菜单增加防呆确认弹窗";
+                if (logEl) logEl.innerText = "【V0.5.4 版本更新】\n· 天穹炽天使（B5）：重构六翼浮游封锁阵、无缝脉冲壁垒与极速折跃光轨\n· 虚空死灵暴君（B4）：提升十字死光旋转速度，优化虚空裂隙连斩前摇与预判\n· 战斗手感：收紧受击保护无敌帧，优化移动端主页居中与按钮图标边界";
                 if (pWrap) pWrap.style.display = 'none';
                 if (cBtn) {
                     cBtn.disabled = false;
@@ -329,11 +343,11 @@
                     pct = Math.min(100, pct + 25);
                     if (hBar) hBar.style.width = pct + '%';
                     if (pct < 100) {
-                        if (hTip) hTip.innerText = `正在同步 V0.5.3 更新内容 (${pct}%)...`;
+                        if (hTip) hTip.innerText = `正在同步 V0.5.4 更新内容 (${pct}%)...`;
                     } else {
                         clearInterval(previewTimerId);
                         previewTimerId = null;
-                        if (hTip) hTip.innerText = '更新完成 (V0.5.3)，即将进入战场！';
+                        if (hTip) hTip.innerText = '更新完成 (V0.5.4)，即将进入战场！';
                     }
                 }, 400);
             }
@@ -612,7 +626,7 @@
 
             const finishUpToDate = (msg) => {
                 if (hBar) hBar.style.width = '100%';
-                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.5.3)，无需更新！`;
+                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.5.4)，无需更新！`;
                 setTimeout(() => {
                     if (ov) ov.style.display = 'none';
                     isManualChecking = false;
@@ -658,10 +672,10 @@
                 }
 
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.3)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.4)，无需更新！`), 260);
             } catch (e) {
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.3)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.4)，无需更新！`), 260);
             }
         };
 
@@ -1324,32 +1338,32 @@
             <div id="mainMenuTitleBox" class="pixel-box px-7 sm:px-11 py-3.5 sm:py-4 border-4 border-sky-400 bg-[#121726] flex flex-col items-center shadow-[0_8px_0_#05060a] shrink-0">
                 <div class="flex items-center gap-2 mb-1.5">
                     <span class="bg-rose-600 text-white font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5">PIXEL STORY</span>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.5.3</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.5.4</span>
                 </div>
                 <canvas id="mainMenuLogoCanvas" width="312" height="76" class="w-[218px] h-[53px] sm:w-[288px] sm:h-[70px] block pointer-events-none" aria-label="像素物语"></canvas>
                 <p class="text-[11px] sm:text-xs text-sky-300 mt-1.5 tracking-wider font-bold">二次元点阵像素 · 街区生存激战</p>
             </div>
             <button id="btnMainPlay" onclick="window.openModeSelectModal()" class="pixel-play-btn w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center group shrink-0" title="开始游戏">
-                <canvas id="iconCanvasPlay" width="48" height="48" class="w-11 h-11 sm:w-13 sm:h-13 translate-x-1 pointer-events-none group-hover:scale-105 transition"></canvas>
+                <canvas id="iconCanvasPlay" width="48" height="48" class="w-11 h-11 sm:w-13 sm:h-13 pointer-events-none group-hover:scale-105 transition"></canvas>
             </button>
         </div>
         <div id="mainMenuBottomBar" class="shrink-0 flex items-end justify-between w-full pt-1">
             <div class="flex items-center gap-3 sm:gap-4">
                 <button onclick="window.openSettingsModal()" class="corner-pixel-btn pixel-icon-btn w-12 h-12 sm:w-14 sm:h-14 flex flex-col items-center justify-center gap-0.5 border-sky-400/80" title="设置">
-                    <canvas id="iconCanvasSettings" width="24" height="24" class="w-6 h-6 pointer-events-none"></canvas>
+                    <canvas id="iconCanvasSettings" width="24" height="24" class="w-5 h-5 sm:w-6 sm:h-6 pointer-events-none"></canvas>
                     <span class="text-[10px] text-sky-300 font-bold leading-none">设置</span>
                 </button>
                 <button onclick="window.openCodexModal('hero')" class="corner-pixel-btn pixel-icon-btn w-12 h-12 sm:w-14 sm:h-14 flex flex-col items-center justify-center gap-0.5 border-amber-400/80" title="图鉴">
-                    <canvas id="iconCanvasCodex" width="24" height="24" class="w-6 h-6 pointer-events-none"></canvas>
+                    <canvas id="iconCanvasCodex" width="24" height="24" class="w-5 h-5 sm:w-6 sm:h-6 pointer-events-none"></canvas>
                     <span class="text-[10px] text-amber-300 font-bold leading-none">图鉴</span>
                 </button>
                 <button onclick="window.openPlaceholderModal('帮助')" class="corner-pixel-btn pixel-icon-btn w-12 h-12 sm:w-14 sm:h-14 flex flex-col items-center justify-center gap-0.5" title="帮助">
-                    <canvas id="iconCanvasHelp" width="24" height="24" class="w-6 h-6 pointer-events-none"></canvas>
+                    <canvas id="iconCanvasHelp" width="24" height="24" class="w-5 h-5 sm:w-6 sm:h-6 pointer-events-none"></canvas>
                     <span class="text-[10px] text-slate-300 leading-none">帮助</span>
                 </button>
             </div>
             <button onclick="window.openAnnouncementModal()" class="corner-pixel-btn pixel-icon-btn w-12 h-12 sm:w-14 sm:h-14 border-amber-400/80 flex flex-col items-center justify-center gap-0.5" title="公告">
-                <canvas id="iconCanvasNotice" width="24" height="24" class="w-6 h-6 pointer-events-none"></canvas>
+                <canvas id="iconCanvasNotice" width="24" height="24" class="w-5 h-5 sm:w-6 sm:h-6 pointer-events-none"></canvas>
                 <span class="text-[10px] text-amber-300 font-bold leading-none">公告</span>
             </button>
         </div>
@@ -1437,7 +1451,7 @@
                         <div>
                             <div class="font-bold text-sky-300 text-xs sm:text-sm flex items-center gap-2">
                                 <span>版本更新</span>
-                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.5.3</span>
+                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.5.4</span>
                             </div>
                             <div class="text-[11px] text-slate-400 mt-0.5">检查并获取游戏最新版本内容</div>
                         </div>
@@ -1730,7 +1744,7 @@
                 <div class="flex items-center gap-2">
                     <canvas class="ui-px-icon w-5 h-5" data-icon="notice" width="20" height="20"></canvas>
                     <h3 class="text-base sm:text-lg font-bold text-amber-300 tracking-wider">游戏公告</h3>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.5.3</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.5.4</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="window.manualCheckGameUpdate && window.manualCheckGameUpdate()" class="pixel-btn px-2.5 py-1 text-xs font-bold text-white flex items-center gap-1">
@@ -1743,8 +1757,17 @@
             </div>
             <div id="announcementBodyBox" class="flex-1 min-h-0 bg-[#0b0e17] border border-slate-800 p-3.5 sm:p-4 overflow-y-auto text-xs sm:text-sm text-slate-300 leading-relaxed space-y-3">
                 <div class="bg-[#111624] border border-amber-400/50 p-3 space-y-1.5">
-                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.5.3 更新内容】</div>
+                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.5.4 更新内容】</div>
                     <ul class="text-xs text-slate-200 space-y-1 list-disc list-inside">
+                        <li><b>天穹炽天使 (Boss 5)</b>：「浮游封锁网」升级为 6 枚浮游翼动态伴飞与三波错位旋转封锁阵；「天穹脉冲壁垒」改为三连无缝弹幕墙；大幅提升「折跃光轨奇袭」突进速度与预判。</li>
+                        <li><b>虚空死灵暴君 (Boss 4)</b>：提升「旋转十字虚空激光」50% 旋转角速度；优化「虚空裂隙连斩」预警前摇、连击间隔与移动预判。</li>
+                        <li><b>战斗与界面</b>：收紧连续受击保护时间（生命受击 0.30s / 护盾受击 0.28s）；修正移动端主页水平居中与四角按钮图标边距。</li>
+                    </ul>
+                </div>
+
+                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
+                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.3 往期更新】</div>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
                         <li><b>更新系统</b>：全新像素风格更新界面；设置与公告新增手动「检查更新」功能。</li>
                         <li><b>屏幕适配</b>：重构移动端横屏弹性布局，修复小屏设备主页与底部按钮溢出问题。</li>
                     </ul>
@@ -3367,11 +3390,11 @@
     const TOP_ICON_ZOMBIE_MATRIX = [".zzzzz.", "zZZZZZz", "zeZZZez", "zZZZZZz", ".zwwwz.", "..zzz..", "......."];
     const TOP_ICON_SKULL_MATRIX = [".wwwww.", "wweweww", "wwwwwww", ".wwwww.", "..w.w..", "..w.w..", "......."];
     const TOP_ICON_COIN_MATRIX = ["..yyy..", ".yYYYy.", "yYwwwYy", "yYwYwYy", "yYwwwYy", ".yYYYy.", "..yyy.."];
-    const MENU_PLAY_ICON_MATRIX = ["..oo........", "..oooo......", "..ooYYoo....", "..ooYYYYoo..", "..ooYYYYYYoo", "..ooYYYYwwww", "..ooYYYYYYoo", "..ooYYYYoo..", "..ooYYoo....", "..oooo......", "..oo........", "............"];
-    const MENU_SETTINGS_ICON_MATRIX = ["....oooo....", "..ooAAAAoo..", ".oAAwwwwAAo.", ".oAwooooWAo.", "oAAwo..owAAo", "oAAwo..owAAo", ".oAwooooWAo.", ".oAAwwwwAAo.", "..ooAAAAoo..", "....oooo....", "............", "............"];
-    const MENU_CODEX_ICON_MATRIX = [".oooooooooo.", "oYYYYYYYYYYo", "oYwwwwwwwwYo", "oYwBBBBBBwYo", "oYwBwwwwBwYo", "oYwBBBBBBwYo", "oYwwwwwwwwYo", "oYYYYYYYYYYo", ".oooooooooo.", "............", "............", "............"];
-    const MENU_HELP_ICON_MATRIX = ["...oooooo...", "..obbbbbbo..", ".obbwwwwbbo.", ".obwwoowwbo.", "....oobbo...", "...obbbo....", "...obbo.....", "....oo......", "...obbo.....", "...obbo.....", "............", "............"];
-    const MENU_NOTICE_ICON_MATRIX = ["......ooo...", "....ooyyyo..", "..ooyywwwyo.", "ooRRRRyyyyob", "oRwwwwyyyyo.", "oRwwwwyyyyob", "ooRRRRyyyyo.", "..ooyywwwyo.", "...oRRoyyyo.", "...oRRo.ooo.", "....oo......", "............"];
+    const MENU_PLAY_ICON_MATRIX = ["............", "..oo........", "..oooo......", "..ooYYoo....", "..ooYYYYoo..", "..ooYYYYYYoo", "..ooYYYYwwww", "..ooYYYYYYoo", "..ooYYYYoo..", "..ooYYoo....", "..oooo......", "..oo........"];
+    const MENU_SETTINGS_ICON_MATRIX = ["............", "....oooo....", "..ooAAAAoo..", ".oAAwwwwAAo.", ".oAwooooWAo.", "oAAwo..owAAo", "oAAwo..owAAo", ".oAwooooWAo.", ".oAAwwwwAAo.", "..ooAAAAoo..", "....oooo....", "............"];
+    const MENU_CODEX_ICON_MATRIX = ["............", ".oooooooooo.", "oYYYYYYYYYYo", "oYwwwwwwwwYo", "oYwBBBBBBwYo", "oYwBwwwwBwYo", "oYwBBBBBBwYo", "oYwwwwwwwwYo", "oYYYYYYYYYYo", ".oooooooooo.", "............", "............"];
+    const MENU_HELP_ICON_MATRIX = ["............", "...oooooo...", "..obbbbbbo..", ".obbwwwwbbo.", ".obwwoowwbo.", "....oobbo...", "...obbbo....", "...obbo.....", "....oo......", "...obbo.....", "...obbo.....", "............"];
+    const MENU_NOTICE_ICON_MATRIX = ["............", "......ooo...", "....ooyyyo..", "..ooyywwwyo.", "ooRRRRyyyyob", "oRwwwwyyyyo.", "oRwwwwyyyyob", "ooRRRRyyyyo.", "..ooyywwwyo.", "...oRRoyyyo.", "...oRRo.ooo.", "....oo......"];
 
     const UI_PX_ICONS = {
         back: ["....oo..", "...obbo.", "..obwbo.", ".obwwwbo", ".obwwwbo", "..obwbo.", "...obbo.", "....oo.."],
@@ -3713,27 +3736,27 @@
             // 语
             [
                 ".11.............",
-                "..11..111111111.",
-                ".........11.....",
-                ".........11.....",
-                "1111...1111111..",
-                "..11....11..11..",
-                "..11....11..11..",
-                "..11...11...11..",
-                "..11.11111111111",
+                "..11.111111111..",
+                "........11......",
+                "........11......",
+                "1111..1111111...",
+                "..11...11..11...",
+                "..11...11..11...",
+                "..11..11...11...",
+                "..11.1111111111.",
                 "..11............",
-                "..11...11111111.",
-                "..11.1.11....11.",
-                "..111..11....11.",
-                "..11...11....11.",
-                ".......11111111.",
-                ".......11....11."
+                "..11..11111111..",
+                "..11.111....11..",
+                "..111.11....11..",
+                "..11..11....11..",
+                "......11111111..",
+                "......11....11.."
             ]
         ];
 
         const S = 4; // 每个像素点阵缩放 4x4 px
         const charAdvance = 19 * S; // 16格字宽 + 3格字距
-        const startX = 6, startY = 4;
+        const startX = 8, startY = 4;
 
         // 1. 底层立体像素厚重投影 + 8方向纯黑闭合外描边
         for (let gi = 0; gi < GLYPHS_16.length; gi++) {
@@ -4114,9 +4137,9 @@
                 },
                 {
                     name: '旋转十字虚空激光',
-                    badge: '旋转光束',
+                    badge: '高速旋转光束',
                     iconMatrix: ["....pp....", "....ww....", "....pp....", "pppwbbwppp", "wwwwbbwwww", "pppwbbwppp", "....pp....", "....ww....", "....pp....", ".........."],
-                    desc: '原地锁定方向蓄力预警0.85秒后，向四周发射4道顺时针旋转的高能虚空激光束（激光可被场上的招魂方尖碑阻挡截断）。'
+                    desc: '原地锁定方向蓄力预警0.85秒后，向四周发射4道高速顺时针旋转的高能虚空激光束（中远距离无法仅靠顺向移动逃脱，需迎面闪避穿越、贴近内圈或利用方尖碑阻挡）。'
                 },
                 {
                     name: '死灵骨牢坠击',
@@ -4128,7 +4151,7 @@
                     name: '虚空裂隙连斩',
                     badge: '空间剑气',
                     iconMatrix: [".......pp.", ".....ppwwp", "...ppwwpp.", "..pwwpp...", ".pwp......", "pp........", "..........", "..........", "..........", ".........."],
-                    desc: '连续3次预判目标位置撕裂空间，短暂延迟后迸发虚空剑气造成伤害与减速。'
+                    desc: '连续3次预判目标移动方向撕裂空间（首斩0.48秒预警、后续连斩0.42秒迸发），需及时变向走位或闪避脱离，命中造成伤害与减速。'
                 }
             ]
         },
@@ -4136,7 +4159,7 @@
             id: 'seraphim_boss',
             name: '天穹炽天使 · Seraphim Core',
             tag: '第 20 波终焉首领',
-            intro: '统御赛博天穹的失控机械女武神。由6枚高精度霓虹浮游翼环绕护卫，擅长双旋星环弹幕、脉冲缺口壁垒、折跃光轨奇袭与浮游子机十字封锁网。',
+            intro: '统御赛博天穹的失控机械女武神。由6枚高精度霓虹浮游翼环绕护卫，擅长双旋星环弹幕、天穹脉冲壁垒、折跃光轨奇袭与六翼浮游封锁阵。',
             skills: [
                 {
                     name: '双旋星环弹幕',
@@ -4145,22 +4168,22 @@
                     desc: '悬浮展开6枚浮游翼，连续8波向四周交替发射顺时针品红光球与逆时针赛博青光球，交织成双旋走廊。'
                 },
                 {
-                    name: '脉冲缺口壁垒',
-                    badge: '扇形弹幕墙',
-                    iconMatrix: ["bbbb..bbbb", "bwwb..bwwb", "..........", "ppp..ppppp", "pwp..pwwwp", "..........", "bbbbbb..bb", "bwwwwb..bw", "..........", ".........."],
-                    desc: '锁定目标方向连续齐射3道宽幅脉冲针壁垒，每道壁垒随机留有1处安全穿行缺口，亦可使用闪避无敌帧穿越。'
+                    name: '天穹脉冲壁垒',
+                    badge: '无缝弹幕墙',
+                    iconMatrix: ["bbbbbbbbbb", "bwwwwwwwwb", "..........", "pppppppppp", "pwwwwwwwwp", "..........", "bbbbbbbbbb", "bwwwwwwwwb", "..........", ".........."],
+                    desc: '锁定目标方向连续齐射3道无缝宽幅脉冲针壁垒（无安全缺口），需看准充能波前使用闪避无敌帧迎面穿越，或向扇形两侧外围脱离。'
                 },
                 {
                     name: '折跃光轨奇袭',
-                    badge: '高速折跃',
+                    badge: '极速折跃',
                     iconMatrix: [".......bb.", ".....bbwwb", "...bbwwpp.", ".bbwwpp...", "bwwpp.....", "bpp..y.y..", "...y.www.y", ".....www..", "...y.www.y", ".....y.y.."],
-                    desc: '铺设高能折跃光轨（远离超过400像素达6秒必触发），0.65秒后沿光轨极速折跃冲锋，沿途留下延迟垂直脉冲针并在终点迸发14方向星落弹环。'
+                    desc: '铺设高能折跃光轨（远离超过400像素达6秒必触发），0.58秒预警后以0.14秒极速沿光轨电光折跃，沿途留下延迟垂直脉冲针并在终点迸发14方向高速星落弹环。'
                 },
                 {
-                    name: '浮游十字封锁网',
-                    badge: '子机矩阵',
+                    name: '浮游六翼封锁阵',
+                    badge: '动态子机阵',
                     iconMatrix: ["..b....p..", ".bwb..pwp.", "..b....p..", "bbbbbbbbbb", "..b....p..", "pppppppppp", "..b....p..", ".pwp..bwb.", "..p....b..", ".........."],
-                    desc: '向目标四周部署4枚天穹浮游翼，激光预瞄0.7秒后连续3轮发射纵横交错的井字形高能脉冲光束网。'
+                    desc: '全数派出6枚天穹浮游翼伴飞追猎目标：前两轮以「3+3正反三角」分批动态定锚发射交叉光针，第三轮6翼同步重聚目标四周完成双轨六芒星合围齐射。'
                 }
             ]
         }
@@ -9585,15 +9608,15 @@
                         sfx.bossAlert();
                         boss.actionState = 'chase'; boss.skillCd = 3.2;
                     } else if (chosen === 'cross_void_laser') {
-                        // 0.85s 明显锁定蓄力前摇 + 4.2s 旋转激发（共 5.05s）
-                        const warnDur = 0.85, activeDur = 4.2;
+                        // 0.85s 明显锁定蓄力前摇 + 4.0s 高速旋转激发（角速度提升50%至 1.32 rad/s，迫使中远距离玩家结合闪避或方尖碑掩体应对）
+                        const warnDur = 0.85, activeDur = 4.0;
                         boss.windupTotal = warnDur;
                         boss.stateTimer = warnDur + activeDur;
                         hazardZones.push({
                             type: 'void_cross_laser',
                             x: boss.x, y: boss.y,
                             baseAngle: Math.random() * Math.PI,
-                            rotSpeed: 0.88,
+                            rotSpeed: 1.32,
                             length: 1650,
                             radius: 1650,
                             warnDuration: warnDur,
@@ -9614,7 +9637,9 @@
                         hazardZones.push({ type: 'void_bone_prison_slam', x: boss.slamTargetX, y: boss.slamTargetY, radius: 108, gapAngle: Math.random() * Math.PI * 2, timer: 0, duration: 0.95, playerDamage: round1(42 * scale) });
                         sfx.bossAlert();
                     } else if (chosen === 'void_rift_slashes') {
-                        boss.spikeCountLeft = 3; boss.stateTimer = 0.08;
+                        boss.spikeCountLeft = 3;
+                        boss.stateTimer = 0.12;
+                        spawnFloatingText(boss.x, boss.y - boss.radius - 26, '！虚空裂隙连斩！', '#c084fc', 13, -34);
                     }
                 }
                 return;
@@ -9640,16 +9665,18 @@
             } else if (boss.actionState === 'void_rift_slashes') {
                 boss.stateTimer -= dt;
                 if (boss.stateTimer <= 0) {
-                    const leadDist = player.isMoving ? 46 : 20;
+                    const isFirstSlash = (boss.spikeCountLeft === 3);
+                    const leadDist = player.isMoving ? 52 : 20;
                     const dirX = player.isMoving ? player.lastMoveDirX : (player.facing || 1), dirY = player.isMoving ? player.lastMoveDirY : 0;
-                    const rx = clampVal(tPos.x + dirX * leadDist + (Math.random() - 0.5) * 32, -HALF_MAP + 60, HALF_MAP - 60);
-                    const ry = clampVal(tPos.y + dirY * leadDist + (Math.random() - 0.5) * 32, -HALF_MAP + 60, HALF_MAP - 60);
+                    const rx = clampVal(tPos.x + dirX * leadDist + (Math.random() - 0.5) * 18, -HALF_MAP + 60, HALF_MAP - 60);
+                    const ry = clampVal(tPos.y + dirY * leadDist + (Math.random() - 0.5) * 18, -HALF_MAP + 60, HALF_MAP - 60);
                     const slashAng = Math.random() * Math.PI;
-                    hazardZones.push({ type: 'void_rift_warn', x: rx, y: ry, radius: 68, slashAngle: slashAng, timer: 0, duration: 0.52, playerDamage: round1(30 * scale), slowDuration: 1.2 });
+                    const warnDur = isFirstSlash ? 0.48 : 0.42;
+                    hazardZones.push({ type: 'void_rift_warn', x: rx, y: ry, radius: 68, slashAngle: slashAng, timer: 0, duration: warnDur, playerDamage: round1(30 * scale), slowDuration: 1.2 });
                     sfx.swordSlash(true);
                     boss.spikeCountLeft--;
-                    if (boss.spikeCountLeft > 0) boss.stateTimer = 0.65;
-                    else { boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 3.1); }
+                    if (boss.spikeCountLeft > 0) boss.stateTimer = isFirstSlash ? 0.78 : 0.68;
+                    else { boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 3.2); }
                 }
             }
             return;
@@ -9800,7 +9827,7 @@
                     sfx.playTone({ type: 'sine', freq: 520, endFreq: 960, duration: 0.24, gain: 0.065 });
                     spawnFloatingText(boss.x, boss.y - boss.radius - 28, '！展开浮游翼：双旋星环！', '#e879f9', 13, -34);
                 } else if (chosen === 'wave_wall_gap') {
-                    // 技能二前摇（第1波 0.65s 预警）：身前扇形列阵展开浮游翼 + 地面扇形危险区与绿色安全缺口走廊
+                    // 技能二前摇（第1波 0.65s 预警）：身前扇形列阵展开浮游翼 + 地面无缝全扇面高危充能预警
                     boss.actionState = 'wave_wall_windup';
                     boss.seraphimWaveIndex = 0;
                     boss.windupTotal = 0.65;
@@ -9809,30 +9836,28 @@
                     boss.wallAimAngle = boss.chargeAngle;
                     boss.facing = Math.cos(boss.chargeAngle) >= 0 ? 1 : -1;
                     const totalNeedles = 13;
-                    boss.wallGapIdx = 2 + Math.floor(Math.random() * (totalNeedles - 5));
                     hazardZones.push({
                         type: 'seraphim_wave_wall_warn',
                         x: boss.x, y: boss.y,
                         angle: boss.chargeAngle,
                         spread: 1.85,
                         totalNeedles,
-                        gapIdx: boss.wallGapIdx,
                         colorType: 'cyan',
                         radius: 370,
                         timer: 0, duration: 0.65
                     });
                     sfx.reloadStrike();
-                    spawnFloatingText(boss.x, boss.y - boss.radius - 28, '！脉冲扇形壁垒（寻找绿色缺口）！', '#38bdf8', 13, -34);
+                    spawnFloatingText(boss.x, boss.y - boss.radius - 28, '！天穹脉冲壁垒（闪避穿越）！', '#38bdf8', 13, -34);
                 } else if (chosen === 'warp_rail_starfall') {
-                    // 技能三前摇（0.80s）：地面高亮折跃光轨矩形 + 终点 140px 星落环形爆发预警圈
+                    // 技能三前摇（0.58s）：地面高亮折跃光轨矩形 + 终点 140px 星落环形爆发预警圈
                     boss.actionState = 'warp_rail_windup';
-                    boss.windupTotal = 0.80;
-                    boss.stateTimer = 0.80;
-                    const leadX = tPos.x + (player.isMoving ? player.lastMoveDirX * 80 : 0);
-                    const leadY = tPos.y + (player.isMoving ? player.lastMoveDirY * 80 : 0);
+                    boss.windupTotal = 0.58;
+                    boss.stateTimer = 0.58;
+                    const leadX = tPos.x + (player.isMoving ? player.lastMoveDirX * 105 : 0);
+                    const leadY = tPos.y + (player.isMoving ? player.lastMoveDirY * 105 : 0);
                     boss.chargeAngle = Math.atan2(leadY - boss.y, leadX - boss.x);
                     boss.facing = Math.cos(boss.chargeAngle) >= 0 ? 1 : -1;
-                    const railDist = clampVal(Math.hypot(leadX - boss.x, leadY - boss.y) + 75, 280, 480);
+                    const railDist = clampVal(Math.hypot(leadX - boss.x, leadY - boss.y) + 80, 290, 500);
                     boss.slamStartX = boss.x; boss.slamStartY = boss.y;
                     boss.slamTargetX = clampVal(boss.x + Math.cos(boss.chargeAngle) * railDist, -HALF_MAP + 55, HALF_MAP - 55);
                     boss.slamTargetY = clampVal(boss.y + Math.sin(boss.chargeAngle) * railDist, -HALF_MAP + 55, HALF_MAP - 55);
@@ -9844,44 +9869,49 @@
                         x2: boss.slamTargetX, y2: boss.slamTargetY,
                         radius: 140,
                         width: 46,
-                        timer: 0, duration: 0.80
+                        timer: 0, duration: 0.58
                     });
                     sfx.playTone({ type: 'sawtooth', freq: 440, endFreq: 960, duration: 0.25, gain: 0.065 });
                     spawnFloatingText(boss.x, boss.y - boss.radius - 28, '！折跃光轨·终点星落预警！', '#f472b6', 13, -34);
                 } else if (chosen === 'funnel_crossfire_grid') {
-                    // 技能四（0.85s 预警 + 3轮井字齐射）：向玩家四周派出4枚像素浮游子机，地面绘制井字激光封锁带
+                    // 技能四（6枚浮游翼动态伴飞 + 3+3正反三角分批定锚 + 终段六翼六芒星合围齐射）
                     boss.actionState = 'funnel_crossfire_cast';
-                    boss.windupTotal = 0.85;
-                    boss.stateTimer = 1.65;
-                    const gx = clampVal(tPos.x, -HALF_MAP + 180, HALF_MAP - 180);
-                    const gy = clampVal(tPos.y, -HALF_MAP + 180, HALF_MAP - 180);
-                    const gridAng = (Math.floor(Math.random() * 2) === 0) ? 0 : (Math.PI * 0.25);
-                    const fDist = 235;
+                    boss.windupTotal = 0.54;
+                    boss.stateTimer = 1.55;
+                    const gx = clampVal(tPos.x, -HALF_MAP + 190, HALF_MAP - 190);
+                    const gy = clampVal(tPos.y, -HALF_MAP + 190, HALF_MAP - 190);
+                    const baseGridAng = Math.random() * (Math.PI / 3);
+                    const fDist = 275;
                     const funnels = [];
-                    for (let f = 0; f < 4; f++) {
-                        const posAng = gridAng + f * (Math.PI * 0.5);
+                    for (let f = 0; f < 6; f++) {
+                        const posAng = baseGridAng + f * (Math.PI / 3);
+                        const isWave1Group = (f % 2 === 0);
                         funnels.push({
+                            slotIdx: f,
+                            baseAng: posAng,
                             x: gx + Math.cos(posAng) * fDist,
                             y: gy + Math.sin(posAng) * fDist,
                             aimAng: posAng + Math.PI,
-                            isCyan: f % 2 === 0
+                            isCyan: isWave1Group,
+                            anchored: isWave1Group,
+                            offsets: [-30, 0, 30]
                         });
                     }
                     hazardZones.push({
                         type: 'seraphim_funnel_grid',
                         x: gx, y: gy,
                         radius: fDist,
+                        baseGridAng,
                         funnels,
-                        warnDuration: 0.85,
+                        waveIndex: 0,
+                        waveTimer: 0,
+                        waveWarnDur: 0.54,
                         timer: 0,
-                        duration: 2.15,
-                        burstTimer: 0,
-                        burstInterval: 0.42,
-                        burstsLeft: 3,
+                        duration: 1.62,
                         needleDamage: round1(26 * scale)
                     });
                     sfx.bossAlert();
-                    spawnFloatingText(boss.x, boss.y - boss.radius - 28, '！浮游子机·十字封锁网！', '#38bdf8', 13, -34);
+                    spawnFloatingText(boss.x, boss.y - boss.radius - 28, '！六翼浮游·天穹封锁阵！', '#38bdf8', 13, -34);
                 }
             }
             return;
@@ -9943,10 +9973,8 @@
                 const aimAng = typeof boss.wallAimAngle === 'number' ? boss.wallAimAngle : boss.chargeAngle;
                 const totalNeedles = 13, spread = 1.85;
                 const startAng = aimAng - spread * 0.5;
-                const gapIdx = typeof boss.wallGapIdx === 'number' ? boss.wallGapIdx : 5;
                 const colorType = (wIdx % 2 === 0) ? 'cyan' : 'magenta';
                 for (let k = 0; k < totalNeedles; k++) {
-                    if (k === gapIdx || k === gapIdx + 1) continue;
                     const ang = startAng + (spread * k) / (totalNeedles - 1);
                     enemyProjectiles.push({
                         kind: 'seraphim_needle', colorType,
@@ -9958,21 +9986,19 @@
                 sfx.shoot();
                 boss.seraphimWaveIndex = wIdx + 1;
                 if (boss.seraphimWaveIndex < 3) {
-                    // 下一波扇形壁垒：重新锁定玩家方向与随机安全缺口，并提前铺设 0.62s 扇形预警与绿色安全走廊
+                    // 下一波无缝扇形壁垒：重新锁定玩家方向，铺设 0.62s 扇形充能预警（匹配 0.50s 闪避冷却节奏）
                     boss.actionState = 'wave_wall_windup';
                     boss.windupTotal = 0.62;
                     boss.stateTimer = 0.62;
                     boss.chargeAngle = Math.atan2(tPos.y - boss.y, tPos.x - boss.x);
                     boss.wallAimAngle = boss.chargeAngle;
                     boss.facing = Math.cos(boss.chargeAngle) >= 0 ? 1 : -1;
-                    boss.wallGapIdx = 2 + Math.floor(Math.random() * (totalNeedles - 5));
                     hazardZones.push({
                         type: 'seraphim_wave_wall_warn',
                         x: boss.x, y: boss.y,
                         angle: boss.chargeAngle,
                         spread: 1.85,
                         totalNeedles,
-                        gapIdx: boss.wallGapIdx,
                         colorType: (boss.seraphimWaveIndex % 2 === 0) ? 'cyan' : 'magenta',
                         radius: 370,
                         timer: 0, duration: 0.62
@@ -9993,16 +10019,18 @@
             }
         } else if (boss.actionState === 'warp_rail_dash') {
             boss.stateTimer += dt;
-            const dashDur = 0.26, prog = Math.min(1, boss.stateTimer / dashDur);
+            const dashDur = 0.14, prog = Math.min(1, boss.stateTimer / dashDur);
             boss.x = boss.slamStartX + (boss.slamTargetX - boss.slamStartX) * prog;
             boss.y = boss.slamStartY + (boss.slamTargetY - boss.slamStartY) * prog;
-            if (Math.hypot(boss.x - boss.flameTrailLastX, boss.y - boss.flameTrailLastY) >= 65) {
-                boss.flameTrailLastX = boss.x; boss.flameTrailLastY = boss.y;
+            while (Math.hypot(boss.x - boss.flameTrailLastX, boss.y - boss.flameTrailLastY) >= 65) {
+                const stepAng = Math.atan2(boss.y - boss.flameTrailLastY, boss.x - boss.flameTrailLastX);
+                boss.flameTrailLastX += Math.cos(stepAng) * 65;
+                boss.flameTrailLastY += Math.sin(stepAng) * 65;
                 hazardZones.push({
                     type: 'seraphim_rail_node',
-                    x: boss.x, y: boss.y,
+                    x: boss.flameTrailLastX, y: boss.flameTrailLastY,
                     railAngle: boss.chargeAngle,
-                    timer: 0, duration: 0.55,
+                    timer: 0, duration: 0.38,
                     needleDamage: round1(24 * scale)
                 });
             }
@@ -10034,7 +10062,7 @@
                     enemyProjectiles.push({
                         kind: 'seraphim_orb', colorType: k % 2 === 0 ? 'cyan' : 'magenta',
                         x: boss.x + Math.cos(ang) * 28, y: boss.y + Math.sin(ang) * 28,
-                        vx: Math.cos(ang) * 265, vy: Math.sin(ang) * 265,
+                        vx: Math.cos(ang) * 320, vy: Math.sin(ang) * 320,
                         radius: 6.5, damage: round1(24 * scale), ignoreWalls: true, life: 2.8
                     });
                 }
@@ -10100,7 +10128,7 @@
         const stats = getPlayerStats(player);
 
         if ((stats.dodgeChance || 0) > 0 && Math.random() < stats.dodgeChance) {
-            player.invulnTimer = 0.25;
+            player.invulnTimer = 0.18;
             sfx.playTone({ type: 'triangle', freq: 640, endFreq: 980, duration: 0.08, gain: 0.06 });
             spawnFloatingText(player.x, player.y - 34, 'MISS 闪避!', '#7dd3fc', 13, -46);
             spawnPixelParticles(player.x, player.y, '#7dd3fc', 8, 120, 3, 0.22);
@@ -10130,7 +10158,7 @@
         let finalDmg = Math.max(0.1, round1(rawAmount * deathMarkDmgMult * (1 - stats.armorReduction)));
 
         if (waveState && waveState.mode === 'training' && trainingConfig.godMode) {
-            player.invulnTimer = 0.35;
+            player.invulnTimer = 0.28;
             sfx.hurt();
             spawnFloatingText(player.x, player.y - 28, `[金身测伤 -${fmt1(finalDmg)}]`, '#fde047', 13, -46);
             spawnPixelParticles(player.x, player.y, '#fde047', 6, 95, 3, 0.24);
@@ -10140,7 +10168,7 @@
         if ((player.shield || 0) > 0) {
             if (player.shield > finalDmg) {
                 player.shield = round1(player.shield - finalDmg);
-                player.invulnTimer = 0.40;
+                player.invulnTimer = 0.28;
                 sfx.hurt();
                 spawnFloatingText(player.x, player.y - 28, `护盾-${fmt1(finalDmg)}`, '#38bdf8', 13, -46);
                 spawnPixelParticles(player.x, player.y, '#38bdf8', 8, 110, 4, 0.28);
@@ -10148,7 +10176,7 @@
                 return;
             } else if (player.shield === finalDmg) {
                 player.shield = 0;
-                player.invulnTimer = 0.40;
+                player.invulnTimer = 0.28;
                 sfx.hurt();
                 spawnFloatingText(player.x, player.y - 28, `护盾-${fmt1(finalDmg)}`, '#38bdf8', 13, -46);
                 triggerPeriodicShieldShatterBurst();
@@ -10162,7 +10190,7 @@
         }
 
         player.hp = Math.max(0, round1(player.hp - finalDmg));
-        player.invulnTimer = 0.45;
+        player.invulnTimer = 0.30;
         screenShake = Math.max(screenShake, 6);
         sfx.hurt();
         spawnFloatingText(player.x, player.y - 28, `-${fmt1(finalDmg)}`, '#f43f5e', 14, -48);
@@ -13900,7 +13928,7 @@
                         sfx.frostNova();
                     }
                     const activeElapsed = hz.timer - warnDur;
-                    const curBaseAng = hz.baseAngle + activeElapsed * (hz.rotSpeed || 0.88);
+                    const curBaseAng = hz.baseAngle + activeElapsed * (hz.rotSpeed || 1.32);
                     if (!isSakuraVanished) {
                         for (let arm = 0; arm < 4; arm++) {
                             const armAng = curBaseAng + (Math.PI * 0.5) * arm;
@@ -13982,30 +14010,97 @@
                 continue;
             }
             if (hz.type === 'seraphim_funnel_grid') {
-                if (hz.timer >= (hz.warnDuration || 0.7)) {
-                    hz.burstTimer = (hz.burstTimer || 0) - dt;
-                    if (hz.burstTimer <= 0 && (hz.burstsLeft || 0) > 0) {
-                        hz.burstsLeft--;
-                        hz.burstTimer = hz.burstInterval || 0.42;
-                        const spd = 395;
-                        const offsets = [-34, 0, 34];
-                        sfx.playTone({ type: 'square', freq: 720, endFreq: 1080, duration: 0.08, gain: 0.045 });
-                        for (let fIdx = 0; fIdx < (hz.funnels || []).length; fIdx++) {
-                            const fn = hz.funnels[fIdx];
-                            const perpX = -Math.sin(fn.aimAng), perpY = Math.cos(fn.aimAng);
-                            for (let oIdx = 0; oIdx < offsets.length; oIdx++) {
-                                const off = offsets[oIdx];
-                                const sx = fn.x + perpX * off, sy = fn.y + perpY * off;
-                                enemyProjectiles.push({
-                                    kind: 'seraphim_needle',
-                                    colorType: fn.isCyan ? 'cyan' : 'magenta',
-                                    x: sx, y: sy,
-                                    vx: Math.cos(fn.aimAng) * spd, vy: Math.sin(fn.aimAng) * spd,
-                                    angle: fn.aimAng, radius: 5,
-                                    damage: hz.needleDamage || 26,
-                                    ignoreWalls: true, life: 1.45
-                                });
+                const fns = hz.funnels || [];
+                const fDist = hz.radius || 275;
+                const liveTPos = getPlayerTrackingPos();
+                const trackCx = clampVal(liveTPos.x, -HALF_MAP + 190, HALF_MAP - 190);
+                const trackCy = clampVal(liveTPos.y, -HALF_MAP + 190, HALF_MAP - 190);
+
+                // 未定锚的伴飞浮游翼实时平滑追踪玩家最新位置，防止玩家提前跑出下一波包围圈
+                for (let fIdx = 0; fIdx < fns.length; fIdx++) {
+                    const fn = fns[fIdx];
+                    if (!fn.anchored) {
+                        const orbitAng = fn.baseAng + hz.timer * 0.85;
+                        const targetX = trackCx + Math.cos(orbitAng) * fDist;
+                        const targetY = trackCy + Math.sin(orbitAng) * fDist;
+                        const followRate = Math.min(1, dt * 11.5);
+                        fn.x += (targetX - fn.x) * followRate;
+                        fn.y += (targetY - fn.y) * followRate;
+                        fn.aimAng = Math.atan2(trackCy - fn.y, trackCx - fn.x);
+                    }
+                }
+
+                hz.waveTimer = (hz.waveTimer || 0) + dt;
+                const curWarnDur = hz.waveWarnDur || 0.54;
+                if ((hz.waveIndex || 0) < 3 && hz.waveTimer >= curWarnDur) {
+                    const wIdx = hz.waveIndex || 0;
+                    const spd = wIdx === 2 ? 425 : 415;
+                    sfx.playTone({ type: 'square', freq: 720 + wIdx * 110, endFreq: 1120 + wIdx * 120, duration: 0.08, gain: 0.048 });
+
+                    // 当前已定锚的浮游翼发射脉冲光针
+                    for (let fIdx = 0; fIdx < fns.length; fIdx++) {
+                        const fn = fns[fIdx];
+                        if (!fn.anchored) continue;
+                        const perpX = -Math.sin(fn.aimAng), perpY = Math.cos(fn.aimAng);
+                        const offsets = fn.offsets || [-30, 0, 30];
+                        for (let oIdx = 0; oIdx < offsets.length; oIdx++) {
+                            const off = offsets[oIdx];
+                            const sx = fn.x + perpX * off, sy = fn.y + perpY * off;
+                            enemyProjectiles.push({
+                                kind: 'seraphim_needle',
+                                colorType: fn.isCyan ? 'cyan' : 'magenta',
+                                x: sx, y: sy,
+                                vx: Math.cos(fn.aimAng) * spd, vy: Math.sin(fn.aimAng) * spd,
+                                angle: fn.aimAng, radius: 5,
+                                damage: hz.needleDamage || 26,
+                                ignoreWalls: true, life: 1.45
+                            });
+                        }
+                        spawnPixelParticles(fn.x, fn.y, fn.isCyan ? '#38bdf8' : '#e879f9', 6, 130, 2.5, 0.22);
+                    }
+
+                    // 推进至下一波：基于玩家当前最新坐标定锚下一批浮游翼
+                    hz.waveIndex = wIdx + 1;
+                    hz.waveTimer = 0;
+                    hz.x = trackCx;
+                    hz.y = trackCy;
+
+                    if (hz.waveIndex === 1) {
+                        // 第 2 波：倒三角（1/3/5号品红翼）附加 +30°（Math.PI/6）相位旋转定锚，使激光轴线正切第1波的6个安全三角缺口！
+                        hz.waveWarnDur = 0.38;
+                        const wave2Shift = Math.PI / 6;
+                        sfx.playTone({ type: 'sine', freq: 580, endFreq: 860, duration: 0.06, gain: 0.038 });
+                        for (let fIdx = 0; fIdx < fns.length; fIdx++) {
+                            const fn = fns[fIdx];
+                            if (fIdx % 2 === 1) {
+                                const lockAng = fn.baseAng + wave2Shift;
+                                fn.x = trackCx + Math.cos(lockAng) * fDist;
+                                fn.y = trackCy + Math.sin(lockAng) * fDist;
+                                fn.aimAng = lockAng + Math.PI;
+                                fn.anchored = true;
+                                fn.offsets = [-30, 0, 30];
+                            } else {
+                                fn.anchored = false;
                             }
+                        }
+                    } else if (hz.waveIndex === 2) {
+                        // 第 3 波：6枚浮游翼附加 +15°（Math.PI/12）错位旋转与微倾弦角重聚，彻底错开前两波的走位方向
+                        hz.waveWarnDur = 0.40;
+                        const hexBaseAng = (hz.baseGridAng || 0) + (Math.PI / 12) + (Math.random() < 0.5 ? 0 : Math.PI / 6);
+                        sfx.playTone({ type: 'triangle', freq: 660, endFreq: 1040, duration: 0.08, gain: 0.045 });
+                        for (let fIdx = 0; fIdx < fns.length; fIdx++) {
+                            const fn = fns[fIdx];
+                            const lockAng = hexBaseAng + fIdx * (Math.PI / 3);
+                            fn.x = trackCx + Math.cos(lockAng) * fDist;
+                            fn.y = trackCy + Math.sin(lockAng) * fDist;
+                            fn.aimAng = lockAng + Math.PI + (fn.isCyan ? 0.12 : -0.12);
+                            fn.anchored = true;
+                            fn.offsets = [-28, 28];
+                            spawnPixelParticles(fn.x, fn.y, fn.isCyan ? '#38bdf8' : '#e879f9', 5, 110, 2.5, 0.20);
+                        }
+                    } else {
+                        for (let fIdx = 0; fIdx < fns.length; fIdx++) {
+                            fns[fIdx].anchored = false;
                         }
                     }
                 }
@@ -15003,7 +15098,7 @@
                 } else {
                     // 正式旋转十字死光阶段（实时计算方尖碑阻挡截断与阻挡处火花迸发）
                     const activeElapsed = hz.timer - warnDur;
-                    const curBaseAng = hz.baseAngle + activeElapsed * (hz.rotSpeed || 0.88);
+                    const curBaseAng = hz.baseAngle + activeElapsed * (hz.rotSpeed || 1.32);
                     for (let arm = 0; arm < 4; arm++) {
                         const armAng = curBaseAng + (Math.PI * 0.5) * arm;
                         const { len: effLen, blocked } = getVoidLaserArmEffectiveLength(hz, armAng);
@@ -15218,60 +15313,47 @@
                 }
                 ctx.restore();
             } else if (hz.type === 'seraphim_wave_wall_warn') {
-                // 技能二【脉冲扇形壁垒】0.65s 地面全息扇面预警 + 醒目亮绿色「安全缺口通道（Safe Gap）」
+                // 技能二【天穹脉冲壁垒】0.65s 地面无缝全扇面高危预警 + 充能波前闪避时机提示
                 const prog = clampVal(hz.timer / Math.max(0.01, hz.duration), 0, 1);
                 const totalNeedles = hz.totalNeedles || 13;
                 const spread = hz.spread || 1.85;
                 const startAng = (hz.angle || 0) - spread * 0.5;
+                const endAng = startAng + spread;
                 const step = spread / (totalNeedles - 1);
-                const gapStartAng = startAng + Math.max(0, (hz.gapIdx || 5) - 0.42) * step;
-                const gapEndAng = startAng + Math.min(totalNeedles - 1, (hz.gapIdx || 5) + 1.42) * step;
                 const r = hz.radius || 370;
                 const isCyan = hz.colorType === 'cyan';
 
                 ctx.save();
-                // 左侧危险扇面
-                ctx.fillStyle = isCyan ? `rgba(14, 165, 233, ${0.14 + prog * 0.22})` : `rgba(217, 70, 239, ${0.14 + prog * 0.22})`;
+                // 完整无缝危险扇面底色
+                ctx.fillStyle = isCyan
+                    ? `rgba(14, 165, 233, ${0.14 + prog * 0.24})`
+                    : `rgba(217, 70, 239, ${0.14 + prog * 0.24})`;
                 ctx.beginPath();
                 ctx.moveTo(hz.x, hz.y);
-                ctx.arc(hz.x, hz.y, r, startAng, gapStartAng);
+                ctx.arc(hz.x, hz.y, r, startAng, endAng);
                 ctx.closePath();
                 ctx.fill();
-                // 右侧危险扇面
-                ctx.beginPath();
-                ctx.moveTo(hz.x, hz.y);
-                ctx.arc(hz.x, hz.y, r, gapEndAng, startAng + spread);
-                ctx.closePath();
-                ctx.fill();
-                // 随蓄力向外推进的高亮充能波前
-                ctx.strokeStyle = prog > 0.78 ? '#fef08a' : (isCyan ? '#38bdf8' : '#e879f9');
-                ctx.lineWidth = 2.5;
-                ctx.beginPath(); ctx.arc(hz.x, hz.y, r * prog, startAng, gapStartAng); ctx.stroke();
-                ctx.beginPath(); ctx.arc(hz.x, hz.y, r * prog, gapEndAng, startAng + spread); ctx.stroke();
 
-                // 中间安全缺口走廊（醒目翠绿安全通道）
-                ctx.fillStyle = `rgba(74, 222, 128, ${0.18 + Math.sin(globalTime * 22) * 0.06})`;
-                ctx.beginPath();
-                ctx.moveTo(hz.x, hz.y);
-                ctx.arc(hz.x, hz.y, r, gapStartAng, gapEndAng);
-                ctx.closePath();
-                ctx.fill();
-                ctx.strokeStyle = '#4ade80';
-                ctx.lineWidth = 2.4;
+                // 扇形外弧封锁边界线
+                ctx.strokeStyle = isCyan ? 'rgba(56, 189, 248, 0.55)' : 'rgba(232, 121, 249, 0.55)';
+                ctx.lineWidth = 2.0;
                 ctx.setLineDash([8, 5]);
                 ctx.beginPath();
-                ctx.moveTo(hz.x + Math.cos(gapStartAng) * 28, hz.y + Math.sin(gapStartAng) * 28);
-                ctx.lineTo(hz.x + Math.cos(gapStartAng) * r, hz.y + Math.sin(gapStartAng) * r);
-                ctx.moveTo(hz.x + Math.cos(gapEndAng) * 28, hz.y + Math.sin(gapEndAng) * 28);
-                ctx.lineTo(hz.x + Math.cos(gapEndAng) * r, hz.y + Math.sin(gapEndAng) * r);
+                ctx.arc(hz.x, hz.y, r, startAng, endAng);
                 ctx.stroke();
                 ctx.setLineDash([]);
 
-                // 11道危险光针弹道线
-                ctx.strokeStyle = isCyan ? 'rgba(56, 189, 248, 0.72)' : 'rgba(232, 121, 249, 0.72)';
+                // 随蓄力向外推进的高亮充能波前（临近发射时变为高亮金黄色提示立刻按闪避）
+                ctx.strokeStyle = prog > 0.78 ? '#fef08a' : (isCyan ? '#38bdf8' : '#e879f9');
+                ctx.lineWidth = prog > 0.78 ? 3.2 : 2.5;
+                ctx.beginPath();
+                ctx.arc(hz.x, hz.y, r * prog, startAng, endAng);
+                ctx.stroke();
+
+                // 全部 13 道密集高能光针弹道线（无缺口）
+                ctx.strokeStyle = isCyan ? 'rgba(56, 189, 248, 0.74)' : 'rgba(232, 121, 249, 0.74)';
                 ctx.lineWidth = 1.6;
                 for (let k = 0; k < totalNeedles; k++) {
-                    if (k === hz.gapIdx || k === hz.gapIdx + 1) continue;
                     const a = startAng + k * step;
                     ctx.beginPath();
                     ctx.moveTo(hz.x + Math.cos(a) * 26, hz.y + Math.sin(a) * 26);
@@ -15360,44 +15442,64 @@
                 ctx.beginPath(); ctx.arc(hz.x, hz.y, 5 + prog * 3, 0, Math.PI * 2); ctx.fill();
                 ctx.restore();
             } else if (hz.type === 'seraphim_funnel_grid') {
-                // 技能四【浮游子机·十字封锁网】0.85s 预警带 + 井字激光网 + 4枚独立像素浮游子机
-                const warnDur = hz.warnDuration || 0.85;
-                const warnProg = clampVal(hz.timer / warnDur, 0, 1);
+                // 技能四【六翼浮游·天穹封锁阵】3+3交替三角动态追随定锚 + 终段六翼六芒星合围
+                const warnDur = hz.waveWarnDur || 0.54;
+                const warnProg = clampVal((hz.waveTimer || 0) / warnDur, 0, 1);
                 const fns = hz.funnels || [];
-                const offsets = [-34, 0, 34];
+                const rayLen = (hz.radius || 275) * 1.92;
                 ctx.save();
                 for (let fIdx = 0; fIdx < fns.length; fIdx++) {
                     const fn = fns[fIdx];
                     const perpX = -Math.sin(fn.aimAng), perpY = Math.cos(fn.aimAng);
-                    // 绘制 68px 宽的半透明危险封锁带底色（让安全九宫格清晰可见）
-                    ctx.save();
-                    ctx.translate(fn.x, fn.y);
-                    ctx.rotate(fn.aimAng);
-                    ctx.fillStyle = fn.isCyan
-                        ? `rgba(14, 165, 233, ${0.10 + warnProg * 0.14})`
-                        : `rgba(217, 70, 239, ${0.10 + warnProg * 0.14})`;
-                    ctx.fillRect(0, -36, 460, 72);
-                    ctx.restore();
+                    const offsets = fn.offsets || [-30, 0, 30];
+                    const bandHalfW = offsets.length === 2 ? 30 : 32;
 
-                    // 绘制十字封锁网激光瞄准线
-                    ctx.strokeStyle = fn.isCyan
-                        ? `rgba(56, 189, 248, ${0.38 + warnProg * 0.52})`
-                        : `rgba(232, 121, 249, ${0.38 + warnProg * 0.52})`;
-                    ctx.lineWidth = hz.timer < warnDur ? (1.8 + warnProg * 1.6) : 2.8;
-                    ctx.setLineDash(hz.timer < warnDur ? [8, 5] : []);
-                    for (let oIdx = 0; oIdx < offsets.length; oIdx++) {
-                        const off = offsets[oIdx];
-                        const sx = fn.x + perpX * off, sy = fn.y + perpY * off;
+                    if (fn.anchored) {
+                        // 已定锚浮游翼：绘制地面危险封锁带底色与高能激光预瞄线
+                        ctx.save();
+                        ctx.translate(fn.x, fn.y);
+                        ctx.rotate(fn.aimAng);
+                        ctx.fillStyle = fn.isCyan
+                            ? `rgba(14, 165, 233, ${0.09 + warnProg * 0.15})`
+                            : `rgba(217, 70, 239, ${0.09 + warnProg * 0.15})`;
+                        ctx.fillRect(0, -bandHalfW, rayLen, bandHalfW * 2);
+                        ctx.restore();
+
+                        ctx.strokeStyle = fn.isCyan
+                            ? `rgba(56, 189, 248, ${0.42 + warnProg * 0.52})`
+                            : `rgba(232, 121, 249, ${0.42 + warnProg * 0.52})`;
+                        ctx.lineWidth = 1.6 + warnProg * 1.6;
+                        ctx.setLineDash(warnProg < 0.85 ? [8, 5] : []);
+                        for (let oIdx = 0; oIdx < offsets.length; oIdx++) {
+                            const off = offsets[oIdx];
+                            const sx = fn.x + perpX * off, sy = fn.y + perpY * off;
+                            ctx.beginPath();
+                            ctx.moveTo(sx, sy);
+                            ctx.lineTo(sx + Math.cos(fn.aimAng) * rayLen, sy + Math.sin(fn.aimAng) * rayLen);
+                            ctx.stroke();
+                        }
+                        ctx.setLineDash([]);
+                    } else if ((hz.waveIndex || 0) < 3) {
+                        // 伴飞追猎态浮游翼：绘制虚线锁定牵引线，提示玩家该子机正在伴飞并将于下一波定锚
+                        ctx.strokeStyle = fn.isCyan
+                            ? 'rgba(56, 189, 248, 0.24)'
+                            : 'rgba(232, 121, 249, 0.24)';
+                        ctx.lineWidth = 1.2;
+                        ctx.setLineDash([4, 6]);
                         ctx.beginPath();
-                        ctx.moveTo(sx, sy);
-                        ctx.lineTo(sx + Math.cos(fn.aimAng) * 460, sy + Math.sin(fn.aimAng) * 460);
+                        ctx.moveTo(fn.x, fn.y);
+                        ctx.lineTo(fn.x + Math.cos(fn.aimAng) * 95, fn.y + Math.sin(fn.aimAng) * 95);
                         ctx.stroke();
+                        ctx.setLineDash([]);
                     }
-                    ctx.setLineDash([]);
+
                     // 绘制子机底座光环与精细像素浮游翼精灵
                     ctx.strokeStyle = fn.isCyan ? '#38bdf8' : '#e879f9';
-                    ctx.lineWidth = 2.2;
-                    ctx.beginPath(); ctx.arc(fn.x, fn.y, 15 + Math.sin(globalTime * 14 + fIdx) * 2, 0, Math.PI * 2); ctx.stroke();
+                    ctx.lineWidth = fn.anchored ? 2.4 : 1.4;
+                    ctx.globalAlpha = fn.anchored ? 1.0 : 0.78;
+                    ctx.beginPath();
+                    ctx.arc(fn.x, fn.y, (fn.anchored ? 15 : 12) + Math.sin(globalTime * 14 + fIdx) * 2, 0, Math.PI * 2);
+                    ctx.stroke();
                     const fnSprArr = fn.isCyan ? SPRITES.seraphim_funnel_cyan : SPRITES.seraphim_funnel_magenta;
                     if (fnSprArr && fnSprArr.length > 0) {
                         const fnSpr = fnSprArr[Math.floor(globalTime * 8 + fIdx) % fnSprArr.length];
@@ -15407,6 +15509,7 @@
                         ctx.drawImage(fnSpr, -fnSpr.width * 0.5, -fnSpr.height * 0.5);
                         ctx.restore();
                     }
+                    ctx.globalAlpha = 1.0;
                 }
                 ctx.restore();
             }
