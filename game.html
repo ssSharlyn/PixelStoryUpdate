@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>像素物语 V0.5.2</title>
+    <title>像素物语 V0.5.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
@@ -23,11 +23,13 @@
             image-rendering: crisp-edges;
         }
         body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
+            margin: 0; padding: 0; width: 100%; height: 100%; height: 100dvh;
             background-color: #07080d; color: #f1f5f9;
             font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
             overflow: hidden; touch-action: none;
         }
+        .h-screen { height: 100% !important; height: 100dvh !important; }
+        .w-screen { width: 100% !important; width: 100dvw !important; }
         .crt-overlay {
             position: fixed; inset: 0; pointer-events: none; z-index: 60;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.24) 50%), radial-gradient(circle at center, transparent 62%, rgba(0, 0, 0, 0.55) 100%);
@@ -85,7 +87,7 @@
         .act-btn-relic { position: absolute !important; right: 164px; bottom: 62px; width: 54px !important; height: 54px !important; border-radius: 50% !important; z-index: 24; }
         .act-btn-relic2 { position: absolute !important; right: 152px; bottom: 124px; width: 54px !important; height: 54px !important; border-radius: 50% !important; z-index: 24; }
 
-        @media (max-height: 540px) and (orientation: landscape) {
+        @media (max-height: 600px) {
             #hudContainer { padding: 6px 10px !important; }
             #hudPlayerBox { padding: 5px 8px !important; gap: 7px !important; }
             #hudAvatarWrap { width: 32px !important; height: 32px !important; }
@@ -110,20 +112,39 @@
             .act-btn-skill canvas, .act-btn-ult canvas { width: 30px !important; height: 30px !important; }
             .act-btn-potion canvas { width: 24px !important; height: 24px !important; }
             .act-key-hint { display: none !important; }
-            #startModalInner, #codexModalInner, #settingsModalInner, #modeSelectModalInner { padding: 6px 12px !important; height: 100vh !important; max-height: 100vh !important; }
-            .mode-wheel-card { width: 220px !important; height: 158px !important; }
-            #startHeroBox { padding: 6px 10px !important; margin-top: 2px !important; gap: 10px !important; }
-            #startHeroAvatarWrap { width: 96px !important; height: 122px !important; }
-            #previewHeroCanvas { width: 84px !important; height: 108px !important; }
-            #levelUpModalInner { padding: 8px 12px !important; max-height: 96vh !important; }
+            #startModalInner, #codexModalInner, #settingsModalInner, #modeSelectModalInner { padding: 6px 12px !important; height: 100% !important; max-height: 100% !important; }
+            .mode-wheel-card { width: 220px !important; height: 154px !important; padding: 6px !important; }
+            #btnConfirmMode, #btnStartGame { padding-top: 6px !important; padding-bottom: 6px !important; font-size: 13px !important; }
+            #startHeroBox { padding: 6px 12px !important; margin-top: 0 !important; gap: 10px !important; }
+            #startHeroAvatarWrap { width: 92px !important; height: 116px !important; }
+            #previewHeroCanvas { width: 80px !important; height: 102px !important; }
+            #startHeroRightCol { gap: 8px !important; }
+            #startHeroRightCol > div { padding: 7px 10px !important; }
+            #levelUpModalInner { padding: 8px 12px !important; max-height: 96% !important; }
             #levelUpCardsContainer { margin: 6px 0 !important; gap: 8px !important; }
             .skill-card { padding: 7px 9px !important; }
             .skill-card .skill-icon-box { width: 32px !important; height: 32px !important; }
             .skill-card .skill-icon-box img { width: 22px !important; height: 22px !important; }
             .skill-card p { font-size: 11px !important; line-height: 1.25 !important; margin-top: 4px !important; padding-top: 4px !important; }
-            #mainMenuTitleBox { transform: scale(0.82); transform-origin: top center; margin-top: 4px !important; }
-            #btnMainPlay { width: 96px !important; height: 96px !important; }
+            #mainMenuModal { padding: max(8px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)) !important; }
+            #mainMenuCenterWrap { gap: 10px !important; }
+            #mainMenuTitleBox { padding: 8px 20px !important; transform: none !important; margin: 0 !important; border-width: 3px !important; }
+            #mainMenuLogoCanvas { width: 204px !important; height: 50px !important; }
+            #mainMenuTitleBox p { margin-top: 4px !important; font-size: 11px !important; }
+            #btnMainPlay { width: 78px !important; height: 78px !important; border-width: 3px !important; }
+            #iconCanvasPlay { width: 36px !important; height: 36px !important; }
             .corner-pixel-btn { width: 44px !important; height: 44px !important; }
+        }
+        @media (max-height: 410px) {
+            #mainMenuModal { padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important; }
+            #mainMenuCenterWrap { gap: 7px !important; }
+            #mainMenuTitleBox { padding: 5px 16px !important; }
+            #mainMenuLogoCanvas { width: 176px !important; height: 43px !important; }
+            #mainMenuTitleBox p { margin-top: 2px !important; font-size: 10px !important; }
+            #btnMainPlay { width: 68px !important; height: 68px !important; }
+            #iconCanvasPlay { width: 32px !important; height: 32px !important; }
+            .corner-pixel-btn { width: 40px !important; height: 40px !important; }
+            .mode-wheel-card { width: 198px !important; height: 138px !important; padding: 5px !important; }
         }
         .pixel-icon-btn {
             background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
@@ -145,17 +166,17 @@
         .pixel-play-btn:active { transform: translateY(5px); box-shadow: 0 2px 0 #78350f; }
     </style>
 <script src="/_aistudio-iframe.js?v=1f94f900"></script></head>
-<body class="relative w-screen h-screen overflow-hidden select-none">
+<body class="relative w-full h-full overflow-hidden select-none">
 
     <!-- =================== GitHub 国内多路加速·双轨自适应更新引擎（像素战术终端版） =================== -->
-    <div id="bootEngineOverlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:#0b0e17; background-image:linear-gradient(rgba(56,189,248,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.045) 1px, transparent 1px); background-size:16px 16px; color:#fff; z-index:9999999; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:16px; box-sizing:border-box;">
+    <div id="bootEngineOverlay" style="position:fixed; inset:0; width:100%; height:100%; background-color:#0b0e17; background-image:linear-gradient(rgba(56,189,248,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.045) 1px, transparent 1px); background-size:16px 16px; color:#fff; z-index:9999999; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:12px; box-sizing:border-box;">
         <!-- 1. 小版本热更进度条 UI（像素装甲框 + 分段能量格） -->
-        <div id="smallPatchBox" class="pixel-box" style="display:flex; flex-direction:column; align-items:center; width:100%; max-width:340px; padding:22px 24px; border:3px solid #38bdf8; background:#121726; box-shadow:0 8px 0 #05060a, 0 0 28px rgba(56,189,248,0.22), inset 0 2px 0 rgba(255,255,255,0.08); box-sizing:border-box;">
+        <div id="smallPatchBox" class="pixel-box" style="display:flex; flex-direction:column; align-items:center; width:100%; max-width:340px; padding:18px 22px; border:3px solid #38bdf8; background:#121726; box-shadow:0 8px 0 #05060a, 0 0 28px rgba(56,189,248,0.22), inset 0 2px 0 rgba(255,255,255,0.08); box-sizing:border-box;">
             <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
                 <span class="font-pixel-en" style="background:#e11d48; color:#fff; font-size:8px; padding:2px 6px; font-weight:bold;">PIXEL STORY</span>
                 <span class="font-pixel-en" style="background:#fbbf24; color:#090d16; font-size:8px; padding:2px 6px; font-weight:bold;">PATCH SYNC</span>
             </div>
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
                 <canvas id="bootTerminalPxIcon" width="20" height="20" style="width:20px; height:20px; image-rendering:pixelated;"></canvas>
                 <div style="font-size:18px; color:#f8fafc; font-weight:900; letter-spacing:2px; text-shadow:2px 2px 0 #05060a;">像素物语 · 战术终端</div>
             </div>
@@ -166,25 +187,26 @@
         </div>
 
         <!-- 2. 大版本整包更新弹窗 UI（像素硬边弹窗 + 分段下载进度条） -->
-        <div id="bigApkModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(7,9,15,0.92); justify-content:center; align-items:center; padding:16px; box-sizing:border-box;">
-            <div class="pixel-box" style="background:#121622; border:3px solid #fbbf24; width:100%; max-width:360px; padding:18px 20px; box-sizing:border-box; box-shadow:0 8px 0 #05060a, 0 0 32px rgba(251,191,36,0.28), inset 0 2px 0 rgba(255,255,255,0.08);">
-                <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #1e293b; padding-bottom:10px; margin-bottom:12px;">
+        <div id="bigApkModal" style="display:none; position:fixed; inset:0; width:100%; height:100%; background:rgba(7,9,15,0.92); justify-content:center; align-items:center; padding:12px; box-sizing:border-box;">
+            <div class="pixel-box" style="background:#121622; border:3px solid #fbbf24; width:100%; max-width:360px; max-height:92%; display:flex; flex-direction:column; padding:16px 18px; box-sizing:border-box; box-shadow:0 8px 0 #05060a, 0 0 32px rgba(251,191,36,0.28), inset 0 2px 0 rgba(255,255,255,0.08);">
+                <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #1e293b; padding-bottom:8px; margin-bottom:10px; flex-shrink:0;">
                     <div style="display:flex; align-items:center; gap:8px;">
                         <canvas id="apkModalPxIcon" width="20" height="20" style="width:20px; height:20px; image-rendering:pixelated;"></canvas>
-                        <div style="color:#fde047; font-size:16px; font-weight:900; letter-spacing:1px;">发现新版本安装包</div>
+                        <div style="color:#fde047; font-size:15px; font-weight:900; letter-spacing:1px;">发现新版本安装包</div>
                     </div>
                     <span class="font-pixel-en" style="background:#fbbf24; color:#090d16; font-size:8px; padding:2px 6px; font-weight:bold;">APK UPDATE</span>
                 </div>
-                <div id="bigUpdateLogText" style="font-size:12px; color:#e2e8f0; line-height:1.65; white-space:pre-wrap; max-height:150px; overflow-y:auto; margin-bottom:14px; background:#0b0e17; padding:10px 12px; border:2px solid #1e293b; box-shadow:inset 0 2px 0 #05060a;"></div>
+                <div id="bigUpdateLogText" style="font-size:12px; color:#e2e8f0; line-height:1.6; white-space:pre-wrap; max-height:120px; overflow-y:auto; margin-bottom:10px; background:#0b0e17; padding:8px 10px; border:2px solid #1e293b; box-shadow:inset 0 2px 0 #05060a; flex-shrink:1;"></div>
                 <!-- 游戏内下载进度条区域（默认隐藏，点击下载后显示） -->
                 <div id="apkInGameProgressWrap" style="display:none; margin-bottom:14px; background:#0b0e17; border:1px solid #1e293b; padding:10px;">
                     <div style="width:100%; height:18px; background:#090c14; border:2px solid #34d399; padding:2px; box-sizing:border-box; box-shadow:inset 0 2px 0 #05060a;">
                         <div id="apkDownloadBar" style="width:0%; height:100%; background:repeating-linear-gradient(90deg, #34d399 0px, #34d399 10px, #059669 10px, #059669 12px); box-shadow:inset 0 2px 0 rgba(255,255,255,0.45); transition:width 0.15s;"></div>
                     </div>
-                    <div id="apkDownloadStatusText" style="font-size:11px; color:#6ee7b7; margin-top:8px; text-align:center; font-weight:bold; font-family:ui-monospace,monospace;">正在连接高速节点...</div>
+                    <div id="apkDownloadStatusText" style="font-size:11px; color:#6ee7b7; margin-top:8px; text-align:center; font-weight:bold; font-family:ui-monospace,monospace;">正在准备下载更新...</div>
                 </div>
-                <div id="bigModalBtnGroup" style="display:flex; flex-direction:column; gap:8px;">
+                <div id="bigModalBtnGroup" style="display:flex; flex-direction:column; gap:8px; flex-shrink:0;">
                     <button id="confirmBigUpdateBtn" class="pixel-play-btn" style="color:#090d16; font-weight:900; padding:10px 16px; font-size:14px; width:100%; cursor:pointer; letter-spacing:1px;">立即下载更新</button>
+                    <button id="cancelBigUpdateBtn" class="pixel-icon-btn" style="display:none; color:#cbd5e1; font-weight:bold; padding:7px 14px; font-size:12px; width:100%; cursor:pointer;">稍后更新 · 返回游戏</button>
                 </div>
             </div>
         </div>
@@ -265,7 +287,7 @@
             if (mode === 'big') {
                 if (smallBox) smallBox.style.display = 'none';
                 if (bigM) bigM.style.display = 'flex';
-                if (logEl) logEl.innerText = "【V0.5.2 重大版本更新】\n· 重绘主菜单像素标题，统一全局中文字体\n· 模式选择升级为 2.5D 跟手滚轮\n· 局内重来与返回菜单增加防呆确认弹窗\n· 修复穿透升级项描述与五号Boss位移卡死";
+                if (logEl) logEl.innerText = "【V0.5.3 版本更新】\n· 实装像素风更新界面与手动检查更新功能\n· 优化手机横屏全页面自适应布局\n· 模式选择升级为 2.5D 跟手滚轮\n· 局内重来与返回菜单增加防呆确认弹窗";
                 if (pWrap) pWrap.style.display = 'none';
                 if (cBtn) {
                     cBtn.disabled = false;
@@ -302,16 +324,16 @@
                 if (smallBox) smallBox.style.display = 'flex';
                 let pct = 15;
                 if (hBar) hBar.style.width = pct + '%';
-                if (hTip) hTip.innerText = '正在连接高速节点检查 V0.5.2 补丁...';
+                if (hTip) hTip.innerText = '正在检查最新版本...';
                 previewTimerId = setInterval(() => {
                     pct = Math.min(100, pct + 25);
                     if (hBar) hBar.style.width = pct + '%';
                     if (pct < 100) {
-                        if (hTip) hTip.innerText = `正在同步 V0.5.2 热更补丁 (${pct}%)...`;
+                        if (hTip) hTip.innerText = `正在同步 V0.5.3 更新内容 (${pct}%)...`;
                     } else {
                         clearInterval(previewTimerId);
                         previewTimerId = null;
-                        if (hTip) hTip.innerText = '热更完成 (V0.5.2)，即将进入战场！';
+                        if (hTip) hTip.innerText = '更新完成 (V0.5.3)，即将进入战场！';
                     }
                 }, 400);
             }
@@ -331,14 +353,6 @@
             if (ctrlBar) ctrlBar.style.display = 'none';
             if (ov) ov.style.display = 'none';
         };
-
-        if (window.__GAME_ENGINE_BOOTED__) {
-            window.__UPDATE_CHECK_PENDING__ = false;
-            const oldOverlay = document.getElementById('bootEngineOverlay');
-            if (oldOverlay) oldOverlay.style.display = 'none';
-            return;
-        }
-        window.__UPDATE_CHECK_PENDING__ = true;
 
         // ================= 【核心热更新配置】 =================
         const GITHUB_USER = "ssSharlyn";             // GitHub 用户名
@@ -367,7 +381,7 @@
         }
         function safeRemoveItem(k) { try { localStorage.removeItem(k); } catch (e) {} }
 
-        // 若处于 AI Studio 在线预览开发环境（含 iframe / srcdoc / run.app / localhost），自动跳过热更检测并直接展示当前最新编辑画面
+        // 若处于 AI Studio 在线预览开发环境（含 iframe / srcdoc / run.app / localhost），自动标记为开发预览模式
         let isDevPreview = false;
         try {
             const hn = (window.location && window.location.hostname) || "";
@@ -376,24 +390,6 @@
         } catch (e) {
             isDevPreview = true;
         }
-        if (isDevPreview) {
-            safeRemoveItem("LOCAL_HOT_PATCH_CODE");
-            safeSetItem("LOCAL_HOT_PATCH_VER", BASE_PATCH_VERSION.toString());
-            if (overlay) overlay.style.display = "none";
-            window.__UPDATE_CHECK_PENDING__ = false;
-            window.__GAME_ENGINE_BOOTED__ = true;
-            return;
-        }
-
-        // 若安装了新版 APK（BASE_PATCH_VERSION >= 缓存版本），自动清除旧的热更缓存
-        const cachedVer = parseInt(safeGetItem("LOCAL_HOT_PATCH_VER") || "0", 10);
-        if (BASE_PATCH_VERSION >= cachedVer) {
-            safeRemoveItem("LOCAL_HOT_PATCH_CODE");
-            safeSetItem("LOCAL_HOT_PATCH_VER", BASE_PATCH_VERSION.toString());
-        }
-
-        const localVer = parseInt(safeGetItem("LOCAL_HOT_PATCH_VER") || "0", 10);
-        const curHighestVer = Math.max(BASE_PATCH_VERSION, localVer);
 
         // 解码 GitHub API 返回的 UTF-8 Base64 内容
         function decodeBase64Utf8(b64) {
@@ -583,6 +579,119 @@
             });
         }
 
+        // 手动检查更新（在「战术终端设置」或「游戏公告」中点击触发，安全不打断战斗）
+        let isManualChecking = false;
+        window.manualCheckGameUpdate = async function() {
+            if (isManualChecking) return;
+            isManualChecking = true;
+            try {
+                if (window.sfx && typeof window.sfx.pickupXp === "function") {
+                    window.sfx.init();
+                    window.sfx.pickupXp();
+                }
+            } catch (e) {}
+
+            if (previewTimerId) { clearInterval(previewTimerId); previewTimerId = null; }
+            const ov = document.getElementById('bootEngineOverlay');
+            const smallBox = document.getElementById('smallPatchBox');
+            const bigM = document.getElementById('bigApkModal');
+            const ctrlBar = document.getElementById('bootPreviewCtrlBar');
+            const hBar = document.getElementById('hotPatchBar');
+            const hTip = document.getElementById('hotPatchTip');
+
+            drawBootPixelIcons();
+            if (ctrlBar) ctrlBar.style.display = 'none';
+            if (bigM) bigM.style.display = 'none';
+            if (smallBox) smallBox.style.display = 'flex';
+            if (ov) ov.style.display = 'flex';
+            if (hBar) hBar.style.width = '28%';
+            if (hTip) hTip.innerText = '正在检查最新版本...';
+
+            const curLocalVer = parseInt(safeGetItem("LOCAL_HOT_PATCH_VER") || "0", 10);
+            const curMaxVer = Math.max(BASE_PATCH_VERSION, curLocalVer);
+
+            const finishUpToDate = (msg) => {
+                if (hBar) hBar.style.width = '100%';
+                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.5.3)，无需更新！`;
+                setTimeout(() => {
+                    if (ov) ov.style.display = 'none';
+                    isManualChecking = false;
+                }, 1100);
+            };
+
+            try {
+                const { config, commitSha } = await fetchRealtimeVersionAndSha(3800);
+
+                if (config && config.minApkVersion > LOCAL_APK_VERSION) {
+                    if (smallBox) smallBox.style.display = 'none';
+                    isManualChecking = false;
+                    showBigApkUpdateModal(config, commitSha, true);
+                    return;
+                }
+
+                if (!isDevPreview && config && (config.hotPatchVersion > curMaxVer || (config.hotPatchVersion > BASE_PATCH_VERSION && config.hotPatchVersion !== curLocalVer))) {
+                    if (hBar) hBar.style.width = '68%';
+                    if (hTip) hTip.innerText = config.smallUpdateLog || `发现新版本内容 (#${config.hotPatchVersion})，正在同步...`;
+
+                    fetch(`https://purge.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/game.html`).catch(() => {});
+                    const newGameCode = await raceMirrors(
+                        "game.html",
+                        commitSha,
+                        config.hotPatchVersion + "_" + Date.now(),
+                        12000,
+                        (txt) => isFreshValidPatchHtml(txt, config)
+                    );
+
+                    if (newGameCode && isFreshValidPatchHtml(newGameCode, config)) {
+                        const wroteOk = safeSetItem("LOCAL_HOT_PATCH_CODE", newGameCode);
+                        if (wroteOk) {
+                            safeSetItem("LOCAL_HOT_PATCH_VER", config.hotPatchVersion.toString());
+                        }
+                        if (hBar) hBar.style.width = '100%';
+                        if (hTip) hTip.innerText = `更新完成 (#${config.hotPatchVersion})，正在重新加载游戏！`;
+                        setTimeout(() => {
+                            isManualChecking = false;
+                            runEngine(newGameCode);
+                        }, 400);
+                        return;
+                    }
+                }
+
+                if (hBar) hBar.style.width = '75%';
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.3)，无需更新！`), 260);
+            } catch (e) {
+                if (hBar) hBar.style.width = '75%';
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.3)，无需更新！`), 260);
+            }
+        };
+
+        if (window.__GAME_ENGINE_BOOTED__) {
+            window.__UPDATE_CHECK_PENDING__ = false;
+            const oldOverlay = document.getElementById('bootEngineOverlay');
+            if (oldOverlay) oldOverlay.style.display = 'none';
+            return;
+        }
+        window.__UPDATE_CHECK_PENDING__ = true;
+
+        if (isDevPreview) {
+            safeRemoveItem("LOCAL_HOT_PATCH_CODE");
+            safeSetItem("LOCAL_HOT_PATCH_VER", BASE_PATCH_VERSION.toString());
+            if (overlay) overlay.style.display = "none";
+            window.__UPDATE_CHECK_PENDING__ = false;
+            window.__GAME_ENGINE_BOOTED__ = true;
+            return;
+        }
+
+        // 若安装了新版 APK（BASE_PATCH_VERSION >= 缓存版本），自动清除旧的热更缓存
+        const cachedVer = parseInt(safeGetItem("LOCAL_HOT_PATCH_VER") || "0", 10);
+        if (BASE_PATCH_VERSION >= cachedVer) {
+            safeRemoveItem("LOCAL_HOT_PATCH_CODE");
+            safeSetItem("LOCAL_HOT_PATCH_VER", BASE_PATCH_VERSION.toString());
+        }
+
+        const localVer = parseInt(safeGetItem("LOCAL_HOT_PATCH_VER") || "0", 10);
+        const curHighestVer = Math.max(BASE_PATCH_VERSION, localVer);
+
         if (bar) bar.style.width = "30%";
 
         try {
@@ -590,7 +699,7 @@
 
             // ====== 分支 A：APK 底座版本过旧 -> 弹出大版本安装包下载 ======
             if (config.minApkVersion > LOCAL_APK_VERSION) {
-                showBigApkUpdateModal(config, commitSha);
+                showBigApkUpdateModal(config, commitSha, false);
                 return;
             }
 
@@ -671,10 +780,19 @@
             }
         }
 
-        function showBigApkUpdateModal(config, commitSha) {
+        function showBigApkUpdateModal(config, commitSha, allowCancel) {
             if (bigModal) bigModal.style.display = "flex";
             const logEl = document.getElementById("bigUpdateLogText");
             if (logEl) logEl.innerText = config.bigUpdateLog || "发现全新重大版本，请更新至最新安装包！";
+
+            const cancelBtn = document.getElementById("cancelBigUpdateBtn");
+            if (cancelBtn) {
+                cancelBtn.style.display = allowCancel ? "block" : "none";
+                cancelBtn.onclick = () => {
+                    if (bigModal) bigModal.style.display = "none";
+                    if (overlay) overlay.style.display = "none";
+                };
+            }
 
             const ref = commitSha || GITHUB_BRANCH;
             const apkCandidateUrls = [
@@ -700,7 +818,7 @@
                     confirmBtn.innerText = "正在游戏内下载更新...";
                     if (progressWrap) progressWrap.style.display = "block";
                     if (dlBar) dlBar.style.width = "2%";
-                    if (dlStatus) dlStatus.innerText = "正在连接国内高速节点...";
+                    if (dlStatus) dlStatus.innerText = "正在准备下载更新...";
 
                     // 优先方案 1：如果使用 HBuilderX (5+ App / uni-app) 打包，直接调用原生底层下载并静默调起安卓安装器，100% 不跳浏览器
                     if (window.plus && window.plus.downloader && window.plus.runtime) {
@@ -763,7 +881,7 @@
                     }
 
                     if (dlBar) dlBar.style.width = "100%";
-                    if (dlStatus) dlStatus.innerText = "已连接最快国内节点，正在调起系统下载安装...";
+                    if (dlStatus) dlStatus.innerText = "正在调起系统下载安装...";
                     window.location.href = bestUrl;
                     setTimeout(() => {
                         isDownloading = false;
@@ -1201,22 +1319,21 @@
     </div>
 
     <!-- 主菜单 -->
-    <div id="mainMenuModal" class="fixed inset-0 z-50 bg-[#0b0e17] flex flex-col justify-between p-4 sm:p-7 pointer-events-auto select-none">
-        <div class="h-2"></div>
-        <div class="flex flex-col items-center justify-center gap-6 sm:gap-9 my-auto">
-            <div id="mainMenuTitleBox" class="pixel-box px-7 sm:px-12 py-4 sm:py-5 border-4 border-sky-400 bg-[#121726] flex flex-col items-center shadow-[0_8px_0_#05060a]">
-                <div class="flex items-center gap-2 mb-2">
+    <div id="mainMenuModal" class="fixed inset-0 z-50 bg-[#0b0e17] w-full h-full flex flex-col justify-between p-3 sm:p-6 overflow-hidden pointer-events-auto select-none">
+        <div id="mainMenuCenterWrap" class="flex-1 min-h-0 w-full flex flex-col items-center justify-center gap-4 sm:gap-6">
+            <div id="mainMenuTitleBox" class="pixel-box px-7 sm:px-11 py-3.5 sm:py-4 border-4 border-sky-400 bg-[#121726] flex flex-col items-center shadow-[0_8px_0_#05060a] shrink-0">
+                <div class="flex items-center gap-2 mb-1.5">
                     <span class="bg-rose-600 text-white font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5">PIXEL STORY</span>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.5.2</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.5.3</span>
                 </div>
-                <canvas id="mainMenuLogoCanvas" width="312" height="76" class="w-[218px] h-[53px] sm:w-[312px] sm:h-[76px] block pointer-events-none" aria-label="像素物语"></canvas>
-                <p class="text-[11px] sm:text-xs text-sky-300 mt-2 tracking-wider font-bold">二次元点阵像素 · 街区生存激战</p>
+                <canvas id="mainMenuLogoCanvas" width="312" height="76" class="w-[218px] h-[53px] sm:w-[288px] sm:h-[70px] block pointer-events-none" aria-label="像素物语"></canvas>
+                <p class="text-[11px] sm:text-xs text-sky-300 mt-1.5 tracking-wider font-bold">二次元点阵像素 · 街区生存激战</p>
             </div>
-            <button id="btnMainPlay" onclick="window.openModeSelectModal()" class="pixel-play-btn w-28 h-28 sm:w-32 sm:h-32 rounded-2xl flex items-center justify-center group" title="开始游戏">
-                <canvas id="iconCanvasPlay" width="48" height="48" class="w-12 h-12 sm:w-14 sm:h-14 translate-x-1 pointer-events-none group-hover:scale-105 transition"></canvas>
+            <button id="btnMainPlay" onclick="window.openModeSelectModal()" class="pixel-play-btn w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center group shrink-0" title="开始游戏">
+                <canvas id="iconCanvasPlay" width="48" height="48" class="w-11 h-11 sm:w-13 sm:h-13 translate-x-1 pointer-events-none group-hover:scale-105 transition"></canvas>
             </button>
         </div>
-        <div class="flex items-end justify-between w-full">
+        <div id="mainMenuBottomBar" class="shrink-0 flex items-end justify-between w-full pt-1">
             <div class="flex items-center gap-3 sm:gap-4">
                 <button onclick="window.openSettingsModal()" class="corner-pixel-btn pixel-icon-btn w-12 h-12 sm:w-14 sm:h-14 flex flex-col items-center justify-center gap-0.5 border-sky-400/80" title="设置">
                     <canvas id="iconCanvasSettings" width="24" height="24" class="w-6 h-6 pointer-events-none"></canvas>
@@ -1239,9 +1356,9 @@
     </div>
 
     <!-- 终端设置界面 -->
-    <div id="settingsModal" class="hidden fixed inset-0 z-[54] bg-[#0b0e17] flex flex-col justify-between w-screen h-screen overflow-hidden pointer-events-auto select-none">
-        <div id="settingsModalInner" class="w-full h-full flex flex-col justify-between p-3 sm:p-6 overflow-hidden">
-            <div class="flex items-center justify-between border-b-2 border-slate-800 pb-2.5 shrink-0">
+    <div id="settingsModal" class="hidden fixed inset-0 z-[54] bg-[#0b0e17] flex flex-col justify-between w-full h-full overflow-hidden pointer-events-auto select-none">
+        <div id="settingsModalInner" class="w-full h-full flex flex-col justify-between p-3 sm:p-5 overflow-hidden">
+            <div class="flex items-center justify-between border-b-2 border-slate-800 pb-2 shrink-0">
                 <div class="flex items-center gap-2.5">
                     <button onclick="window.closeSettingsModal()" class="pixel-icon-btn px-3 py-1.5 text-xs font-bold text-slate-200 flex items-center gap-1.5">
                         <canvas class="ui-px-icon w-3.5 h-3.5" data-icon="back" width="14" height="14"></canvas><span>返回</span>
@@ -1253,7 +1370,7 @@
                 </div>
                 <span class="text-[11px] text-slate-400 hidden sm:inline">修改后自动持久化保存至本地</span>
             </div>
-            <div class="my-auto grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5 max-w-4xl w-full mx-auto overflow-y-auto max-h-[72vh] p-1">
+            <div class="flex-1 min-h-0 my-1.5 grid grid-cols-1 sm:grid-cols-2 content-start gap-2.5 sm:gap-3.5 max-w-4xl w-full mx-auto overflow-y-auto p-1">
                 <div class="pixel-box bg-[#101420] border border-slate-700 p-3 sm:p-4 flex flex-col justify-between gap-2.5">
                     <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2.5">
@@ -1313,6 +1430,22 @@
                         <div><div class="font-bold text-amber-300 text-xs sm:text-sm">游戏布局与视野设置</div><div class="text-[11px] text-slate-400 mt-0.5">调整按键、视野大小与双圈透明度</div></div>
                     </div>
                     <button onclick="window.openKeybindEditor()" class="pixel-play-btn px-3.5 py-1.5 font-bold text-xs text-slate-950 shrink-0">修改布局</button>
+                </div>
+                <div class="pixel-box bg-[#101420] border border-sky-500/60 p-3 sm:p-4 flex items-center justify-between gap-2 sm:col-span-2">
+                    <div class="flex items-center gap-2.5">
+                        <canvas class="ui-px-icon w-6 h-6 shrink-0" data-icon="reroll" width="24" height="24"></canvas>
+                        <div>
+                            <div class="font-bold text-sky-300 text-xs sm:text-sm flex items-center gap-2">
+                                <span>版本更新</span>
+                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.5.3</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400 mt-0.5">检查并获取游戏最新版本内容</div>
+                        </div>
+                    </div>
+                    <button onclick="window.manualCheckGameUpdate && window.manualCheckGameUpdate()" class="pixel-btn px-3.5 py-1.5 font-bold text-xs text-white flex items-center gap-1.5 shrink-0">
+                        <canvas class="ui-px-icon w-3.5 h-3.5" data-icon="reroll" width="14" height="14"></canvas>
+                        <span>检查更新</span>
+                    </button>
                 </div>
             </div>
             <div class="text-[11px] text-slate-400 text-center border-t border-slate-800 pt-2 shrink-0">提示：所有设置与键位修改会自动保存在手机本地存储中</div>
@@ -1409,7 +1542,7 @@
     </div>
 
     <!-- 作战模式选择界面 -->
-    <div id="modeSelectModal" class="hidden fixed inset-0 z-50 bg-[#0b0e17] flex flex-col justify-between w-screen h-screen overflow-hidden pointer-events-auto select-none">
+    <div id="modeSelectModal" class="hidden fixed inset-0 z-50 bg-[#0b0e17] flex flex-col justify-between w-full h-full overflow-hidden pointer-events-auto select-none">
         <div id="modeSelectModalInner" class="w-full h-full flex flex-col justify-between p-3 sm:p-5 overflow-hidden">
             <div class="flex flex-row items-center justify-between gap-2 border-b-2 border-slate-800 pb-2 shrink-0">
                 <div class="flex items-center gap-2.5">
@@ -1421,7 +1554,7 @@
                 </div>
                 <div class="text-[11px] text-slate-400">左右滑动滚轮或点击卡片切换模式</div>
             </div>
-            <div class="my-auto flex-1 min-h-0 flex items-center justify-center relative w-full overflow-hidden">
+            <div class="flex-1 min-h-0 flex items-center justify-center relative w-full overflow-hidden">
                 <button onclick="window.cycleGameMode(-1)" class="pixel-icon-btn w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center z-30 mr-2 sm:mr-5 shrink-0" title="上一个模式">
                     <canvas class="ui-px-icon w-4 h-4" data-icon="back" width="16" height="16"></canvas>
                 </button>
@@ -1458,13 +1591,13 @@
                     <canvas class="ui-px-icon w-4 h-4" data-icon="forward" width="16" height="16"></canvas>
                 </button>
             </div>
-            <div class="pt-1.5 border-t border-slate-800 shrink-0 max-w-md w-full mx-auto flex flex-col items-center gap-2">
+            <div class="pt-1.5 border-t border-slate-800 shrink-0 max-w-md w-full mx-auto flex flex-col items-center gap-1.5">
                 <div class="flex items-center gap-2">
                     <span id="wheelDot_endless" class="w-5 h-1.5 bg-sky-400 transition-all"></span>
                     <span id="wheelDot_boss_rush" class="w-2 h-1.5 bg-slate-700 transition-all"></span>
                     <span id="wheelDot_training" class="w-2 h-1.5 bg-slate-700 transition-all"></span>
                 </div>
-                <button onclick="window.confirmModeAndOpenHeroSelect()" class="pixel-btn w-full py-2 sm:py-2.5 text-white font-bold text-sm sm:text-base tracking-widest flex items-center justify-center gap-2 cursor-pointer">
+                <button id="btnConfirmMode" onclick="window.confirmModeAndOpenHeroSelect()" class="pixel-btn w-full py-2 sm:py-2.5 text-white font-bold text-sm sm:text-base tracking-widest flex items-center justify-center gap-2 cursor-pointer">
                     <canvas class="ui-px-icon w-4 h-4" data-icon="play_sm" width="16" height="16"></canvas>
                     <span id="btnConfirmModeText">下一步 · 选择特工</span>
                 </button>
@@ -1473,7 +1606,7 @@
     </div>
 
     <!-- 人物选择界面 -->
-    <div id="startModal" class="hidden fixed inset-0 z-50 bg-[#0b0e17] flex flex-col justify-between w-screen h-screen overflow-hidden pointer-events-auto select-none">
+    <div id="startModal" class="hidden fixed inset-0 z-50 bg-[#0b0e17] flex flex-col justify-between w-full h-full overflow-hidden pointer-events-auto select-none">
         <div id="startModalInner" class="w-full h-full flex flex-col justify-between p-2.5 sm:p-5 overflow-hidden">
             <div class="flex flex-row items-center justify-between gap-2 border-b-2 border-slate-800 pb-1.5 shrink-0">
                 <div class="flex items-center gap-2">
@@ -1485,8 +1618,8 @@
                 </div>
                 <div class="text-[11px] text-slate-400 hidden sm:block">点击左侧头像切换英雄，单击技能图标查看详情</div>
             </div>
-            <div class="my-auto flex flex-row items-stretch gap-2.5 sm:gap-5 max-w-5xl w-full mx-auto flex-1 min-h-0 py-1.5 overflow-hidden">
-                <div class="flex flex-col items-center gap-2 sm:gap-2.5 shrink-0 w-24 sm:w-32 overflow-y-auto overflow-x-hidden py-2 px-2">
+            <div class="flex flex-row items-stretch gap-2.5 sm:gap-5 max-w-5xl w-full mx-auto flex-1 min-h-0 py-1.5 overflow-hidden">
+                <div class="flex flex-col items-center gap-2 sm:gap-2.5 shrink-0 w-24 sm:w-32 overflow-y-auto overflow-x-hidden py-1.5 px-2">
                     <button id="btnSelectRinne" onclick="window.selectHeroType && window.selectHeroType('rinne')" class="w-full shrink-0 group relative p-1.5 bg-[#121726] border-2 border-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.35)] flex flex-col items-center gap-1 cursor-pointer transition">
                         <div class="w-11 h-11 sm:w-14 sm:h-14 bg-[#090d16] border border-sky-400/70 flex items-center justify-center overflow-hidden">
                             <canvas id="avatarOptionRinne" width="48" height="48" class="w-10 h-10 sm:w-12 sm:h-12 pointer-events-none"></canvas>
@@ -1524,7 +1657,7 @@
                         </div>
                         <span id="previewHeroName" class="text-xs sm:text-base font-bold text-white mt-1.5 tracking-wide">【凛音 · Rinne】</span>
                     </div>
-                    <div class="flex-1 max-w-md flex flex-col justify-center gap-3 sm:gap-5 min-w-0">
+                    <div id="startHeroRightCol" class="flex-1 max-w-md flex flex-col justify-center gap-3 sm:gap-5 min-w-0">
                         <div class="bg-slate-900/90 border border-slate-800 p-2.5 sm:p-3.5">
                             <div class="text-xs text-sky-300 font-bold mb-2 flex items-center justify-between">
                                 <span>英雄技能</span><span class="text-[10px] text-amber-300 font-normal">单击查看详情</span>
@@ -1552,7 +1685,7 @@
     </div>
 
     <!-- 战术图鉴界面 -->
-    <div id="codexModal" class="hidden fixed inset-0 z-50 bg-[#0b0e17] flex flex-col justify-between w-screen h-screen overflow-hidden pointer-events-auto select-none">
+    <div id="codexModal" class="hidden fixed inset-0 z-50 bg-[#0b0e17] flex flex-col justify-between w-full h-full overflow-hidden pointer-events-auto select-none">
         <div id="codexModalInner" class="w-full h-full flex flex-col justify-between p-3 sm:p-5 overflow-hidden">
             <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-800 pb-2 shrink-0">
                 <div class="flex items-center gap-2">
@@ -1597,19 +1730,31 @@
                 <div class="flex items-center gap-2">
                     <canvas class="ui-px-icon w-5 h-5" data-icon="notice" width="20" height="20"></canvas>
                     <h3 class="text-base sm:text-lg font-bold text-amber-300 tracking-wider">游戏公告</h3>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.5.2</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.5.3</span>
                 </div>
-                <button onclick="window.closeAnnouncementModal()" class="pixel-icon-btn px-3 py-1 text-xs font-bold text-slate-200 flex items-center gap-1">
-                    <canvas class="ui-px-icon w-3 h-3" data-icon="close_x" width="12" height="12"></canvas><span>关闭</span>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.manualCheckGameUpdate && window.manualCheckGameUpdate()" class="pixel-btn px-2.5 py-1 text-xs font-bold text-white flex items-center gap-1">
+                        <canvas class="ui-px-icon w-3 h-3" data-icon="reroll" width="12" height="12"></canvas><span>检查更新</span>
+                    </button>
+                    <button onclick="window.closeAnnouncementModal()" class="pixel-icon-btn px-3 py-1 text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <canvas class="ui-px-icon w-3 h-3" data-icon="close_x" width="12" height="12"></canvas><span>关闭</span>
+                    </button>
+                </div>
             </div>
             <div id="announcementBodyBox" class="flex-1 min-h-0 bg-[#0b0e17] border border-slate-800 p-3.5 sm:p-4 overflow-y-auto text-xs sm:text-sm text-slate-300 leading-relaxed space-y-3">
                 <div class="bg-[#111624] border border-amber-400/50 p-3 space-y-1.5">
-                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.5.2 更新内容】</div>
+                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.5.3 更新内容】</div>
                     <ul class="text-xs text-slate-200 space-y-1 list-disc list-inside">
-                        <li><b>界面与字体</b>：重绘主菜单像素标题，统一全局中文字体。</li>
-                        <li><b>交互优化</b>：模式选择升级为跟手滚轮；所有滑动栏重开自动归位；局内重来与返回菜单增加确认弹窗；设置新增性能监测开关。</li>
-                        <li><b>问题修复</b>：修正穿透升级项数值描述；修复五号Boss位移技能偶发卡死；优化热更新版本校验。</li>
+                        <li><b>更新系统</b>：全新像素风格更新界面；设置与公告新增手动「检查更新」功能。</li>
+                        <li><b>屏幕适配</b>：重构移动端横屏弹性布局，修复小屏设备主页与底部按钮溢出问题。</li>
+                    </ul>
+                </div>
+
+                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
+                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.2 往期更新】</div>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                        <li><b>界面与交互</b>：重绘主菜单像素标题；模式选择升级为跟手滚轮；滑动栏重开自动归位；局内重来与菜单增加确认弹窗。</li>
+                        <li><b>问题修复</b>：修正穿透升级项数值描述；修复五号Boss位移技能偶发卡死。</li>
                     </ul>
                 </div>
 
