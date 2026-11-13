@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>像素物语 V0.5.0</title>
+    <title>像素物语 V0.5.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
@@ -144,7 +144,7 @@
         .pixel-play-btn:hover { filter: brightness(1.08); }
         .pixel-play-btn:active { transform: translateY(5px); box-shadow: 0 2px 0 #78350f; }
     </style>
-</head>
+<script src="/_aistudio-iframe.js?v=1f94f900"></script></head>
 <body class="relative w-screen h-screen overflow-hidden select-none">
 
     <!-- =================== GitHub 国内多路加速·双轨自适应更新引擎 =================== -->
@@ -200,11 +200,22 @@
         const bigModal = document.getElementById('bigApkModal');
         const overlay = document.getElementById('bootEngineOverlay');
 
-        // 若处于 AI Studio 在线预览开发环境，自动清除热更缓存并直接展示当前最新编辑画面，避免被旧缓存覆盖
-        const isDevPreview = window.location && (window.location.hostname.includes("run.app") || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+        function safeGetItem(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+        function safeSetItem(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+        function safeRemoveItem(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+        // 若处于 AI Studio 在线预览开发环境（含 iframe / srcdoc / run.app / localhost），自动跳过热更检测并直接展示当前最新编辑画面
+        let isDevPreview = false;
+        try {
+            const hn = (window.location && window.location.hostname) || "";
+            const href = (window.location && window.location.href) || "";
+            isDevPreview = hn.includes("run.app") || hn === "localhost" || hn === "127.0.0.1" || href.startsWith("about:") || (window.self !== window.top && !window.plus);
+        } catch (e) {
+            isDevPreview = true;
+        }
         if (isDevPreview) {
-            localStorage.removeItem("LOCAL_HOT_PATCH_CODE");
-            localStorage.setItem("LOCAL_HOT_PATCH_VER", BASE_PATCH_VERSION.toString());
+            safeRemoveItem("LOCAL_HOT_PATCH_CODE");
+            safeSetItem("LOCAL_HOT_PATCH_VER", BASE_PATCH_VERSION.toString());
             if (overlay) overlay.style.display = "none";
             window.__UPDATE_CHECK_PENDING__ = false;
             window.__GAME_ENGINE_BOOTED__ = true;
@@ -212,13 +223,13 @@
         }
 
         // 若安装了新版 APK（BASE_PATCH_VERSION >= 缓存版本），自动清除旧的热更缓存
-        const cachedVer = parseInt(localStorage.getItem("LOCAL_HOT_PATCH_VER") || "0", 10);
+        const cachedVer = parseInt(safeGetItem("LOCAL_HOT_PATCH_VER") || "0", 10);
         if (BASE_PATCH_VERSION >= cachedVer) {
-            localStorage.removeItem("LOCAL_HOT_PATCH_CODE");
-            localStorage.setItem("LOCAL_HOT_PATCH_VER", BASE_PATCH_VERSION.toString());
+            safeRemoveItem("LOCAL_HOT_PATCH_CODE");
+            safeSetItem("LOCAL_HOT_PATCH_VER", BASE_PATCH_VERSION.toString());
         }
 
-        const localVer = parseInt(localStorage.getItem("LOCAL_HOT_PATCH_VER") || "0", 10);
+        const localVer = parseInt(safeGetItem("LOCAL_HOT_PATCH_VER") || "0", 10);
         const curHighestVer = Math.max(BASE_PATCH_VERSION, localVer);
 
         // 解码 GitHub API 返回的 UTF-8 Base64 内容
@@ -230,8 +241,19 @@
             return new TextDecoder("utf-8").decode(bytes);
         }
 
+        function fetchJsonWithTimeout(url, ms) {
+            return new Promise((resolve, reject) => {
+                const ctrl = new AbortController();
+                const tid = setTimeout(() => { ctrl.abort(); reject(new Error("timeout")); }, ms);
+                fetch(url, { cache: "no-store", signal: ctrl.signal })
+                    .then(r => r.ok ? r.json() : Promise.reject(new Error("status " + r.status)))
+                    .then(data => { clearTimeout(tid); resolve(data); })
+                    .catch(err => { clearTimeout(tid); reject(err); });
+            });
+        }
+
         // 1. 实时获取最新 version.json 与最新 Commit SHA（彻底绕过 jsDelivr @main 分支缓存延迟）
-        async function fetchRealtimeVersionAndSha(timeoutMs = 3500) {
+        async function fetchRealtimeVersionAndSha(timeoutMs = 3000) {
             const ts = Date.now();
             // 顺手触发 jsDelivr 缓存刷新
             fetch(`https://purge.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/version.json`).catch(() => {});
@@ -263,14 +285,14 @@
 
                 // 若获取到 latestSha，直接用 @latestSha 从国内 CDN 秒拉无缓存 version.json
                 if (latestSha !== GITHUB_BRANCH) {
-                    const cdnVerText = await raceMirrors("version.json", latestSha, ts, 2500);
+                    const cdnVerText = await raceMirrors("version.json", latestSha, ts, 2200);
                     return { config: JSON.parse(cdnVerText), commitSha: latestSha };
                 }
             } catch (e) {
                 clearTimeout(timer);
             }
 
-            // 兜底：从多路镜像拉取 version.json，并选出版本号最高的一份（防止旧缓存覆盖新版本）
+            // 兜底：从多路镜像拉取 version.json（带 2.5s 严格超时），并选出版本号最高的一份
             const rawMain = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/version.json?t=${ts}`;
             const fallbackUrls = [
                 `https://mirror.ghproxy.com/${rawMain}`,
@@ -279,7 +301,7 @@
                 `https://testingcf.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/version.json?t=${ts}`
             ];
             const results = await Promise.allSettled(
-                fallbackUrls.map(u => fetch(u, { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject()))
+                fallbackUrls.map(u => fetchJsonWithTimeout(u, 2500))
             );
             let bestCfg = null;
             for (const r of results) {
@@ -362,8 +384,8 @@
 
             // 若远端 version.json 的热更版本号已还原为初始版本(<= BASE_PATCH_VERSION)，自动清理本地之前测试留下的旧热更缓存
             if (config.hotPatchVersion <= BASE_PATCH_VERSION) {
-                localStorage.removeItem("LOCAL_HOT_PATCH_CODE");
-                localStorage.setItem("LOCAL_HOT_PATCH_VER", BASE_PATCH_VERSION.toString());
+                safeRemoveItem("LOCAL_HOT_PATCH_CODE");
+                safeSetItem("LOCAL_HOT_PATCH_VER", BASE_PATCH_VERSION.toString());
             }
 
             // ====== 分支 B：检查是否有新版 game.html 小补丁 ======
@@ -376,8 +398,8 @@
 
                 // 安全完整性校验：确认下载的是完整游戏 HTML 才写入缓存
                 if (newGameCode && newGameCode.includes("<canvas") && newGameCode.includes("</html>")) {
-                    localStorage.setItem("LOCAL_HOT_PATCH_CODE", newGameCode);
-                    localStorage.setItem("LOCAL_HOT_PATCH_VER", config.hotPatchVersion.toString());
+                    safeSetItem("LOCAL_HOT_PATCH_CODE", newGameCode);
+                    safeSetItem("LOCAL_HOT_PATCH_VER", config.hotPatchVersion.toString());
                     if (bar) bar.style.width = "100%";
                     if (tip) tip.innerText = `热更完成 (Patch #${config.hotPatchVersion})，正在启动游戏！`;
                     setTimeout(() => runEngine(newGameCode), 350);
@@ -394,8 +416,8 @@
         function fallbackLocal() {
             if (bar) bar.style.width = "100%";
             if (tip) tip.innerText = "正在进入战场...";
-            const savedVer = parseInt(localStorage.getItem("LOCAL_HOT_PATCH_VER") || "0", 10);
-            const savedCode = localStorage.getItem("LOCAL_HOT_PATCH_CODE");
+            const savedVer = parseInt(safeGetItem("LOCAL_HOT_PATCH_VER") || "0", 10);
+            const savedCode = safeGetItem("LOCAL_HOT_PATCH_CODE");
             setTimeout(() => {
                 if (savedCode && savedVer > BASE_PATCH_VERSION && savedCode.includes("<canvas")) {
                     runEngine(savedCode);
@@ -957,7 +979,7 @@
             <div id="mainMenuTitleBox" class="pixel-box px-7 sm:px-12 py-4 sm:py-5 border-4 border-sky-400 bg-[#121726] flex flex-col items-center shadow-[0_8px_0_#05060a]">
                 <div class="flex items-center gap-2 mb-1.5">
                     <span class="bg-rose-600 text-white font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5">PIXEL STORY</span>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.5.0</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.5.1</span>
                 </div>
                 <h1 class="text-3xl sm:text-5xl font-bold text-white tracking-widest drop-shadow-[0_4px_0_#090d16]">像素物语</h1>
                 <p class="text-[11px] sm:text-xs text-sky-300 mt-1.5 tracking-wider">二次元点阵像素 · 街区生存激战</p>
@@ -1003,13 +1025,38 @@
                 </div>
                 <span class="text-[11px] text-slate-400 hidden sm:inline">修改后自动持久化保存至本地</span>
             </div>
-            <div class="my-auto grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4 max-w-4xl w-full mx-auto overflow-y-auto max-h-[72vh] p-1">
-                <div class="pixel-box bg-[#101420] border border-slate-700 p-3 sm:p-4 flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-2.5">
-                        <canvas class="ui-px-icon w-6 h-6 shrink-0" data-icon="speaker" width="24" height="24"></canvas>
-                        <div><div class="font-bold text-white text-xs sm:text-sm">战斗音效 (SFX)</div><div class="text-[11px] text-slate-400 mt-0.5">射击、技能、爆炸与受击音效</div></div>
+            <div class="my-auto grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5 max-w-4xl w-full mx-auto overflow-y-auto max-h-[72vh] p-1">
+                <div class="pixel-box bg-[#101420] border border-slate-700 p-3 sm:p-4 flex flex-col justify-between gap-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <canvas class="ui-px-icon w-6 h-6 shrink-0" data-icon="speaker" width="24" height="24"></canvas>
+                            <div><div class="font-bold text-white text-xs sm:text-sm">战斗音效 (SFX)</div><div class="text-[11px] text-slate-400 mt-0.5">拟真枪械、刀风、命中与受击音效</div></div>
+                        </div>
+                        <button id="btnToggleSfx" onclick="window.toggleSettingOption('sfx')" class="pixel-btn px-3.5 py-1.5 font-bold text-xs text-white min-w-[72px] shrink-0">已开启</button>
                     </div>
-                    <button id="btnToggleSfx" onclick="window.toggleSettingOption('sfx')" class="pixel-btn px-3.5 py-1.5 font-bold text-xs text-white min-w-[72px] shrink-0">已开启</button>
+                    <div id="sfxVolControlRow" class="flex items-center gap-2 pt-2 border-t border-slate-800/90 text-xs">
+                        <span class="text-slate-400 text-[11px] shrink-0">音量:</span>
+                        <button onclick="window.adjustVolumeStep('sfx', -10)" class="pixel-icon-btn w-6 h-6 flex items-center justify-center font-bold text-white shrink-0" title="降低音效音量">-</button>
+                        <input id="sfxVolumeSlider" type="range" min="0" max="150" step="5" value="100" oninput="window.onVolumeSliderChange('sfx', this.value)" class="flex-1 accent-sky-400 cursor-pointer" />
+                        <button onclick="window.adjustVolumeStep('sfx', 10)" class="pixel-icon-btn w-6 h-6 flex items-center justify-center font-bold text-white shrink-0" title="提高音效音量">+</button>
+                        <span id="sfxVolumeValueText" class="font-pixel-en text-[10px] text-sky-300 w-11 text-right tabular-nums shrink-0">100%</span>
+                    </div>
+                </div>
+                <div class="pixel-box bg-[#101420] border border-slate-700 p-3 sm:p-4 flex flex-col justify-between gap-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <canvas class="ui-px-icon w-6 h-6 shrink-0" data-icon="music" width="24" height="24"></canvas>
+                            <div><div class="font-bold text-white text-xs sm:text-sm">背景音乐 (BGM)</div><div class="text-[11px] text-slate-400 mt-0.5">赛博暗黑电子律动与Boss动态变奏</div></div>
+                        </div>
+                        <button id="btnToggleBgm" onclick="window.toggleSettingOption('bgm')" class="pixel-btn px-3.5 py-1.5 font-bold text-xs text-white min-w-[72px] shrink-0">已开启</button>
+                    </div>
+                    <div id="bgmVolControlRow" class="flex items-center gap-2 pt-2 border-t border-slate-800/90 text-xs">
+                        <span class="text-slate-400 text-[11px] shrink-0">音量:</span>
+                        <button onclick="window.adjustVolumeStep('bgm', -10)" class="pixel-icon-btn w-6 h-6 flex items-center justify-center font-bold text-white shrink-0" title="降低背景音乐音量">-</button>
+                        <input id="bgmVolumeSlider" type="range" min="0" max="150" step="5" value="100" oninput="window.onVolumeSliderChange('bgm', this.value)" class="flex-1 accent-sky-400 cursor-pointer" />
+                        <button onclick="window.adjustVolumeStep('bgm', 10)" class="pixel-icon-btn w-6 h-6 flex items-center justify-center font-bold text-white shrink-0" title="提高背景音乐音量">+</button>
+                        <span id="bgmVolumeValueText" class="font-pixel-en text-[10px] text-sky-300 w-11 text-right tabular-nums shrink-0">100%</span>
+                    </div>
                 </div>
                 <div class="pixel-box bg-[#101420] border border-slate-700 p-3 sm:p-4 flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2.5">
@@ -1025,7 +1072,7 @@
                     </div>
                     <button id="btnToggleShake" onclick="window.toggleSettingOption('shake')" class="pixel-btn px-3.5 py-1.5 font-bold text-xs text-white min-w-[72px] shrink-0">已开启</button>
                 </div>
-                <div class="pixel-box bg-[#101420] border-2 border-amber-500/70 p-3 sm:p-4 flex items-center justify-between gap-2">
+                <div class="pixel-box bg-[#101420] border-2 border-amber-500/70 p-3 sm:p-4 flex items-center justify-between gap-2 sm:col-span-2">
                     <div class="flex items-center gap-2.5">
                         <canvas class="ui-px-icon w-6 h-6 shrink-0" data-icon="layout" width="24" height="24"></canvas>
                         <div><div class="font-bold text-amber-300 text-xs sm:text-sm">游戏布局与视野设置</div><div class="text-[11px] text-slate-400 mt-0.5">调整按键、视野大小与双圈透明度</div></div>
@@ -1315,7 +1362,7 @@
                 <div class="flex items-center gap-2">
                     <canvas class="ui-px-icon w-5 h-5" data-icon="notice" width="20" height="20"></canvas>
                     <h3 class="text-base sm:text-lg font-bold text-amber-300 tracking-wider">游戏公告</h3>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.5.0</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.5.1</span>
                 </div>
                 <button onclick="window.closeAnnouncementModal()" class="pixel-icon-btn px-3 py-1 text-xs font-bold text-slate-200 flex items-center gap-1">
                     <canvas class="ui-px-icon w-3 h-3" data-icon="close_x" width="12" height="12"></canvas><span>关闭</span>
@@ -1323,8 +1370,29 @@
             </div>
             <div id="announcementBodyBox" class="flex-1 min-h-0 bg-[#0b0e17] border border-slate-800 p-3.5 sm:p-4 overflow-y-auto text-xs sm:text-sm text-slate-300 leading-relaxed space-y-3">
                 <div class="border-b border-slate-800 pb-2.5">
-                    <div class="text-sm sm:text-base font-bold text-amber-300 mb-1">【V0.5.0 版本公告】夜瞳降临 · 街区防线全面升级！</div>
-                    <p class="text-xs text-slate-300 leading-relaxed">亲爱的特工：<b class="text-white">《像素物语》V0.5.0 版本重磅来袭！</b>本次更新带来全新参战角色、强力首领、黑市武装体系以及在线热更新支持，欢迎前往封锁街区体验！</p>
+                    <div class="text-sm sm:text-base font-bold text-amber-300 mb-1">【V0.5.1 版本更新】首领智能 AI 与视听体验全面升级！</div>
+                    <p class="text-xs text-slate-300 leading-relaxed">亲爱的特工：<b class="text-white">《像素物语》V0.5.1 版本已正式实装！</b>本次更新重点优化了首领技能释放逻辑，并带来全新动态背景音乐与拟真打击音效。</p>
+                </div>
+
+                <div class="bg-[#111624] border border-rose-500/40 p-2.5 space-y-1">
+                    <div class="flex items-center gap-1.5 text-rose-300 font-bold text-xs sm:text-sm">
+                        <canvas class="ui-px-icon w-4 h-4 shrink-0" data-icon="crown" width="16" height="16"></canvas>
+                        <span>1. Boss 技能释放机制优化</span>
+                    </div>
+                    <p class="text-xs text-slate-300 pl-5 leading-relaxed">重构全体首领的战术 AI 决策系统，Boss 将根据交战距离、血量阶段与技能节奏更聪明地衔接招式，并优化了部分首领技能的判定范围与连段表现。</p>
+                </div>
+
+                <div class="bg-[#111624] border border-emerald-500/40 p-2.5 space-y-1">
+                    <div class="flex items-center gap-1.5 text-emerald-300 font-bold text-xs sm:text-sm">
+                        <canvas class="ui-px-icon w-4 h-4 shrink-0" data-icon="bolt" width="16" height="16"></canvas>
+                        <span>2. 音效全面优化 & 新增动态 BGM</span>
+                    </div>
+                    <p class="text-xs text-slate-300 pl-5 leading-relaxed">升级武器挥砍、技能释放、受击与暴击等多层拟音反馈，新增主菜单、常规波次与首领战专属动态合成 BGM，并在设置面板中新增 0% ~ 150% 音量百分比调节滑块。</p>
+                </div>
+
+                <div class="border-t border-slate-800/90 pt-3 mt-2">
+                    <div class="text-xs sm:text-sm font-bold text-slate-400 mb-1">【往期回顾 · V0.5.0】夜瞳降临 · 街区防线升级</div>
+                    <p class="text-xs text-slate-400 leading-relaxed">全新参战角色「夜瞳 · Yomi」、强力终局首领、黑市武装体系重构以及在线热更新支持。</p>
                 </div>
 
                 <div class="bg-[#111624] border border-purple-500/40 p-2.5 space-y-1">
@@ -1535,7 +1603,7 @@
         return null;
     }
 
-    let gameSettings = { sfx: true, crt: true, shake: true, fovScale: 1.0, circleOpacity: 1.0 };
+    let gameSettings = { sfx: true, bgm: true, sfxVolume: 1.0, bgmVolume: 1.0, crt: true, shake: true, fovScale: 1.0, circleOpacity: 1.0 };
 
     const DEFAULT_KEYBINDS = {
         dodge:      { name: '闪避键',     btnId: 'btnActiveDodge',    dx: 0, dy: 0, scale: 1.0, opacity: 1.0 },
@@ -1571,6 +1639,9 @@
         const savedCfg = loadPersistentData(STORAGE_KEY_SETTINGS);
         if (savedCfg && typeof savedCfg === 'object') {
             if (typeof savedCfg.sfx === 'boolean') gameSettings.sfx = savedCfg.sfx;
+            if (typeof savedCfg.bgm === 'boolean') gameSettings.bgm = savedCfg.bgm;
+            if (typeof savedCfg.sfxVolume === 'number') gameSettings.sfxVolume = clampVal(savedCfg.sfxVolume, 0, 1.5);
+            if (typeof savedCfg.bgmVolume === 'number') gameSettings.bgmVolume = clampVal(savedCfg.bgmVolume, 0, 1.5);
             if (typeof savedCfg.crt === 'boolean') gameSettings.crt = savedCfg.crt;
             if (typeof savedCfg.shake === 'boolean') gameSettings.shake = savedCfg.shake;
             if (typeof savedCfg.fovScale === 'number') gameSettings.fovScale = clampVal(savedCfg.fovScale, 0.6, 1.6);
@@ -1590,7 +1661,10 @@
     }
 
     function applySettingsToDOM() {
-        sfx.enabled = gameSettings.sfx;
+        const sfxVol = typeof gameSettings.sfxVolume === 'number' ? clampVal(gameSettings.sfxVolume, 0, 1.5) : 1.0;
+        const bgmVol = typeof gameSettings.bgmVolume === 'number' ? clampVal(gameSettings.bgmVolume, 0, 1.5) : 1.0;
+        sfx.setSfxState(gameSettings.sfx, sfxVol);
+        sfx.setBgmState(gameSettings.bgm, bgmVol);
         const crtEl = document.querySelector('.crt-overlay');
         if (crtEl) crtEl.style.display = gameSettings.crt ? 'block' : 'none';
         const updateBtnVisual = (id, isOn) => {
@@ -1601,9 +1675,26 @@
                 ? 'pixel-btn px-3.5 py-1.5 font-bold text-xs text-white min-w-[72px] shrink-0'
                 : 'pixel-icon-btn px-3.5 py-1.5 font-bold text-xs text-slate-400 min-w-[72px] shrink-0';
         };
-        updateBtnVisual('btnToggleSfx', gameSettings.sfx);
+        updateBtnVisual('btnToggleSfx', gameSettings.sfx && sfxVol > 0);
+        updateBtnVisual('btnToggleBgm', gameSettings.bgm && bgmVol > 0);
         updateBtnVisual('btnToggleCrt', gameSettings.crt);
         updateBtnVisual('btnToggleShake', gameSettings.shake);
+
+        const sfxSlider = document.getElementById('sfxVolumeSlider');
+        const sfxText = document.getElementById('sfxVolumeValueText');
+        const sfxRow = document.getElementById('sfxVolControlRow');
+        const sfxPct = gameSettings.sfx ? Math.round(sfxVol * 100) : 0;
+        if (sfxSlider) sfxSlider.value = String(sfxPct);
+        if (sfxText) sfxText.textContent = `${sfxPct}%`;
+        if (sfxRow) sfxRow.style.opacity = (gameSettings.sfx && sfxPct > 0) ? '1' : '0.55';
+
+        const bgmSlider = document.getElementById('bgmVolumeSlider');
+        const bgmText = document.getElementById('bgmVolumeValueText');
+        const bgmRow = document.getElementById('bgmVolControlRow');
+        const bgmPct = gameSettings.bgm ? Math.round(bgmVol * 100) : 0;
+        if (bgmSlider) bgmSlider.value = String(bgmPct);
+        if (bgmText) bgmText.textContent = `${bgmPct}%`;
+        if (bgmRow) bgmRow.style.opacity = (gameSettings.bgm && bgmPct > 0) ? '1' : '0.55';
 
         const fovSlider = document.getElementById('kbFovSlider');
         const fovText = document.getElementById('kbFovValueText');
@@ -1655,54 +1746,439 @@
     }
 
     class RetroAudioEngine {
-        constructor() { this.ctx = null; this.activeVoices = 0; this.maxVoices = 8; this.enabled = true; }
+        constructor() {
+            this.ctx = null;
+            this.masterComp = null;
+            this.sfxBus = null;
+            this.bgmBus = null;
+            this.bgmFilter = null;
+            this.whiteNoiseBuf = null;
+            this.pinkNoiseBuf = null;
+            this.activeVoices = 0;
+            this.maxVoices = 22;
+            this.enabled = true;
+            this.bgmEnabled = true;
+            this.sfxVolume = 1.0;
+            this.bgmVolume = 1.0;
+            this.baseSfxGain = 1.45; // 默认100%档位较原版提升45%响度
+            this.baseBgmGain = 0.52; // 默认100%档位较原版提升45%响度
+            this.lastHitSfxTime = 0;
+            this.lastCritSfxTime = 0;
+            this.lastXpSfxTime = 0;
+            this.bgmMode = 'menu';
+            this.bgmMuffled = false;
+            this.bgmStep = 0;
+            this.bgmNextStepTime = 0;
+        }
         init() {
             if (!this.ctx) {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (AudioCtx) this.ctx = new AudioCtx();
+                if (AudioCtx) {
+                    this.ctx = new AudioCtx();
+                    this.masterComp = this.ctx.createDynamicsCompressor();
+                    this.masterComp.threshold.setValueAtTime(-10, this.ctx.currentTime);
+                    this.masterComp.knee.setValueAtTime(10, this.ctx.currentTime);
+                    this.masterComp.ratio.setValueAtTime(5, this.ctx.currentTime);
+                    this.masterComp.attack.setValueAtTime(0.003, this.ctx.currentTime);
+                    this.masterComp.release.setValueAtTime(0.15, this.ctx.currentTime);
+                    this.masterComp.connect(this.ctx.destination);
+
+                    this.sfxBus = this.ctx.createGain();
+                    const initSfxGain = (this.enabled && this.sfxVolume > 0) ? (this.baseSfxGain * this.sfxVolume) : 0.0001;
+                    this.sfxBus.gain.setValueAtTime(initSfxGain, this.ctx.currentTime);
+                    this.sfxBus.connect(this.masterComp);
+
+                    this.bgmFilter = this.ctx.createBiquadFilter();
+                    this.bgmFilter.type = 'lowpass';
+                    this.bgmFilter.frequency.setValueAtTime(3600, this.ctx.currentTime);
+                    this.bgmFilter.Q.setValueAtTime(0.7, this.ctx.currentTime);
+                    this.bgmFilter.connect(this.masterComp);
+
+                    this.bgmBus = this.ctx.createGain();
+                    const initBgmGain = (this.bgmEnabled && this.bgmVolume > 0) ? (this.baseBgmGain * this.bgmVolume) : 0.0001;
+                    this.bgmBus.gain.setValueAtTime(initBgmGain, this.ctx.currentTime);
+                    this.bgmBus.connect(this.bgmFilter);
+
+                    this._buildNoiseBuffers();
+                    this.bgmNextStepTime = this.ctx.currentTime + 0.08;
+                }
             }
-            if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+            if (this.ctx && this.ctx.state === 'suspended') {
+                this.ctx.resume().catch(() => {});
+            }
         }
-        playTone({ type = 'square', freq = 440, endFreq = null, duration = 0.1, gain = 0.08 }) {
-            if (!this.enabled || !this.ctx || this.activeVoices >= this.maxVoices) return;
-            try {
+        _buildNoiseBuffers() {
+            if (!this.ctx) return;
+            const sr = this.ctx.sampleRate;
+            const len = Math.floor(sr * 1.2);
+            this.whiteNoiseBuf = this.ctx.createBuffer(1, len, sr);
+            this.pinkNoiseBuf = this.ctx.createBuffer(1, len, sr);
+            const wData = this.whiteNoiseBuf.getChannelData(0);
+            const pData = this.pinkNoiseBuf.getChannelData(0);
+            let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+            for (let i = 0; i < len; i++) {
+                const white = Math.random() * 2 - 1;
+                wData[i] = white;
+                b0 = 0.99886 * b0 + white * 0.0555179;
+                b1 = 0.99332 * b1 + white * 0.0750759;
+                b2 = 0.96900 * b2 + white * 0.1538520;
+                b3 = 0.86650 * b3 + white * 0.3104856;
+                b4 = 0.55000 * b4 + white * 0.5329522;
+                b5 = -0.7616 * b5 - white * 0.0168980;
+                pData[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+                b6 = white * 0.115926;
+            }
+        }
+        setSfxState(on, vol = 1.0) {
+            this.sfxVolume = clampVal(typeof vol === 'number' ? vol : 1.0, 0, 1.5);
+            this.enabled = Boolean(on) && this.sfxVolume > 0;
+            if (this.ctx && this.sfxBus) {
                 const now = this.ctx.currentTime;
+                const target = this.enabled ? Math.max(0.0001, this.baseSfxGain * this.sfxVolume) : 0.0001;
+                this.sfxBus.gain.cancelScheduledValues(now);
+                this.sfxBus.gain.setTargetAtTime(target, now, 0.04);
+            }
+        }
+        setBgmState(on, vol = 1.0) {
+            this.bgmVolume = clampVal(typeof vol === 'number' ? vol : 1.0, 0, 1.5);
+            this.bgmEnabled = Boolean(on) && this.bgmVolume > 0;
+            if (this.ctx && this.bgmBus) {
+                const now = this.ctx.currentTime;
+                const target = this.bgmEnabled ? Math.max(0.0001, this.baseBgmGain * this.bgmVolume) : 0.0001;
+                this.bgmBus.gain.cancelScheduledValues(now);
+                this.bgmBus.gain.setTargetAtTime(target, now, 0.08);
+            }
+        }
+        setBgmEnabled(on) {
+            this.setBgmState(on, this.bgmVolume);
+        }
+        playTone({ type = 'square', freq = 440, endFreq = null, duration = 0.1, gain = 0.08, priority = false, jitter = 0.035, filterFreq = 0, delay = 0 }) {
+            if (!this.enabled || !this.ctx || (!priority && this.activeVoices >= this.maxVoices)) return;
+            try {
+                const now = this.ctx.currentTime + delay;
                 const osc = this.ctx.createOscillator();
                 const gainNode = this.ctx.createGain();
+                const pitchMult = jitter > 0 ? (1 + (Math.random() * 2 - 1) * jitter) : 1;
                 osc.type = type;
-                osc.frequency.setValueAtTime(freq, now);
-                if (endFreq !== null) osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), now + duration);
-                gainNode.gain.setValueAtTime(gain, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
-                osc.connect(gainNode);
-                gainNode.connect(this.ctx.destination);
+                osc.frequency.setValueAtTime(Math.max(20, freq * pitchMult), now);
+                if (endFreq !== null) {
+                    osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq * pitchMult), now + duration);
+                }
+                gainNode.gain.setValueAtTime(0.001, now);
+                gainNode.gain.linearRampToValueAtTime(gain, now + Math.min(0.006, duration * 0.2));
+                gainNode.gain.exponentialRampToValueAtTime(0.0008, now + duration);
+
+                if (filterFreq > 0) {
+                    const flt = this.ctx.createBiquadFilter();
+                    flt.type = 'lowpass';
+                    flt.frequency.setValueAtTime(filterFreq, now);
+                    osc.connect(flt);
+                    flt.connect(gainNode);
+                } else {
+                    osc.connect(gainNode);
+                }
+                gainNode.connect(this.sfxBus || this.ctx.destination);
                 this.activeVoices++;
                 osc.onended = () => {
                     this.activeVoices = Math.max(0, this.activeVoices - 1);
                     try { osc.disconnect(); gainNode.disconnect(); } catch (e) {}
                 };
                 osc.start(now);
-                osc.stop(now + duration);
+                osc.stop(now + duration + 0.01);
             } catch (e) {}
         }
-        shoot() { this.playTone({ type: 'square', freq: 580, endFreq: 160, duration: 0.075, gain: 0.06 }); }
+        playNoise({ pink = false, duration = 0.08, gain = 0.08, filterType = 'bandpass', freq = 1200, endFreq = null, q = 1.0, priority = false, delay = 0 }) {
+            if (!this.enabled || !this.ctx || (!priority && this.activeVoices >= this.maxVoices)) return;
+            const buf = pink ? this.pinkNoiseBuf : this.whiteNoiseBuf;
+            if (!buf) return;
+            try {
+                const now = this.ctx.currentTime + delay;
+                const src = this.ctx.createBufferSource();
+                src.buffer = buf;
+                const maxOffset = Math.max(0.01, buf.duration - duration - 0.05);
+                const startOffset = Math.random() * maxOffset;
+
+                const flt = this.ctx.createBiquadFilter();
+                flt.type = filterType;
+                flt.frequency.setValueAtTime(Math.max(30, freq), now);
+                if (endFreq !== null) {
+                    flt.frequency.exponentialRampToValueAtTime(Math.max(30, endFreq), now + duration);
+                }
+                flt.Q.setValueAtTime(q, now);
+
+                const gainNode = this.ctx.createGain();
+                gainNode.gain.setValueAtTime(0.001, now);
+                gainNode.gain.linearRampToValueAtTime(gain, now + Math.min(0.004, duration * 0.15));
+                gainNode.gain.exponentialRampToValueAtTime(0.0008, now + duration);
+
+                src.connect(flt);
+                flt.connect(gainNode);
+                gainNode.connect(this.sfxBus || this.ctx.destination);
+                this.activeVoices++;
+                src.onended = () => {
+                    this.activeVoices = Math.max(0, this.activeVoices - 1);
+                    try { src.disconnect(); flt.disconnect(); gainNode.disconnect(); } catch (e) {}
+                };
+                src.start(now, startOffset, duration + 0.01);
+            } catch (e) {}
+        }
+        shoot() {
+            // 凛音双枪：火药爆裂白噪瞬态 + 枪机低频冲击 + 金属弹壳脆响
+            this.playNoise({ pink: false, duration: 0.046, gain: 0.085, filterType: 'bandpass', freq: 2400, endFreq: 820, q: 1.3 });
+            this.playTone({ type: 'triangle', freq: 330, endFreq: 68, duration: 0.068, gain: 0.095, jitter: 0.06 });
+            this.playTone({ type: 'square', freq: 1380, endFreq: 520, duration: 0.024, gain: 0.032, jitter: 0.06 });
+        }
         shotgunBlast(isHeavyUlt = false) {
+            // 千夏重装霰弹/狙击重炮：深沉胸腔低音下潜 + 宽频火药轰鸣 + 枪膛机械回弹
             if (isHeavyUlt) {
-                this.playTone({ type: 'sawtooth', freq: 185, endFreq: 32, duration: 0.22, gain: 0.14 });
-                this.playTone({ type: 'square', freq: 110, endFreq: 24, duration: 0.25, gain: 0.12 });
+                this.playNoise({ pink: true, duration: 0.24, gain: 0.18, filterType: 'lowpass', freq: 2200, endFreq: 260, q: 0.9, priority: true });
+                this.playTone({ type: 'sine', freq: 165, endFreq: 28, duration: 0.25, gain: 0.20, priority: true, jitter: 0.03 });
+                this.playTone({ type: 'sawtooth', freq: 240, endFreq: 42, duration: 0.18, gain: 0.11, filterFreq: 1400, jitter: 0.04 });
             } else {
-                this.playTone({ type: 'sawtooth', freq: 310, endFreq: 68, duration: 0.13, gain: 0.095 });
+                this.playNoise({ pink: true, duration: 0.14, gain: 0.13, filterType: 'lowpass', freq: 1950, endFreq: 340, q: 1.0 });
+                this.playTone({ type: 'triangle', freq: 195, endFreq: 44, duration: 0.14, gain: 0.14, jitter: 0.05 });
+                this.playTone({ type: 'sawtooth', freq: 720, endFreq: 190, duration: 0.045, gain: 0.045, jitter: 0.05 });
             }
         }
-        swordSlash(isDouble = false) { this.playTone({ type: 'triangle', freq: isDouble ? 820 : 620, endFreq: 180, duration: 0.09, gain: 0.085 }); }
-        reloadStrike() { this.playTone({ type: 'sawtooth', freq: 320, endFreq: 880, duration: 0.16, gain: 0.09 }); }
-        explosion() { this.playTone({ type: 'sawtooth', freq: 140, endFreq: 28, duration: 0.28, gain: 0.12 }); }
-        frostNova() { this.playTone({ type: 'triangle', freq: 720, endFreq: 260, duration: 0.24, gain: 0.09 }); }
-        zap() { this.playTone({ type: 'sawtooth', freq: 920, endFreq: 280, duration: 0.11, gain: 0.07 }); }
-        pickupXp() { this.playTone({ type: 'sine', freq: 660, endFreq: 990, duration: 0.06, gain: 0.045 }); }
-        levelUp() { this.playTone({ type: 'square', freq: 440, endFreq: 880, duration: 0.22, gain: 0.09 }); }
-        hurt() { this.playTone({ type: 'sawtooth', freq: 190, endFreq: 75, duration: 0.14, gain: 0.09 }); }
-        bossAlert() { this.playTone({ type: 'sawtooth', freq: 220, endFreq: 110, duration: 0.4, gain: 0.12 }); }
+        swordSlash(isDouble = false) {
+            // 咲良/夜瞳破空斩击：凌厉刀风噪波 + 寒铁刀鸣泛音
+            const baseF = isDouble ? 860 : 660;
+            this.playNoise({ pink: false, duration: 0.095, gain: 0.095, filterType: 'bandpass', freq: isDouble ? 2100 : 1650, endFreq: 540, q: 2.1 });
+            this.playTone({ type: 'triangle', freq: baseF, endFreq: 175, duration: 0.088, gain: 0.085, jitter: 0.05 });
+            this.playTone({ type: 'sine', freq: baseF * 1.85, endFreq: baseF * 0.75, duration: 0.042, gain: 0.032, jitter: 0.05 });
+        }
+        chainClink() {
+            // 夜瞳飞刃收回入体：清脆利落的锁链归鞘金属声
+            this.playTone({ type: 'sine', freq: 1680, endFreq: 1120, duration: 0.042, gain: 0.036, jitter: 0.04 });
+            this.playNoise({ pink: false, duration: 0.025, gain: 0.035, filterType: 'highpass', freq: 3200, q: 1.5 });
+        }
+        hitEnemy(isCrit = false) {
+            // 真实打击感核心：命中肉体闷响 + 暴击撕裂脆响（带智能微节流防群怪破音）
+            if (!this.enabled || !this.ctx) return;
+            const now = this.ctx.currentTime;
+            if (isCrit) {
+                if (now - this.lastCritSfxTime < 0.028) return;
+                this.lastCritSfxTime = now;
+                this.playTone({ type: 'triangle', freq: 185, endFreq: 54, duration: 0.055, gain: 0.085, jitter: 0.06 });
+                this.playTone({ type: 'triangle', freq: 1320, endFreq: 2150, duration: 0.048, gain: 0.065, jitter: 0.05 });
+                this.playNoise({ pink: false, duration: 0.038, gain: 0.07, filterType: 'bandpass', freq: 3100, endFreq: 1400, q: 1.6 });
+            } else {
+                if (now - this.lastHitSfxTime < 0.042) return;
+                this.lastHitSfxTime = now;
+                this.playTone({ type: 'triangle', freq: 155, endFreq: 48, duration: 0.045, gain: 0.068, jitter: 0.07 });
+                this.playNoise({ pink: true, duration: 0.032, gain: 0.052, filterType: 'lowpass', freq: 980, endFreq: 320, q: 0.8 });
+            }
+        }
+        reloadStrike() {
+            this.playNoise({ pink: false, duration: 0.05, gain: 0.06, filterType: 'highpass', freq: 2200, q: 1.4 });
+            this.playTone({ type: 'sawtooth', freq: 360, endFreq: 920, duration: 0.14, gain: 0.075, filterFreq: 2600 });
+            this.playTone({ type: 'triangle', freq: 720, endFreq: 1240, duration: 0.09, gain: 0.055, delay: 0.04 });
+        }
+        explosion() {
+            // 真实重型爆炸：超低频震地轰鸣 + 粉红噪声气浪翻滚
+            this.playNoise({ pink: true, duration: 0.36, gain: 0.17, filterType: 'lowpass', freq: 1250, endFreq: 140, q: 0.85, priority: true });
+            this.playTone({ type: 'sine', freq: 120, endFreq: 24, duration: 0.34, gain: 0.22, priority: true, jitter: 0.03 });
+            this.playTone({ type: 'sawtooth', freq: 165, endFreq: 32, duration: 0.24, gain: 0.10, filterFreq: 900, jitter: 0.04 });
+        }
+        frostNova() {
+            this.playNoise({ pink: false, duration: 0.24, gain: 0.095, filterType: 'bandpass', freq: 3400, endFreq: 1200, q: 1.8, priority: true });
+            this.playTone({ type: 'triangle', freq: 880, endFreq: 320, duration: 0.24, gain: 0.085, jitter: 0.02 });
+            this.playTone({ type: 'sine', freq: 1320, endFreq: 520, duration: 0.20, gain: 0.06, jitter: 0.02 });
+        }
+        zap() {
+            this.playNoise({ pink: false, duration: 0.08, gain: 0.065, filterType: 'highpass', freq: 2600, q: 2.0 });
+            this.playTone({ type: 'sawtooth', freq: 1120, endFreq: 260, duration: 0.10, gain: 0.065, filterFreq: 3200, jitter: 0.06 });
+        }
+        pickupXp() {
+            if (!this.enabled || !this.ctx) return;
+            const now = this.ctx.currentTime;
+            if (now - this.lastXpSfxTime < 0.028) return;
+            this.lastXpSfxTime = now;
+            this.playTone({ type: 'sine', freq: 720, endFreq: 1080, duration: 0.055, gain: 0.042, jitter: 0.03 });
+        }
+        levelUp() {
+            this.playTone({ type: 'triangle', freq: 440, endFreq: 440, duration: 0.09, gain: 0.085, priority: true, jitter: 0 });
+            this.playTone({ type: 'triangle', freq: 554.37, endFreq: 554.37, duration: 0.09, gain: 0.085, priority: true, jitter: 0, delay: 0.07 });
+            this.playTone({ type: 'triangle', freq: 659.25, endFreq: 659.25, duration: 0.11, gain: 0.09, priority: true, jitter: 0, delay: 0.14 });
+            this.playTone({ type: 'triangle', freq: 880, endFreq: 880, duration: 0.24, gain: 0.10, priority: true, jitter: 0, delay: 0.21 });
+        }
+        hurt() {
+            this.playNoise({ pink: true, duration: 0.11, gain: 0.11, filterType: 'bandpass', freq: 680, endFreq: 220, q: 1.2, priority: true });
+            this.playTone({ type: 'sawtooth', freq: 210, endFreq: 68, duration: 0.14, gain: 0.11, filterFreq: 1100, priority: true, jitter: 0.03 });
+        }
+        bossAlert() {
+            this.playTone({ type: 'sawtooth', freq: 220, endFreq: 110, duration: 0.36, gain: 0.12, filterFreq: 1400, priority: true, jitter: 0 });
+            this.playTone({ type: 'triangle', freq: 110, endFreq: 55, duration: 0.38, gain: 0.14, priority: true, jitter: 0 });
+        }
+        // 耐听型暗黑电子 (Dark-Synth / Cyberpunk Pulse) 动态 BGM 引擎
+        _schedBgmKick(t, gain = 0.22) {
+            const osc = this.ctx.createOscillator();
+            const g = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(128, t);
+            osc.frequency.exponentialRampToValueAtTime(36, t + 0.11);
+            g.gain.setValueAtTime(0.001, t);
+            g.gain.linearRampToValueAtTime(gain, t + 0.004);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+            osc.connect(g);
+            g.connect(this.bgmBus);
+            osc.start(t);
+            osc.stop(t + 0.16);
+        }
+        _schedBgmHat(t, open = false, gain = 0.045) {
+            if (!this.whiteNoiseBuf) return;
+            const dur = open ? 0.095 : 0.032;
+            const src = this.ctx.createBufferSource();
+            src.buffer = this.whiteNoiseBuf;
+            const flt = this.ctx.createBiquadFilter();
+            flt.type = 'highpass';
+            flt.frequency.setValueAtTime(5200, t);
+            const g = this.ctx.createGain();
+            g.gain.setValueAtTime(0.001, t);
+            g.gain.linearRampToValueAtTime(gain, t + 0.002);
+            g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+            src.connect(flt);
+            flt.connect(g);
+            g.connect(this.bgmBus);
+            src.start(t, 0.1, dur + 0.01);
+        }
+        _schedBgmSnare(t, gain = 0.095) {
+            if (this.pinkNoiseBuf) {
+                const src = this.ctx.createBufferSource();
+                src.buffer = this.pinkNoiseBuf;
+                const flt = this.ctx.createBiquadFilter();
+                flt.type = 'bandpass';
+                flt.frequency.setValueAtTime(1650, t);
+                flt.Q.setValueAtTime(1.1, t);
+                const g = this.ctx.createGain();
+                g.gain.setValueAtTime(0.001, t);
+                g.gain.linearRampToValueAtTime(gain, t + 0.003);
+                g.gain.exponentialRampToValueAtTime(0.0008, t + 0.12);
+                src.connect(flt);
+                flt.connect(g);
+                g.connect(this.bgmBus);
+                src.start(t, 0.2, 0.13);
+            }
+            const osc = this.ctx.createOscillator();
+            const g2 = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(185, t);
+            osc.frequency.exponentialRampToValueAtTime(82, t + 0.07);
+            g2.gain.setValueAtTime(gain * 0.7, t);
+            g2.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+            osc.connect(g2);
+            g2.connect(this.bgmBus);
+            osc.start(t);
+            osc.stop(t + 0.09);
+        }
+        _schedBgmNote(t, freq, dur, type = 'sawtooth', gain = 0.09, cutoff = 720) {
+            if (!freq || freq <= 0) return;
+            const osc = this.ctx.createOscillator();
+            const flt = this.ctx.createBiquadFilter();
+            const g = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, t);
+            flt.type = 'lowpass';
+            flt.frequency.setValueAtTime(cutoff, t);
+            flt.frequency.exponentialRampToValueAtTime(Math.max(120, cutoff * 0.42), t + dur * 0.9);
+            g.gain.setValueAtTime(0.001, t);
+            g.gain.linearRampToValueAtTime(gain, t + 0.012);
+            g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+            osc.connect(flt);
+            flt.connect(g);
+            g.connect(this.bgmBus);
+            osc.start(t);
+            osc.stop(t + dur + 0.01);
+        }
+        _scheduleBgmStep(stepIdx, t, mode) {
+            const s16 = stepIdx % 16;
+            const bar = Math.floor(stepIdx / 16) % 4;
+            if (mode === 'menu') {
+                // 主界面：静谧深邃赛博夜景脉冲 (102 BPM)
+                const roots = [73.42, 65.41, 58.27, 65.41]; // D2, C2, Bb1, C2
+                const root = roots[bar];
+                if (s16 === 0 || s16 === 6 || s16 === 10) {
+                    this._schedBgmNote(t, root, 0.34, 'triangle', 0.14, 380);
+                }
+                if (s16 === 0) this._schedBgmKick(t, 0.13);
+                if (s16 % 4 === 2) this._schedBgmHat(t, false, 0.022);
+                const arp = [293.66, 349.23, 440.00, 523.25, 440.00, 349.23, 293.66, 261.63];
+                if (s16 % 2 === 0) {
+                    const n = arp[(s16 / 2 + bar * 2) % arp.length];
+                    this._schedBgmNote(t, n, 0.24, 'sine', 0.045, 950);
+                }
+                return;
+            }
+            if (mode === 'boss') {
+                // 首领战：140 BPM 暗黑压迫电子律动
+                const bossRoots = [73.42, 77.78, 65.41, 69.30]; // D2, Eb2, C2, C#2
+                const root = bossRoots[bar];
+                const octave = (s16 % 2 === 1) ? root * 2 : root;
+                this._schedBgmNote(t, octave, 0.11, 'sawtooth', 0.115, 680);
+                if (s16 % 4 === 0 || s16 === 14) this._schedBgmKick(t, 0.22);
+                if (s16 === 4 || s16 === 12) this._schedBgmSnare(t, 0.095);
+                if (s16 % 2 === 1) this._schedBgmHat(t, s16 === 15, 0.038);
+                const bossMotif = [293.66, 0, 311.13, 293.66, 349.23, 0, 311.13, 261.63, 293.66, 0, 440.00, 392.00, 349.23, 311.13, 293.66, 0];
+                const leadF = bossMotif[s16];
+                if (leadF > 0 && (bar % 2 === 1 || s16 < 8)) {
+                    this._schedBgmNote(t, leadF, 0.14, 'triangle', 0.052, 1350);
+                }
+                return;
+            }
+            // 常规街区战斗：124 BPM 耐听型暗黑电子低音律动
+            const battleRoots = [73.42, 58.27, 65.41, 82.41]; // D2, Bb1, C2, E2
+            const root = battleRoots[bar];
+            if (s16 % 2 === 0 || s16 === 7 || s16 === 15) {
+                const bassFreq = (s16 === 6 || s16 === 14) ? root * 1.5 : root;
+                this._schedBgmNote(t, bassFreq, 0.13, 'sawtooth', 0.10, 560);
+            }
+            if (s16 === 0 || s16 === 6 || s16 === 8 || s16 === 12) this._schedBgmKick(t, 0.19);
+            if (s16 === 4 || s16 === 12) this._schedBgmSnare(t, 0.078);
+            if (s16 % 2 === 1) this._schedBgmHat(t, s16 === 11, 0.03);
+            const battleArp = [293.66, 0, 349.23, 0, 440.00, 0, 349.23, 329.63, 293.66, 0, 261.63, 0, 349.23, 0, 329.63, 0];
+            const note = battleArp[s16];
+            if (note > 0 && bar !== 2) {
+                this._schedBgmNote(t, note, 0.16, 'triangle', 0.044, 1100);
+            }
+        }
+        updateBgm(currentGameState, zombieList, currentWaveState) {
+            if (!this.ctx || !this.bgmEnabled || this.ctx.state !== 'running') return;
+            let hasBoss = false;
+            let bossEnraged = false;
+            if (Array.isArray(zombieList)) {
+                for (let i = 0; i < zombieList.length; i++) {
+                    const z = zombieList[i];
+                    if (z && z.hp > 0 && z.isBoss && !z.isDummy) {
+                        hasBoss = true;
+                        if (z.hp <= z.maxHp * 0.5) bossEnraged = true;
+                        break;
+                    }
+                }
+            }
+            const nextMode = (currentGameState === 'START' || currentGameState === 'GAME_OVER')
+                ? 'menu'
+                : (hasBoss ? 'boss' : 'battle');
+            this.bgmMode = nextMode;
+
+            // 在暂停、升级三选一、黑市商店时自动开启安全屋闷音低通滤波，战斗时恢复通透
+            const shouldMuffle = (currentGameState === 'PAUSED' || currentGameState === 'LEVEL_UP' || currentGameState === 'WAVE_SHOP' || currentGameState === 'KEYBIND_EDIT');
+            if (shouldMuffle !== this.bgmMuffled && this.bgmFilter) {
+                this.bgmMuffled = shouldMuffle;
+                this.bgmFilter.frequency.setTargetAtTime(shouldMuffle ? 560 : 3600, this.ctx.currentTime, 0.12);
+            }
+
+            const bpm = nextMode === 'menu' ? 102 : (nextMode === 'boss' ? (bossEnraged ? 148 : 138) : 124);
+            const stepDur = (60 / bpm) / 4;
+            const now = this.ctx.currentTime;
+            if (this.bgmNextStepTime < now - 0.25 || this.bgmNextStepTime > now + 1.0) {
+                this.bgmNextStepTime = now + 0.02;
+            }
+            while (this.bgmNextStepTime < now + 0.12) {
+                this._scheduleBgmStep(this.bgmStep, this.bgmNextStepTime, nextMode);
+                this.bgmNextStepTime += stepDur;
+                this.bgmStep = (this.bgmStep + 1) % 64;
+            }
+        }
     }
     const sfx = new RetroAudioEngine();
 
@@ -2529,6 +3005,7 @@
         reset: ["..oooo..", ".obbbbo.", "obb..bbo", "ob....oo", "ob..yyyy", "obb..yy.", ".obbbbo.", "..oooo.."],
         gear: ["..oooo..", ".oAAAAo.", "oAwwwwAo", "oAwoowAo", "oAwoowAo", "oAwwwwAo", ".oAAAAo.", "..oooo.."],
         speaker: ["...oo...", "..oyyo..", "ooyyyyo.", "oywyyyyb", "oywyyyyb", "ooyyyyo.", "..oyyo..", "...oo..."],
+        music:   ["..oooooo", "..obbbbo", "..ob..bo", "..ob..bo", "oobboobo", "obwbobwo", "obbboobo", ".oo..oo."],
         crt: ["oooooooo", "obbbbbbo", "obwwwwbo", "obbbbbbo", "obwwwwbo", "obbbbbbo", ".oooooo.", "..oooo.."],
         shake: ["y..oo..y", ".yorroy.", "yorwwwro", ".orrrrro", ".orrrrro", "yorwwwro", ".yorroy.", "y..oo..y"],
         layout: ["...oo...", "..oyyo..", "...oo...", "ooyyyyyo", "oywwwwyo", "ooyyyyyo", "...oo...", "..oyyo.."],
@@ -3447,15 +3924,53 @@
 
     window.toggleSettingOption = function (optKey) {
         sfx.init();
-        if (optKey === 'sfx') gameSettings.sfx = !gameSettings.sfx;
-        else if (optKey === 'crt') gameSettings.crt = !gameSettings.crt;
-        else if (optKey === 'shake') {
+        if (optKey === 'sfx') {
+            gameSettings.sfx = !gameSettings.sfx;
+            if (gameSettings.sfx && (gameSettings.sfxVolume || 0) <= 0) {
+                gameSettings.sfxVolume = 1.0;
+            }
+        } else if (optKey === 'bgm') {
+            gameSettings.bgm = !gameSettings.bgm;
+            if (gameSettings.bgm && (gameSettings.bgmVolume || 0) <= 0) {
+                gameSettings.bgmVolume = 1.0;
+            }
+        } else if (optKey === 'crt') {
+            gameSettings.crt = !gameSettings.crt;
+        } else if (optKey === 'shake') {
             gameSettings.shake = !gameSettings.shake;
             if (!gameSettings.shake) screenShake = 0;
         }
         applySettingsToDOM();
         savePersistentData(STORAGE_KEY_SETTINGS, gameSettings);
         sfx.pickupXp();
+    };
+
+    window.onVolumeSliderChange = function (kind, rawPct) {
+        sfx.init();
+        const pct = clampVal(Math.round((Number(rawPct) || 0) / 5) * 5, 0, 150);
+        const ratio = round2(pct / 100);
+        if (kind === 'sfx') {
+            gameSettings.sfxVolume = ratio;
+            gameSettings.sfx = pct > 0;
+        } else if (kind === 'bgm') {
+            gameSettings.bgmVolume = ratio;
+            gameSettings.bgm = pct > 0;
+        }
+        applySettingsToDOM();
+        savePersistentData(STORAGE_KEY_SETTINGS, gameSettings);
+        if (kind === 'sfx' && pct > 0) {
+            sfx.pickupXp();
+        }
+    };
+
+    window.adjustVolumeStep = function (kind, deltaPct) {
+        sfx.init();
+        const isSfx = (kind === 'sfx');
+        const curActive = isSfx ? gameSettings.sfx : gameSettings.bgm;
+        const curVol = isSfx ? (gameSettings.sfxVolume ?? 1.0) : (gameSettings.bgmVolume ?? 1.0);
+        const curPct = curActive ? Math.round(curVol * 100) : 0;
+        const nextPct = clampVal(curPct + deltaPct, 0, 150);
+        window.onVolumeSliderChange(kind, nextPct);
     };
 
     window.openKeybindEditor = function () {
@@ -6365,6 +6880,8 @@
         if (!player || player.hp <= 0 || dealtDamage <= 0) return;
         const stats = getPlayerStats(player), rate = stats.lifestealRate || 0;
         if (rate <= 0) return;
+        // 取消暴击伤害对吸血的翻倍加成：若该发子弹暴击，还原为未暴击基础有效伤害计算吸血
+        const nonCritDealt = bullet.isCrit ? round1(dealtDamage / Math.max(1, stats.critDamageMult || 1.5)) : dealtDamage;
         const maxVampCap = round1(1 + player.maxHp * 0.02);
         if (player.heroId === 'chinatsu' || player.heroId === 'rinne') {
             if (player.heroId === 'chinatsu') {
@@ -6378,7 +6895,7 @@
             const salvo = bullet.salvoState;
             if (!salvo) {
                 if (globalTime - (player.lastLifestealTime || -999) < 0.20) return;
-                const healAmt = Math.min(maxVampCap, round1(dealtDamage * rate));
+                const healAmt = Math.min(maxVampCap, round1(nonCritDealt * rate));
                 if (healAmt > 0) {
                     player.lastLifestealTime = globalTime;
                     healPlayerWithOverheal(player, healAmt);
@@ -6394,8 +6911,8 @@
                     return;
                 }
                 player.lastLifestealTime = globalTime;
-                salvo.maxLifestealHitDmg = dealtDamage;
-                const healAmt = Math.min(maxVampCap, round1(dealtDamage * rate));
+                salvo.maxLifestealHitDmg = nonCritDealt;
+                const healAmt = Math.min(maxVampCap, round1(nonCritDealt * rate));
                 salvo.maxLifestealHealed = healAmt;
                 if (healAmt > 0) {
                     healPlayerWithOverheal(player, healAmt);
@@ -6403,10 +6920,10 @@
                     salvo.lifestealTextObj = spawnFloatingText(player.x, player.y - 44, `+${fmt1(healAmt)}`, '#4ade80', 11, -38);
                 }
             } else if (!salvo.lifestealBlockedByIcd && Math.abs(globalTime - salvo.lifestealHitTime) <= 0.02) {
-                // 同一波次分裂子弹/霰弹同时命中多个敌人：仅依照单颗最高伤害结算1次吸血（不超过单次上限）
-                if (dealtDamage > salvo.maxLifestealHitDmg) {
-                    salvo.maxLifestealHitDmg = dealtDamage;
-                    const targetHeal = Math.min(maxVampCap, round1(dealtDamage * rate));
+                // 同一波次分裂子弹/霰弹同时命中多个敌人：仅依照单颗最高非暴击伤害结算1次吸血（不超过单次上限）
+                if (nonCritDealt > salvo.maxLifestealHitDmg) {
+                    salvo.maxLifestealHitDmg = nonCritDealt;
+                    const targetHeal = Math.min(maxVampCap, round1(nonCritDealt * rate));
                     const diffHeal = round1(targetHeal - (salvo.maxLifestealHealed || 0));
                     if (diffHeal > 0) {
                         salvo.maxLifestealHealed = targetHeal;
@@ -6457,6 +6974,7 @@
                 const isCrit = Boolean(slashFx.forceCrit) || (stats.critRate > 0 && Math.random() < stats.critRate);
                 const finalDmg = isCrit ? round1(slashFx.rawSlashDmg * stats.critDamageMult) : round1(slashFx.rawSlashDmg);
                 const dealt = damageZombie(z, finalDmg, 0, 0, slashFx.isPhantomSlash ? '#c084fc' : (slashFx.isUltSlash ? '#f43f5e' : '#f472b6'), isCrit);
+                const nonCritDealt = isCrit ? round1(dealt / Math.max(1, stats.critDamageMult || 1.5)) : dealt;
                 applyNormalBulletOnHitEffects(z, isFirstHitOfSlash, 1, slashFx.salvoState);
                 spawnPixelParticles(z.x, z.y, isCrit ? '#facc15' : '#f472b6', 6, 110, 3, 0.22);
 
@@ -6464,8 +6982,8 @@
                     slashFx.cdReduced = true;
                     player.grenadeCdTimer = Math.max(0, round1((player.grenadeCdTimer || 0) - 0.3));
                 }
-                if (dealt > tickMaxDealt) {
-                    tickMaxDealt = dealt;
+                if (nonCritDealt > tickMaxDealt) {
+                    tickMaxDealt = nonCritDealt;
                 }
             }
         }
@@ -7801,13 +8319,78 @@
     }
 
     function rollBossSkillByWeights(entries) {
-        const r = Math.random();
-        let acc = 0;
+        let total = 0;
+        for (let i = 0; i < entries.length; i++) total += Math.max(0, entries[i].weight || 0);
+        if (total <= 0) return entries[entries.length - 1].id;
+        let r = Math.random() * total;
         for (let i = 0; i < entries.length; i++) {
-            acc += entries[i].weight;
-            if (r < acc) return entries[i].id;
+            r -= Math.max(0, entries[i].weight || 0);
+            if (r <= 0) return entries[i].id;
         }
         return entries[entries.length - 1].id;
+    }
+
+    // 三层战术智能决策 AI + 三合一防距离锁死机制（1. 距离感知权重 + 保底底数；2. 技能饥饿值递增保底 + 防复读；3. 突进后 1.4s 快接二连窗口 + 半血狂暴加速）
+    function selectSmartBossSkill(boss, distToPlayer, skillConfigs, forcedSkillId = null) {
+        if (!boss.skillStarveCounts) boss.skillStarveCounts = {};
+        let chosenId = forcedSkillId;
+        if (!chosenId) {
+            const band = distToPlayer < 160 ? 'close' : (distToPlayer <= 280 ? 'mid' : 'far');
+            const weighted = [];
+            for (let i = 0; i < skillConfigs.length; i++) {
+                const cfg = skillConfigs[i];
+                // 防连续复读：若上一招刚放过该技能，且有其它招式可选，则本轮跳过
+                if (skillConfigs.length > 1 && boss.lastCastSkillId === cfg.id) continue;
+                const starve = boss.skillStarveCounts[cfg.id] || 0;
+                let w = band === 'close' ? cfg.close : (band === 'mid' ? cfg.mid : cfg.far);
+                // 保底底数：消除绝对 0 权重，避免玩家卡死单一距离导致某些技能整场不触发
+                if (w <= 0) w = starve >= 2 ? 0.12 : 0.06;
+                // 饥饿值保底递增：连续 3 轮未释放起每轮额外 +0.20 权重，连续 5 轮未释放再额外翻倍加权
+                if (starve >= 3) {
+                    w += (starve - 2) * 0.20;
+                    if (starve >= 5) w *= 2.2;
+                }
+                // 突进贴脸连招追击：若上一招是突进/位移技且玩家在中近距离内，大幅拉升近身反制技权重
+                if (boss.lastSkillWasGapCloser && distToPlayer <= 250 && cfg.isCloseFollowUp) {
+                    w = Math.max(w, 0.36) * 1.85;
+                }
+                if (w > 0) weighted.push({ id: cfg.id, weight: w, isGapCloser: Boolean(cfg.isGapCloser) });
+            }
+            if (weighted.length === 0) {
+                for (let i = 0; i < skillConfigs.length; i++) {
+                    const cfg = skillConfigs[i];
+                    if (skillConfigs.length > 1 && boss.lastCastSkillId === cfg.id) continue;
+                    weighted.push({ id: cfg.id, weight: 1, isGapCloser: Boolean(cfg.isGapCloser) });
+                }
+            }
+            chosenId = rollBossSkillByWeights(weighted);
+        }
+        const chosenObj = skillConfigs.find(c => c.id === chosenId) || skillConfigs[0];
+        for (let i = 0; i < skillConfigs.length; i++) {
+            const sid = skillConfigs[i].id;
+            if (sid === chosenId) boss.skillStarveCounts[sid] = 0;
+            else boss.skillStarveCounts[sid] = (boss.skillStarveCounts[sid] || 0) + 1;
+        }
+        const wasComboFollowUp = Boolean(boss.lastSkillWasGapCloser && !boss.fastComboUsed);
+        boss.lastCastSkillId = chosenId;
+        boss.lastSkillWasGapCloser = Boolean(chosenObj && chosenObj.isGapCloser);
+        boss.fastComboUsed = wasComboFollowUp;
+        return chosenId;
+    }
+
+    function computeSmartBossCooldown(boss, baseCd) {
+        const hpRatio = boss.hp / Math.max(1, boss.maxHp || 1);
+        // 半血以下（<=50% HP）进入二阶段战术加速，技能冷却间隔缩短 18%（不缩短地面红圈预警时间）
+        const phaseMult = hpRatio <= 0.50 ? 0.82 : 1.0;
+        // 突进贴脸后的「1.4s 连招快接窗口」：刚完成突进技且玩家尚未跑远时，立即快接一记近身技，避免被高移速玩家无限风筝锁死
+        if (boss.lastSkillWasGapCloser && !boss.fastComboUsed && player) {
+            const distNow = Math.hypot(player.x - boss.x, player.y - boss.y);
+            if (distNow <= 255) {
+                return Math.max(1.15, round2(1.42 * phaseMult + (Math.random() - 0.5) * 0.16));
+            }
+        }
+        const jitter = (Math.random() - 0.5) * 0.24;
+        return Math.max(2.0, round2(baseCd * phaseMult + jitter));
     }
 
     function startNextFlameBossDash(boss) {
@@ -7831,6 +8414,7 @@
 
     function updateFlameBossAI(boss, dt) {
         const scale = getBossDamageScale(boss.kind), tPos = getPlayerTrackingPos(), distToPlayer = Math.hypot(tPos.x - boss.x, tPos.y - boss.y);
+        // Boss 3 空心火圈：保持独立固定周期释放节奏，持续封锁场地
         if ((boss.freezeTimer || 0) <= 0 && !boss.hollowRingWarningActive) {
             boss.hollowRingAutoTimer = (typeof boss.hollowRingAutoTimer === 'number' ? boss.hollowRingAutoTimer : 6.0) - dt;
             if (boss.hollowRingAutoTimer <= 0) spawnFlameBossAutoHollowRing(boss);
@@ -7840,14 +8424,14 @@
         if (boss.actionState === 'chase') {
             boss.skillCd = Math.max(0, boss.skillCd - dt);
             boss.outOfRangeTimer = distToPlayer > 400 ? (boss.outOfRangeTimer || 0) + dt : 0;
-            const forceBlinkDash = (boss.outOfRangeTimer || 0) >= 8.0;
-            if (forceBlinkDash || (boss.skillCd <= 0 && distToPlayer <= 400)) {
+            const forceBlinkDash = (boss.outOfRangeTimer || 0) >= 6.5;
+            if (forceBlinkDash || (boss.skillCd <= 0 && distToPlayer <= 420)) {
                 boss.outOfRangeTimer = 0;
-                const chosen = forceBlinkDash ? 'flame_blink_dash' : rollBossSkillByWeights([
-                    { id: 'flame_blink_dash', weight: 1 / 3 },
-                    { id: 'meteor_ring_fall', weight: 1 / 3 },
-                    { id: 'flame_arrow_snipe', weight: 1 / 3 }
-                ]);
+                const chosen = selectSmartBossSkill(boss, distToPlayer, [
+                    { id: 'meteor_ring_fall', close: 0.55, mid: 0.42, far: 0.14, isCloseFollowUp: true },
+                    { id: 'flame_blink_dash', close: 0.28, mid: 0.25, far: 0.48, isGapCloser: true },
+                    { id: 'flame_arrow_snipe', close: 0.17, mid: 0.33, far: 0.38 }
+                ], forceBlinkDash ? 'flame_blink_dash' : null);
                 if (chosen === 'flame_blink_dash') {
                     boss.flameDashCountLeft = 2;
                     startNextFlameBossDash(boss);
@@ -7935,11 +8519,11 @@
                 }
                 boss.flameDashCountLeft--;
                 if (boss.flameDashCountLeft > 0) startNextFlameBossDash(boss);
-                else { boss.actionState = 'chase'; boss.skillCd = 4.0; }
+                else { boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 3.8); }
             }
         } else if (boss.actionState === 'meteor_ring_windup') {
             boss.stateTimer -= dt;
-            if (boss.stateTimer <= 0) { boss.actionState = 'chase'; boss.skillCd = 4.0; }
+            if (boss.stateTimer <= 0) { boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 3.2); }
         } else if (boss.actionState === 'flame_arrow_aim') {
             boss.stateTimer -= dt;
             boss.chargeAngle = Math.atan2(tPos.y - boss.y, tPos.x - boss.x);
@@ -7953,7 +8537,7 @@
                 if (boss.flameArrowShotsLeft > 0) {
                     boss.aimDurationTotal = 0.78; boss.stateTimer = 0.78; sfx.reloadStrike();
                 } else {
-                    boss.actionState = 'chase'; boss.skillCd = 4.0;
+                    boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 4.3);
                 }
             }
         }
@@ -7965,15 +8549,15 @@
         if (boss.actionState === 'chase') {
             boss.skillCd = Math.max(0, boss.skillCd - dt);
             boss.outOfRangeTimer = distToPlayer > 420 ? (boss.outOfRangeTimer || 0) + dt : 0;
-            const forceVanish = (boss.outOfRangeTimer || 0) >= 8.0;
+            const forceVanish = (boss.outOfRangeTimer || 0) >= 6.5;
             if (forceVanish || (boss.skillCd <= 0 && distToPlayer <= 420)) {
                 boss.outOfRangeTimer = 0;
-                const chosen = forceVanish ? 'vanish_strike' : rollBossSkillByWeights([
-                    { id: 'snowball_trio', weight: 0.35 },
-                    { id: 'frost_shockwave_3', weight: 0.25 },
-                    { id: 'vanish_strike', weight: 0.20 },
-                    { id: 'ice_spikes_5', weight: 0.20 }
-                ]);
+                const chosen = selectSmartBossSkill(boss, distToPlayer, [
+                    { id: 'frost_shockwave_3', close: 0.50, mid: 0.18, far: 0.08, isCloseFollowUp: true },
+                    { id: 'snowball_trio', close: 0.26, mid: 0.38, far: 0.20, isCloseFollowUp: true },
+                    { id: 'ice_spikes_5', close: 0.16, mid: 0.32, far: 0.28 },
+                    { id: 'vanish_strike', close: 0.08, mid: 0.12, far: 0.44, isGapCloser: true }
+                ], forceVanish ? 'vanish_strike' : null);
                 boss.actionState = chosen;
                 if (chosen === 'vanish_strike') {
                     boss.isHidden = true; boss.stateTimer = 1.50;
@@ -8019,7 +8603,7 @@
             }
         } else if (boss.actionState === 'vanish_slam_windup') {
             boss.stateTimer -= dt;
-            if (boss.stateTimer <= 0) { boss.actionState = 'chase'; boss.skillCd = 4.0; }
+            if (boss.stateTimer <= 0) { boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 3.6); }
         } else if (boss.actionState === 'ice_spikes_5') {
             boss.stateTimer -= dt;
             if (boss.stateTimer <= 0) {
@@ -8036,7 +8620,7 @@
                     // 第一段与第二段之间的释放间隔适当延长至 1.18s，后续段保持 0.95s
                     boss.stateTimer = isFirstSpike ? 1.18 : 0.95;
                 } else {
-                    boss.actionState = 'chase'; boss.skillCd = 4.0;
+                    boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 4.2);
                 }
             }
         } else if (boss.actionState === 'frost_shockwave_3') {
@@ -8046,7 +8630,7 @@
                 sfx.frostNova();
                 boss.pulseWaveIndex++;
                 if (boss.pulseWaveIndex < 3) boss.stateTimer = 0.90;
-                else { boss.actionState = 'chase'; boss.skillCd = 4.0; }
+                else { boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 4.0); }
             }
         } else if (boss.actionState === 'snowball_trio') {
             boss.stateTimer -= dt;
@@ -8056,19 +8640,20 @@
                     const travelTime = 1.05, spd = g.spawnDist / travelTime;
                     for (let i = 0; i < 3; i++) {
                         const ang = g.baseAng + (Math.PI * 2 * i) / 3;
-                        const sx = g.centerX + Math.cos(ang) * g.spawnDist, sy = g.centerY + Math.sin(ang) * g.spawnDist;
+                        const sx = g.centerX + Math.cos(ang) * spawnDistOrDefault(g), sy = g.centerY + Math.sin(ang) * spawnDistOrDefault(g);
                         const toCenterAng = Math.atan2(g.centerY - sy, g.centerX - sx);
                         enemyProjectiles.push({ kind: 'boss_snowball', x: sx, y: sy, vx: Math.cos(toCenterAng) * spd, vy: Math.sin(toCenterAng) * spd, targetX: g.centerX, targetY: g.centerY, radius: 15, damage: g.dmg, blastDamage: g.blastDmg, groupId: g.id, isMaster: i === 0, ignoreWalls: true, hitPlayer: false, life: travelTime });
                     }
                 }
-                sfx.shoot(); boss.actionState = 'chase'; boss.skillCd = 4.0;
+                sfx.shoot(); boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 3.1);
             }
         }
     }
+    function spawnDistOrDefault(g) { return g && g.spawnDist ? g.spawnDist : 145; }
 
     // 计算虚空十字激光某一条射线臂是否被场上存活的招魂方尖碑阻挡，返回有效长度与阻挡状态
     function getVoidLaserArmEffectiveLength(hz, armAng) {
-        const maxLen = hz.length || 450;
+        const maxLen = hz.length || hz.radius || 1650;
         const dirX = Math.cos(armAng), dirY = Math.sin(armAng);
         let effLen = maxLen;
         let blocked = false;
@@ -8133,18 +8718,18 @@
             if (boss.actionState === 'chase') {
                 boss.skillCd = Math.max(0, boss.skillCd - dt);
                 boss.outOfRangeTimer = distToPlayer > 400 ? (boss.outOfRangeTimer || 0) + dt : 0;
-                const forcePrisonLeap = (boss.outOfRangeTimer || 0) >= 8.0;
+                const forcePrisonLeap = (boss.outOfRangeTimer || 0) >= 6.5;
                 if (boss.pendingObeliskSummon && !boss.voidShieldActive) {
                     boss.pendingObeliskSummon = false;
                     boss.outOfRangeTimer = 0;
                     boss.actionState = 'summon_obelisks';
                 } else if (forcePrisonLeap || (boss.skillCd <= 0 && distToPlayer <= 420)) {
                     boss.outOfRangeTimer = 0;
-                    const chosen = forcePrisonLeap ? 'bone_prison_leap' : rollBossSkillByWeights([
-                        { id: 'cross_void_laser', weight: 0.34 },
-                        { id: 'bone_prison_leap', weight: 0.33 },
-                        { id: 'void_rift_slashes', weight: 0.33 }
-                    ]);
+                    const chosen = selectSmartBossSkill(boss, distToPlayer, [
+                        { id: 'cross_void_laser', close: 0.46, mid: 0.34, far: 0.24, isCloseFollowUp: true },
+                        { id: 'void_rift_slashes', close: 0.34, mid: 0.42, far: 0.28, isCloseFollowUp: true },
+                        { id: 'bone_prison_leap', close: 0.20, mid: 0.24, far: 0.48, isGapCloser: true }
+                    ], forcePrisonLeap ? 'bone_prison_leap' : null);
                     boss.actionState = chosen;
                 }
                 if (boss.actionState !== 'chase') {
@@ -8192,7 +8777,7 @@
                         screenShake = Math.max(screenShake, 8);
                         spawnFloatingText(boss.x, boss.y - 52, '招魂方尖碑降临! 击碎3座破除护盾并晕眩首领!', '#e879f9', 14, -40);
                         sfx.bossAlert();
-                        boss.actionState = 'chase'; boss.skillCd = 3.6;
+                        boss.actionState = 'chase'; boss.skillCd = 3.2;
                     } else if (chosen === 'cross_void_laser') {
                         // 0.85s 明显锁定蓄力前摇 + 4.2s 旋转激发（共 5.05s）
                         const warnDur = 0.85, activeDur = 4.2;
@@ -8203,7 +8788,8 @@
                             x: boss.x, y: boss.y,
                             baseAngle: Math.random() * Math.PI,
                             rotSpeed: 0.88,
-                            radius: 1150,
+                            length: 1650,
+                            radius: 1650,
                             warnDuration: warnDur,
                             timer: 0,
                             duration: warnDur + activeDur,
@@ -8229,7 +8815,7 @@
             }
             if (boss.actionState === 'cross_void_laser') {
                 boss.stateTimer -= dt;
-                if (boss.stateTimer <= 0) { boss.actionState = 'chase'; boss.skillCd = 4.0; }
+                if (boss.stateTimer <= 0) { boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 4.4); }
             } else if (boss.actionState === 'bone_prison_leap') {
                 boss.stateTimer += dt;
                 const dur = boss.currentSlamDuration || 0.95, t = Math.min(1, boss.stateTimer / dur);
@@ -8243,7 +8829,7 @@
                     if (!(player.sakuraVanishState && player.sakuraVanishState.active) && Math.hypot(player.x - boss.x, player.y - boss.y) <= 108 + player.radius) {
                         damagePlayer(round1(42 * scale));
                     }
-                    boss.actionState = 'chase'; boss.skillCd = 4.2;
+                    boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 3.9);
                 }
             } else if (boss.actionState === 'void_rift_slashes') {
                 boss.stateTimer -= dt;
@@ -8257,7 +8843,7 @@
                     sfx.swordSlash(true);
                     boss.spikeCountLeft--;
                     if (boss.spikeCountLeft > 0) boss.stateTimer = 0.65;
-                    else { boss.actionState = 'chase'; boss.skillCd = 4.0; }
+                    else { boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 3.1); }
                 }
             }
             return;
@@ -8270,15 +8856,15 @@
         if (boss.actionState === 'chase') {
             boss.skillCd = Math.max(0, boss.skillCd - dt);
             boss.outOfRangeTimer = distToPlayer > 360 ? (boss.outOfRangeTimer || 0) + dt : 0;
-            const forceTripleSlam = (boss.outOfRangeTimer || 0) >= 8.0;
-            if (forceTripleSlam || (boss.skillCd <= 0 && distToPlayer <= 360)) {
+            const forceTripleSlam = (boss.outOfRangeTimer || 0) >= 6.5;
+            if (forceTripleSlam || (boss.skillCd <= 0 && distToPlayer <= 380)) {
                 boss.outOfRangeTimer = 0;
-                const chosen = forceTripleSlam ? 'triple_slam' : rollBossSkillByWeights([
-                    { id: 'rock_barrage', weight: 0.20 },
-                    { id: 'charge', weight: 0.30 },
-                    { id: 'triple_slam', weight: 0.20 },
-                    { id: 'bombard', weight: 0.30 }
-                ]);
+                const chosen = selectSmartBossSkill(boss, distToPlayer, [
+                    { id: 'rock_barrage', close: 0.48, mid: 0.18, far: 0.08, isCloseFollowUp: true },
+                    { id: 'charge', close: 0.28, mid: 0.34, far: 0.32, isGapCloser: true },
+                    { id: 'bombard', close: 0.16, mid: 0.36, far: 0.18, isCloseFollowUp: true },
+                    { id: 'triple_slam', close: 0.08, mid: 0.12, far: 0.42, isGapCloser: true }
+                ], forceTripleSlam ? 'triple_slam' : null);
                 boss.actionState = chosen;
                 if (chosen === 'bombard') {
                     boss.stateTimer = 0.38;
@@ -8307,7 +8893,7 @@
         }
         if (boss.actionState === 'bombard') {
             boss.stateTimer -= dt;
-            if (boss.stateTimer <= 0) { boss.actionState = 'chase'; boss.skillCd = 4.0; }
+            if (boss.stateTimer <= 0) { boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 3.1); }
         } else if (boss.actionState === 'slam_leap') {
             boss.stateTimer += dt;
             const slamDur = boss.currentSlamDuration || 0.55, t = Math.min(1, boss.stateTimer / slamDur);
@@ -8325,7 +8911,7 @@
                 if (!(player.sakuraVanishState && player.sakuraVanishState.active) && Math.hypot(player.x - boss.x, player.y - boss.y) <= 118 + player.radius) damagePlayer(round1(34 * scale));
                 boss.slamCountLeft--;
                 if (boss.slamCountLeft > 0) { boss.actionState = 'slam_recover'; boss.stateTimer = 0.15; }
-                else { boss.actionState = 'chase'; boss.skillCd = 4.0; }
+                else { boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 4.4); }
             }
         } else if (boss.actionState === 'slam_recover') {
             boss.stateTimer -= dt;
@@ -8360,7 +8946,7 @@
                     const col = resolveCircleRectCollision(boss.x, boss.y, boss.radius, obstacles[i]);
                     if (col) { boss.x += col.nx * col.overlap; boss.y += col.ny * col.overlap; }
                 }
-                boss.actionState = 'chase'; boss.skillCd = 4.0;
+                boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 3.6);
             }
         } else if (boss.actionState === 'rock_windup') {
             boss.stateTimer -= dt;
@@ -8370,7 +8956,7 @@
                     const ang = startAng + (spread * i) / (rockCount - 1);
                     enemyProjectiles.push({ kind: 'boss_rock', x: boss.x + Math.cos(ang) * 24, y: boss.y + Math.sin(ang) * 24, vx: Math.cos(ang) * 680, vy: Math.sin(ang) * 680, radius: 7, damage: round1(18 * scale), ignoreWalls: true, life: 1.4 });
                 }
-                sfx.explosion(); boss.actionState = 'chase'; boss.skillCd = 4.0;
+                sfx.explosion(); boss.actionState = 'chase'; boss.skillCd = computeSmartBossCooldown(boss, 2.9);
             }
         }
     }
@@ -8386,12 +8972,12 @@
             const forceWarpRail = (boss.outOfRangeTimer || 0) >= 6.0;
             if (forceWarpRail || (boss.skillCd <= 0 && distToPlayer <= 420)) {
                 boss.outOfRangeTimer = 0;
-                const chosen = forceWarpRail ? 'warp_rail_starfall' : rollBossSkillByWeights([
-                    { id: 'double_helix_barrage', weight: 0.27 },
-                    { id: 'wave_wall_gap', weight: 0.27 },
-                    { id: 'warp_rail_starfall', weight: 0.23 },
-                    { id: 'funnel_crossfire_grid', weight: 0.23 }
-                ]);
+                const chosen = selectSmartBossSkill(boss, distToPlayer, [
+                    { id: 'double_helix_barrage', close: 0.46, mid: 0.20, far: 0.08, isCloseFollowUp: true },
+                    { id: 'wave_wall_gap', close: 0.30, mid: 0.38, far: 0.20, isCloseFollowUp: true },
+                    { id: 'warp_rail_starfall', close: 0.14, mid: 0.14, far: 0.42, isGapCloser: true },
+                    { id: 'funnel_crossfire_grid', close: 0.10, mid: 0.28, far: 0.30 }
+                ], forceWarpRail ? 'warp_rail_starfall' : null);
                 if (chosen === 'double_helix_barrage') {
                     // 技能一前摇（0.80s）：展开6枚环绕浮游翼 + 地面 135px 近战高危双旋警戒圈
                     boss.actionState = 'double_helix_windup';
@@ -8535,7 +9121,7 @@
                     boss.stateTimer = 0.34;
                 } else {
                     boss.actionState = 'chase';
-                    boss.skillCd = 3.8;
+                    boss.skillCd = computeSmartBossCooldown(boss, 4.3);
                 }
             }
         } else if (boss.actionState === 'wave_wall_windup') {
@@ -8587,7 +9173,7 @@
                     });
                 } else {
                     boss.actionState = 'chase';
-                    boss.skillCd = 3.8;
+                    boss.skillCd = computeSmartBossCooldown(boss, 3.3);
                 }
             }
         } else if (boss.actionState === 'warp_rail_windup') {
@@ -8627,6 +9213,15 @@
                     const col = resolveCircleRectCollision(boss.x, boss.y, boss.radius, obstacles[i]);
                     if (col) { boss.x += col.nx * col.overlap; boss.y += col.ny * col.overlap; }
                 }
+                if (!isPlayerInvulnerable(player) && Math.hypot(player.x - boss.x, player.y - boss.y) <= 140 + player.radius) {
+                    const prevHp = player.hp, prevShield = player.shield || 0;
+                    damagePlayer(round1(40 * scale));
+                    if (player.hp < prevHp || (player.shield || 0) < prevShield) {
+                        spawnFloatingText(player.x, player.y - 42, '星落震击!', '#f472b6', 13, -40);
+                    }
+                }
+                attackRings.push({ x: boss.x, y: boss.y, r: 24, maxR: 140, color: '#f472b6', life: 0.30, maxLife: 0.30 });
+                screenShake = Math.max(screenShake, 9);
                 const ringCount = 14;
                 for (let k = 0; k < ringCount; k++) {
                     const ang = (Math.PI * 2 * k) / ringCount;
@@ -8638,15 +9233,16 @@
                     });
                 }
                 spawnPixelParticles(boss.x, boss.y, '#38bdf8', 20, 210, 4, 0.36);
+                sfx.explosion();
                 sfx.frostNova();
                 boss.actionState = 'chase';
-                boss.skillCd = 3.8;
+                boss.skillCd = computeSmartBossCooldown(boss, 3.6);
             }
         } else if (boss.actionState === 'funnel_crossfire_cast') {
             boss.stateTimer -= dt;
             if (boss.stateTimer <= 0) {
                 boss.actionState = 'chase';
-                boss.skillCd = 4.0;
+                boss.skillCd = computeSmartBossCooldown(boss, 4.0);
             }
         }
     }
@@ -8826,6 +9422,7 @@
         }
         z.hp = round1(z.hp - dmg);
         z.hitFlashTimer = 0.11;
+        sfx.hitEnemy(isCrit);
         if (z.isDummy) {
             z.wobbleTimer = 0.26;
             z.wobbleDir = (z.wobbleDir || 1) * -1;
@@ -11673,9 +12270,10 @@
                             const isCrit = Boolean(yb.forceCrit) || (stats.critRate > 0 && Math.random() < stats.critRate);
                             const finalDmg = isCrit ? round1(yb.outRawDmg * stats.critDamageMult) : round1(yb.outRawDmg);
                             const dealt = damageZombie(z, finalDmg, 0, 0, '#c084fc', isCrit);
+                            const nonCritDealt = isCrit ? round1(dealt / Math.max(1, stats.critDamageMult || 1.5)) : dealt;
                             applyNormalBulletOnHitEffects(z, isFirstHit, 1, yb.salvoState);
                             spawnPixelParticles(z.x, z.y, '#c084fc', 5, 110, 3, 0.18);
-                            if (dealt > tickMaxOutDealt) tickMaxOutDealt = dealt;
+                            if (nonCritDealt > tickMaxOutDealt) tickMaxOutDealt = nonCritDealt;
                         }
                     }
                     if (stats.lifestealRate > 0 && tickMaxOutDealt > (yb.maxOutHitDealt || 0)) {
@@ -11726,13 +12324,14 @@
                             const isCrit = Boolean(yb.forceCrit) || (stats.critRate > 0 && Math.random() < stats.critRate);
                             const finalDmg = isCrit ? round1(yb.retRawDmg * stats.critDamageMult) : round1(yb.retRawDmg);
                             const dealt = damageZombie(z, finalDmg, 0, 0, '#e879f9', isCrit);
+                            const nonCritDealt = isCrit ? round1(dealt / Math.max(1, stats.critDamageMult || 1.5)) : dealt;
                             applyNormalBulletOnHitEffects(z, isFirstRetHit, 1, yb.salvoState);
                             spawnPixelParticles(z.x, z.y, '#e879f9', 4, 95, 3, 0.16);
                             // 被动：回程命中减少小技能 5% 当前冷却（不拉回、不击退）
                             if (player.grenadeCdTimer > 0) {
                                 player.grenadeCdTimer = Math.max(0, round1(player.grenadeCdTimer * 0.95));
                             }
-                            if (dealt > tickMaxRetDealt) tickMaxRetDealt = dealt;
+                            if (nonCritDealt > tickMaxRetDealt) tickMaxRetDealt = nonCritDealt;
                         }
                     }
                     if (stats.lifestealRate > 0 && tickMaxRetDealt > (yb.maxRetHitDealt || 0)) {
@@ -11763,6 +12362,9 @@
                         }
                     }
                 } else {
+                    if (yb.isPrimary && (yb.outHitIds.size > 0 || yb.retHitIds.size > 0)) {
+                        sfx.chainClink();
+                    }
                     player.yomiBlades.splice(bIdx, 1);
                 }
             }
@@ -16039,7 +16641,7 @@
         const statItems = [
             { label: '最大生命', icon: PAUSE_STAT_ICON_URLS.hp, val: `${fmt1(player.hp)}/${fmt1(player.maxHp)}`, color: 'text-rose-300', desc: `当前生命：${fmt1(player.hp)} / ${fmt1(player.maxHp)}\n当前护盾：+${fmt1(player.shield || 0)}` },
             { label: '生命恢复', icon: PAUSE_STAT_ICON_URLS.regen, val: regenValStr, color: stats.regenFlatPer5s < 0 ? 'text-rose-400' : 'text-emerald-300', desc: `每5秒生命恢复：${regenValStr}。` },
-            { label: '吸血率', icon: PAUSE_STAT_ICON_URLS.lifesteal, val: `${fmt1(stats.lifestealRate * 100)}%`, color: 'text-rose-400', desc: `普攻命中时按伤害比例恢复生命：${fmt1(stats.lifestealRate * 100)}%（上限15%，单次恢复上限为 1+2%最大生命，内置冷却0.2秒）。` },
+            { label: '吸血率', icon: PAUSE_STAT_ICON_URLS.lifesteal, val: `${fmt1(stats.lifestealRate * 100)}%`, color: 'text-rose-400', desc: `普攻命中时按非暴击伤害比例恢复生命：${fmt1(stats.lifestealRate * 100)}%（不享受暴击翻倍，上限15%，单次恢复上限为 1+2%最大生命，内置冷却0.2秒）。` },
             { label: '攻击力', icon: PAUSE_STAT_ICON_URLS.atk, val: `${fmt1(stats.damage)}`, color: 'text-amber-300', desc: `当前攻击力：${fmt1(stats.damage)}` },
             { label: '攻击速度', icon: PAUSE_STAT_ICON_URLS.aspd, val: aspdValStr, color: stats.aspdBonusPct < 0 ? 'text-rose-400' : 'text-emerald-300', desc: `攻速加成：${fmt1(stats.aspdBonusPct)}%\n每秒攻击次数：${fmt1(attacksPerSec)}次/秒` },
             { label: '防御与免伤', icon: PAUSE_STAT_ICON_URLS.armor, val: defValStr, color: stats.armorReduction < 0 ? 'text-rose-400' : 'text-sky-300', desc: `当前防御：${fmt1(stats.defense)}（物理免伤 ${defPct}%）\n特殊免伤：${specPct}%\n总免伤率：${fmt1(stats.armorReduction * 100)}%（上限50%）` },
@@ -16282,6 +16884,7 @@
         if (canvas && !canvas.isConnected) return;
         const dt = Math.min(0.05, Math.max(0.001, (now - lastFrameTime) / 1000));
         lastFrameTime = now;
+        sfx.updateBgm(gameState, zombies, waveState);
         if (gameState === 'PLAYING' && player) {
             if (postUpgradeFreezeTimer > 0) postUpgradeFreezeTimer = Math.max(0, postUpgradeFreezeTimer - dt);
             else updateGame(dt);
@@ -16303,6 +16906,10 @@
         renderOrderedSkillsHUD();
         updateHUD(true);
         drawRadarMinimap();
+
+        const unlockAudioOnce = () => { sfx.init(); };
+        window.addEventListener('pointerdown', unlockAudioOnce, { once: true, passive: true });
+        window.addEventListener('keydown', unlockAudioOnce, { once: true, passive: true });
 
         const startBtn = document.getElementById('btnStartGame');
         if (startBtn) {
