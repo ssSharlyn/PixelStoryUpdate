@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>像素物语 V0.5.4</title>
+    <title>像素物语 V0.5.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
@@ -301,7 +301,7 @@
             if (mode === 'big') {
                 if (smallBox) smallBox.style.display = 'none';
                 if (bigM) bigM.style.display = 'flex';
-                if (logEl) logEl.innerText = "【V0.5.4 版本更新】\n· 天穹炽天使（B5）：重构六翼浮游封锁阵、无缝脉冲壁垒与极速折跃光轨\n· 虚空死灵暴君（B4）：提升十字死光旋转速度，优化虚空裂隙连斩前摇与预判\n· 战斗手感：收紧受击保护无敌帧，优化移动端主页居中与按钮图标边界";
+                if (logEl) logEl.innerText = "【V0.5.5 版本更新】\n· 新角色「星澜」：御剑特工参战，周天剑环、万剑归鞘与万剑归宗剑阵\n· 新精英丧尸：新增骸骨筑墙者、腐沼粘液怪与三刃处刑者\n· 体验优化：首领击败直接进下一波；训练营新增丧尸召唤滑动栏";
                 if (pWrap) pWrap.style.display = 'none';
                 if (cBtn) {
                     cBtn.disabled = false;
@@ -343,11 +343,11 @@
                     pct = Math.min(100, pct + 25);
                     if (hBar) hBar.style.width = pct + '%';
                     if (pct < 100) {
-                        if (hTip) hTip.innerText = `正在同步 V0.5.4 更新内容 (${pct}%)...`;
+                        if (hTip) hTip.innerText = `正在同步 V0.5.5 更新内容 (${pct}%)...`;
                     } else {
                         clearInterval(previewTimerId);
                         previewTimerId = null;
-                        if (hTip) hTip.innerText = '更新完成 (V0.5.4)，即将进入战场！';
+                        if (hTip) hTip.innerText = '更新完成 (V0.5.5)，即将进入战场！';
                     }
                 }, 400);
             }
@@ -372,8 +372,8 @@
         const GITHUB_USER = "ssSharlyn";             // GitHub 用户名
         const GITHUB_REPO = "PixelStoryUpdate";      // 仓库名
         const GITHUB_BRANCH = "main";                // 默认分支名
-        const LOCAL_APK_VERSION = 1;                 // 当前 APK 底座大版本号（发新APK时才改）
-        const BASE_PATCH_VERSION = 1;                // 当前 APK 内置初始热更号
+        const LOCAL_APK_VERSION = 2;                 // 当前 APK 底座大版本号（发新APK时才改）
+        const BASE_PATCH_VERSION = 1;                // 当前 APK 内置初始热更号（随新APK重置为 1）
         // ======================================================
 
         const bar = document.getElementById('hotPatchBar');
@@ -513,19 +513,40 @@
             ];
         }
 
-        // 校验下载到的新补丁是否真正为新版本（纯自动比对代码内容，无需在 version.json 额外填写版本号字符）
+        // 提取 HTML 标题中的语义化版本号（如 "像素物语 V0.5.4" -> 5004），彻底杜绝海外 CDN 旧缓存导致版本倒退回 0.5.0
+        function extractHtmlSemVer(htmlOrTitle) {
+            if (!htmlOrTitle) return 0;
+            const m = String(htmlOrTitle).match(/V(\d+)\.(\d+)\.(\d+)/i);
+            if (!m) return 0;
+            return parseInt(m[1], 10) * 1000000 + parseInt(m[2], 10) * 1000 + parseInt(m[3], 10);
+        }
+
+        // 校验下载到的新补丁是否真正为新版本（自动比对代码内容与语义化版本号，严禁旧版本覆盖新版本）
         function isFreshValidPatchHtml(htmlText) {
             if (!htmlText || !htmlText.includes("<canvas") || !htmlText.includes("</html>")) return false;
-            // 1. 与本地已缓存的上一版热更代码比对：若版本号升级了但代码完全一模一样，说明 CDN 返回了旧缓存
+            const titleMatch = htmlText.match(/<title>([^<]*)<\/title>/i);
+            const newTitle = titleMatch ? titleMatch[1].trim() : "";
+            const newSemVer = extractHtmlSemVer(newTitle);
+
+            // 1. 与本地已缓存的热更代码比对：若新包版本号低于本地缓存版本，或代码完全一模一样，说明海外/边缘 CDN 返回了旧缓存
             const oldCachedCode = safeGetItem("LOCAL_HOT_PATCH_CODE");
-            if (oldCachedCode && htmlText.length === oldCachedCode.length && htmlText.trim() === oldCachedCode.trim()) {
-                return false;
+            if (oldCachedCode) {
+                const cachedTitleMatch = oldCachedCode.match(/<title>([^<]*)<\/title>/i);
+                const cachedSemVer = extractHtmlSemVer(cachedTitleMatch ? cachedTitleMatch[1] : "");
+                if (cachedSemVer > 0 && newSemVer > 0 && newSemVer < cachedSemVer) {
+                    return false;
+                }
+                if (htmlText.length === oldCachedCode.length && htmlText.trim() === oldCachedCode.trim()) {
+                    return false;
+                }
             }
-            // 2. 与当前正在运行的页面主脚本及标题比对：若标题和末尾主逻辑脚本与当前旧页面分毫不差，说明是旧包
+            // 2. 与当前正在运行的页面标题及主脚本比对：严禁低于当前运行版本的旧包覆盖，且拒绝完全相同的旧包
             try {
                 const curTitle = document.title || "";
-                const titleMatch = htmlText.match(/<title>([^<]*)<\/title>/i);
-                const newTitle = titleMatch ? titleMatch[1].trim() : "";
+                const curSemVer = extractHtmlSemVer(curTitle);
+                if (curSemVer > 0 && newSemVer > 0 && newSemVer < curSemVer) {
+                    return false;
+                }
                 const scripts = document.getElementsByTagName("script");
                 const lastScript = scripts.length > 1 ? (scripts[scripts.length - 1].textContent || "").trim() : "";
                 if (curTitle && newTitle === curTitle && lastScript.length > 50000 && htmlText.includes(lastScript)) {
@@ -621,12 +642,18 @@
             if (hBar) hBar.style.width = '28%';
             if (hTip) hTip.innerText = '正在检查最新版本...';
 
+            const savedApkVer = parseInt(safeGetItem("LOCAL_APK_VER") || "0", 10);
+            if (savedApkVer !== LOCAL_APK_VERSION) {
+                safeRemoveItem("LOCAL_HOT_PATCH_CODE");
+                safeSetItem("LOCAL_APK_VER", LOCAL_APK_VERSION.toString());
+                safeSetItem("LOCAL_HOT_PATCH_VER", BASE_PATCH_VERSION.toString());
+            }
             const curLocalVer = parseInt(safeGetItem("LOCAL_HOT_PATCH_VER") || "0", 10);
             const curMaxVer = Math.max(BASE_PATCH_VERSION, curLocalVer);
 
             const finishUpToDate = (msg) => {
                 if (hBar) hBar.style.width = '100%';
-                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.5.4)，无需更新！`;
+                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.5.5)，无需更新！`;
                 setTimeout(() => {
                     if (ov) ov.style.display = 'none';
                     isManualChecking = false;
@@ -643,7 +670,8 @@
                     return;
                 }
 
-                if (!isDevPreview && config && (config.hotPatchVersion > curMaxVer || (config.hotPatchVersion > BASE_PATCH_VERSION && config.hotPatchVersion !== curLocalVer))) {
+                // 仅当远端热更号严格大于本地最高版本时才拉取更新，防止海外 VPN 命中旧 CDN 节点导致版本倒退
+                if (!isDevPreview && config && config.hotPatchVersion > curMaxVer) {
                     if (hBar) hBar.style.width = '68%';
                     if (hTip) hTip.innerText = config.smallUpdateLog || `发现新版本内容 (#${config.hotPatchVersion})，正在同步...`;
 
@@ -672,10 +700,10 @@
                 }
 
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.4)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.5)，无需更新！`), 260);
             } catch (e) {
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.4)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.5)，无需更新！`), 260);
             }
         };
 
@@ -696,10 +724,22 @@
             return;
         }
 
-        // 若安装了新版 APK（BASE_PATCH_VERSION >= 缓存版本），自动清除旧的热更缓存
+        // 若覆盖安装了新版 APK（LOCAL_APK_VERSION 变化、BASE_PATCH_VERSION > 缓存版本、或内置语义版本号高于旧缓存代码），自动清空旧 APK 残留的热更缓存并将本地热更号重置为 1
+        const savedApkVer = parseInt(safeGetItem("LOCAL_APK_VER") || "0", 10);
         const cachedVer = parseInt(safeGetItem("LOCAL_HOT_PATCH_VER") || "0", 10);
-        if (BASE_PATCH_VERSION >= cachedVer) {
+        const cachedCodeCheck = safeGetItem("LOCAL_HOT_PATCH_CODE");
+        let isCachedCodeOlderThanApk = false;
+        if (cachedCodeCheck) {
+            const cTitleMatch = cachedCodeCheck.match(/<title>([^<]*)<\/title>/i);
+            const cachedSem = extractHtmlSemVer(cTitleMatch ? cTitleMatch[1] : "");
+            const builtInSem = extractHtmlSemVer(document.title || "");
+            if (builtInSem > 0 && cachedSem > 0 && cachedSem <= builtInSem) {
+                isCachedCodeOlderThanApk = true;
+            }
+        }
+        if (savedApkVer !== LOCAL_APK_VERSION || BASE_PATCH_VERSION > cachedVer || isCachedCodeOlderThanApk) {
             safeRemoveItem("LOCAL_HOT_PATCH_CODE");
+            safeSetItem("LOCAL_APK_VER", LOCAL_APK_VERSION.toString());
             safeSetItem("LOCAL_HOT_PATCH_VER", BASE_PATCH_VERSION.toString());
         }
 
@@ -717,14 +757,8 @@
                 return;
             }
 
-            // 若远端 version.json 的热更版本号已还原为初始版本(<= BASE_PATCH_VERSION)，自动清理本地之前测试留下的旧热更缓存
-            if (config.hotPatchVersion <= BASE_PATCH_VERSION) {
-                safeRemoveItem("LOCAL_HOT_PATCH_CODE");
-                safeSetItem("LOCAL_HOT_PATCH_VER", BASE_PATCH_VERSION.toString());
-            }
-
-            // ====== 分支 B：检查是否有新版 game.html 小补丁 ======
-            if (config.hotPatchVersion > curHighestVer || (config.hotPatchVersion > BASE_PATCH_VERSION && config.hotPatchVersion !== localVer)) {
+            // ====== 分支 B：仅当远端热更号严格大于本地最高版本（config.hotPatchVersion > curHighestVer）时才下载热更补丁 ======
+            if (config.hotPatchVersion > curHighestVer) {
                 if (bar) bar.style.width = "65%";
                 if (tip) tip.innerText = config.smallUpdateLog || `正在同步 V${config.hotPatchVersion} 热更补丁...`;
 
@@ -737,10 +771,11 @@
                     (txt) => isFreshValidPatchHtml(txt, config)
                 );
 
-                // 安全完整性与防旧包校验通过后才写入缓存，且仅当代码成功写入 localStorage 后才更新版本号
+                // 安全完整性与防降级校验通过后才写入缓存，且仅当代码成功写入 localStorage 后才更新版本号
                 if (newGameCode && isFreshValidPatchHtml(newGameCode, config)) {
                     const wroteOk = safeSetItem("LOCAL_HOT_PATCH_CODE", newGameCode);
                     if (wroteOk) {
+                        safeSetItem("LOCAL_APK_VER", LOCAL_APK_VERSION.toString());
                         safeSetItem("LOCAL_HOT_PATCH_VER", config.hotPatchVersion.toString());
                     }
                     if (bar) bar.style.width = "100%";
@@ -762,7 +797,7 @@
             const savedVer = parseInt(safeGetItem("LOCAL_HOT_PATCH_VER") || "0", 10);
             const savedCode = safeGetItem("LOCAL_HOT_PATCH_CODE");
             setTimeout(() => {
-                if (savedCode && savedVer > BASE_PATCH_VERSION && savedCode.includes("<canvas")) {
+                if (savedCode && savedVer > BASE_PATCH_VERSION && savedCode.includes("<canvas") && isFreshValidPatchHtml(savedCode)) {
                     runEngine(savedCode);
                 } else {
                     if (overlay) overlay.style.display = "none";
@@ -1107,7 +1142,7 @@
             </div>
 
             <!-- 折叠面板 1：训练指令面板（对标王者荣耀训练营紧凑网格，展开不挡下半屏操作） -->
-            <div id="gmDrawerPanel" class="hidden mt-1.5 w-full pointer-events-auto pixel-box bg-[#0b101d] border-2 border-amber-400/90 p-2.5 flex flex-col gap-2 max-h-[42vh] overflow-y-auto shadow-[0_10px_30px_rgba(0,0,0,0.88)]" style="background-color: #0b101d; touch-action: pan-y; -webkit-overflow-scrolling: touch;">
+            <div id="gmDrawerPanel" class="hidden mt-1.5 w-full pointer-events-auto pixel-box bg-[#0b101d] border-2 border-amber-400/90 p-2.5 flex flex-col gap-2 max-h-[56vh] overflow-y-auto shadow-[0_10px_30px_rgba(0,0,0,0.88)]" style="background-color: #0b101d; touch-action: pan-y; -webkit-overflow-scrolling: touch;">
                 <!-- 第一区：状态开关与功能直达 -->
                 <div class="grid grid-cols-3 gap-1.5">
                     <button id="btnGmZeroCd" onclick="window.toggleTrainingCheat('zeroCd')" class="py-1.5 px-2 text-xs font-bold border-2 border-slate-700 bg-[#131b2e] text-slate-300 flex items-center justify-center gap-1 cursor-pointer transition">
@@ -1148,7 +1183,35 @@
                     </button>
                 </div>
 
-                <!-- 第三区：真 Boss 召唤与消除 -->
+                <!-- 第三区：丧尸召唤与消除（独立滑动栏，防止移动端丧尸增多显示不全） -->
+                <div class="flex flex-col gap-1.5 pt-1 border-t border-slate-800/90">
+                    <div class="flex items-center justify-between text-[10px] text-slate-400 px-0.5">
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-bold text-emerald-300">丧尸召唤</span>
+                            <span class="text-[9px] text-slate-500">↕可上下滑动</span>
+                        </div>
+                        <button onclick="window.trainingClearAllZombies()" class="px-2 py-0.5 text-[10px] font-bold border border-rose-500 bg-rose-950/80 hover:bg-rose-900 text-rose-200 flex items-center gap-1 cursor-pointer">
+                            <canvas class="ui-px-icon w-2.5 h-2.5 shrink-0" data-icon="close_x" width="16" height="16"></canvas>
+                            <span>消除全部丧尸</span>
+                        </button>
+                    </div>
+                    <div id="gmZombieScrollBox" class="max-h-[64px] sm:max-h-[72px] overflow-y-auto bg-[#080c17] border border-slate-800 p-1 grid grid-cols-3 gap-1.5" style="touch-action: pan-y; -webkit-overflow-scrolling: touch;">
+                        <button onclick="window.trainingSpawnZombie('walker')" class="py-1 px-1 text-[10px] font-bold border border-slate-600 bg-[#161c2e] hover:border-emerald-300 text-slate-200 truncate cursor-pointer">街区感染者</button>
+                        <button onclick="window.trainingSpawnZombie('dog')" class="py-1 px-1 text-[10px] font-bold border border-slate-600 bg-[#161c2e] hover:border-rose-300 text-slate-200 truncate cursor-pointer">变异丧尸犬</button>
+                        <button onclick="window.trainingSpawnZombie('splitter')" class="py-1 px-1 text-[10px] font-bold border border-slate-600 bg-[#161c2e] hover:border-cyan-300 text-slate-200 truncate cursor-pointer">双生裂殖体</button>
+                        <button onclick="window.trainingSpawnZombie('exploder')" class="py-1 px-1 text-[10px] font-bold border border-amber-500/60 bg-[#161c2e] hover:border-amber-300 text-amber-200 truncate cursor-pointer">★自爆脓包怪</button>
+                        <button onclick="window.trainingSpawnZombie('spitter')" class="py-1 px-1 text-[10px] font-bold border border-lime-500/60 bg-[#161c2e] hover:border-lime-300 text-lime-200 truncate cursor-pointer">★酸液喷吐者</button>
+                        <button onclick="window.trainingSpawnZombie('bone_thrower')" class="py-1 px-1 text-[10px] font-bold border border-sky-400/60 bg-[#161c2e] hover:border-sky-300 text-sky-200 truncate cursor-pointer">★骨刺投掷者</button>
+                        <button onclick="window.trainingSpawnZombie('spore_lobber')" class="py-1 px-1 text-[10px] font-bold border border-purple-400/60 bg-[#161c2e] hover:border-purple-300 text-purple-200 truncate cursor-pointer">★剧毒孢子母体</button>
+                        <button onclick="window.trainingSpawnZombie('airdrop_brute')" class="py-1 px-1 text-[10px] font-bold border border-orange-400/60 bg-[#161c2e] hover:border-orange-300 text-orange-200 truncate cursor-pointer">★空投暴徒</button>
+                        <button onclick="window.trainingSpawnZombie('pulse_cyborg')" class="py-1 px-1 text-[10px] font-bold border border-fuchsia-400/60 bg-[#161c2e] hover:border-fuchsia-300 text-fuchsia-200 truncate cursor-pointer">★脉冲殖装者</button>
+                        <button onclick="window.trainingSpawnZombie('mire_dredger')" class="py-1 px-1 text-[10px] font-bold border border-amber-500/60 bg-[#161c2e] hover:border-amber-300 text-amber-200 truncate cursor-pointer">★腐沼粘液怪</button>
+                        <button onclick="window.trainingSpawnZombie('bone_weaver')" class="py-1 px-1 text-[10px] font-bold border border-teal-400/60 bg-[#161c2e] hover:border-teal-300 text-teal-200 truncate cursor-pointer">★骸骨筑墙者</button>
+                        <button onclick="window.trainingSpawnZombie('tri_blade')" class="py-1 px-1 text-[10px] font-bold border border-rose-400/60 bg-[#161c2e] hover:border-rose-300 text-rose-200 truncate cursor-pointer">★三刃处刑者</button>
+                    </div>
+                </div>
+
+                <!-- 第四区：真 Boss 召唤与消除 -->
                 <div class="grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-800/90">
                     <button onclick="window.trainingSpawnBoss(1)" class="py-1.5 px-1.5 text-[11px] font-bold border border-amber-500/70 bg-[#161c2e] hover:border-amber-300 text-amber-200 truncate cursor-pointer">召唤 末日暴君</button>
                     <button onclick="window.trainingSpawnBoss(2)" class="py-1.5 px-1.5 text-[11px] font-bold border border-sky-400/70 bg-[#161c2e] hover:border-sky-300 text-sky-200 truncate cursor-pointer">召唤 冰霜暴君</button>
@@ -1338,7 +1401,7 @@
             <div id="mainMenuTitleBox" class="pixel-box px-7 sm:px-11 py-3.5 sm:py-4 border-4 border-sky-400 bg-[#121726] flex flex-col items-center shadow-[0_8px_0_#05060a] shrink-0">
                 <div class="flex items-center gap-2 mb-1.5">
                     <span class="bg-rose-600 text-white font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5">PIXEL STORY</span>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.5.4</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.5.5</span>
                 </div>
                 <canvas id="mainMenuLogoCanvas" width="312" height="76" class="w-[218px] h-[53px] sm:w-[288px] sm:h-[70px] block pointer-events-none" aria-label="像素物语"></canvas>
                 <p class="text-[11px] sm:text-xs text-sky-300 mt-1.5 tracking-wider font-bold">二次元点阵像素 · 街区生存激战</p>
@@ -1451,7 +1514,7 @@
                         <div>
                             <div class="font-bold text-sky-300 text-xs sm:text-sm flex items-center gap-2">
                                 <span>版本更新</span>
-                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.5.4</span>
+                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.5.5</span>
                             </div>
                             <div class="text-[11px] text-slate-400 mt-0.5">检查并获取游戏最新版本内容</div>
                         </div>
@@ -1662,6 +1725,13 @@
                         <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-none">夜瞳</span>
                         <div id="avatarCheckYomi" class="hidden absolute top-0.5 right-0.5 bg-purple-400 text-slate-950 font-pixel-en text-[7px] px-1 py-0.5 font-bold leading-none">ON</div>
                     </button>
+                    <button id="btnSelectXinglan" onclick="window.selectHeroType && window.selectHeroType('xinglan')" class="w-full shrink-0 group relative p-1.5 bg-[#101420] border-2 border-slate-700 opacity-75 hover:opacity-100 flex flex-col items-center gap-1 cursor-pointer transition">
+                        <div class="w-11 h-11 sm:w-14 sm:h-14 bg-[#090d16] border border-slate-700 flex items-center justify-center overflow-hidden">
+                            <canvas id="avatarOptionXinglan" width="48" height="48" class="w-10 h-10 sm:w-12 sm:h-12 pointer-events-none"></canvas>
+                        </div>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 leading-none">星澜</span>
+                        <div id="avatarCheckXinglan" class="hidden absolute top-0.5 right-0.5 bg-indigo-400 text-slate-950 font-pixel-en text-[7px] px-1 py-0.5 font-bold leading-none">ON</div>
+                    </button>
                 </div>
                 <div id="startHeroBox" class="flex-1 bg-[#101420] border-2 border-slate-800 p-3 sm:p-5 flex flex-row items-center justify-around gap-4 sm:gap-8 min-w-0 overflow-hidden">
                     <div class="flex flex-col items-center justify-center shrink-0">
@@ -1691,7 +1761,7 @@
                 </div>
             </div>
             <div class="pt-1.5 border-t border-slate-800 shrink-0 max-w-5xl w-full mx-auto">
-                <button id="btnStartGame" onclick="window.startPixelGame && window.startPixelGame()" class="pixel-btn w-full py-2 sm:py-2.5 text-white font-bold text-sm sm:text-base tracking-widest flex items-center justify-center gap-2 cursor-pointer z-50">
+                <button id="btnStartGame" class="pixel-btn w-full py-2 sm:py-2.5 text-white font-bold text-sm sm:text-base tracking-widest flex items-center justify-center gap-2 cursor-pointer z-50">
                     <canvas class="ui-px-icon w-4 h-4" data-icon="play_sm" width="16" height="16"></canvas><span>确认出击 · 进入封锁街区</span>
                 </button>
             </div>
@@ -1744,7 +1814,7 @@
                 <div class="flex items-center gap-2">
                     <canvas class="ui-px-icon w-5 h-5" data-icon="notice" width="20" height="20"></canvas>
                     <h3 class="text-base sm:text-lg font-bold text-amber-300 tracking-wider">游戏公告</h3>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.5.4</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.5.5</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="window.manualCheckGameUpdate && window.manualCheckGameUpdate()" class="pixel-btn px-2.5 py-1 text-xs font-bold text-white flex items-center gap-1">
@@ -1757,11 +1827,19 @@
             </div>
             <div id="announcementBodyBox" class="flex-1 min-h-0 bg-[#0b0e17] border border-slate-800 p-3.5 sm:p-4 overflow-y-auto text-xs sm:text-sm text-slate-300 leading-relaxed space-y-3">
                 <div class="bg-[#111624] border border-amber-400/50 p-3 space-y-1.5">
-                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.5.4 更新内容】</div>
+                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.5.5 更新内容】</div>
                     <ul class="text-xs text-slate-200 space-y-1 list-disc list-inside">
-                        <li><b>天穹炽天使 (Boss 5)</b>：「浮游封锁网」升级为 6 枚浮游翼动态伴飞与三波错位旋转封锁阵；「天穹脉冲壁垒」改为三连无缝弹幕墙；大幅提升「折跃光轨奇袭」突进速度与预判。</li>
-                        <li><b>虚空死灵暴君 (Boss 4)</b>：提升「旋转十字虚空激光」50% 旋转角速度；优化「虚空裂隙连斩」预警前摇、连击间隔与移动预判。</li>
-                        <li><b>战斗与界面</b>：收紧连续受击保护时间（生命受击 0.30s / 护盾受击 0.28s）；修正移动端主页水平居中与四角按钮图标边距。</li>
+                        <li><b>新角色「星澜」</b>：御剑特工参战，携带「周天剑环·留影」、「万剑归鞘」回收爆发与「万剑归宗」追踪剑阵。</li>
+                        <li><b>新精英丧尸</b>：新增「骸骨筑墙者」（骨墙封路）、「腐沼粘液怪」（减速泥沼）与「三刃处刑者」（激光预警三刃追猎）。</li>
+                        <li><b>战斗与训练营</b>：首领击败后直接进入下一波（保留场上剩余丧尸）；训练营新增丧尸召唤滑动栏，优化同英雄切换保留局内状态。</li>
+                    </ul>
+                </div>
+
+                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
+                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.4 往期更新】</div>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                        <li><b>首领强化</b>：重构天穹炽天使（B5）六翼封锁阵与脉冲壁垒；提升虚空死灵暴君（B4）十字激光转速与连斩预判。</li>
+                        <li><b>战斗与界面</b>：收紧连续受击无敌保护时间；修正移动端主页居中与按钮图标边距。</li>
                     </ul>
                 </div>
 
@@ -2611,7 +2689,10 @@
         const W = 32, H = 36, canvas = document.createElement('canvas');
         canvas.width = Math.round(W * scale); canvas.height = Math.round(H * scale);
         const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = false;
-        const px = (x, y, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(Math.round(x * scale), Math.round(y * scale), Math.ceil(w * scale), Math.ceil(h * scale)); };
+        const px = (x, y, w, h, color) => {
+            ctx.fillStyle = color;
+            ctx.fillRect(Math.round(x * scale), Math.round(y * scale), Math.ceil(w * scale), Math.ceil(h * scale));
+        };
         const bob = frameIndex === 1 ? 1 : 0, tailLift = frameIndex === 1 ? -1 : 0;
 
         // 1. 看板娘标志性不对称灵动长双马尾（三阶光影：暗酒红底影 #881337 -> 玫瑰主色 #e11d48/#f43f5e -> 樱粉高光 #fda4af）
@@ -2912,6 +2993,88 @@
         } else {
             px(8, 28, 4, 6, '#090612'); px(9, 28, 2, 1, '#f8fafc'); px(9, 29, 2, 1, '#6d28d9'); px(9, 30, 2, 1, '#f8fafc'); px(8, 31, 4, 3, '#1e1b4b'); px(8, 33, 4, 1, '#c084fc');
             px(19, 29, 4, 6, '#090612'); px(20, 29, 2, 1, '#f8fafc'); px(20, 30, 2, 1, '#6d28d9'); px(20, 31, 2, 1, '#f8fafc'); px(19, 32, 4, 3, '#1e1b4b'); px(19, 34, 4, 1, '#c084fc');
+        }
+        return canvas;
+    }
+
+    function createCuteAnimeXinglanSprite(frameIndex = 0, scale = 1.45) {
+        const W = 32, H = 36, canvas = document.createElement('canvas');
+        canvas.width = Math.round(W * scale); canvas.height = Math.round(H * scale);
+        const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = false;
+        const px = (x, y, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(Math.round(x * scale), Math.round(y * scale), Math.ceil(w * scale), Math.ceil(h * scale)); };
+        const bob = frameIndex === 1 ? 1 : 0, hairFlow = frameIndex === 1 ? -1 : 0;
+
+        // 1. 去同质化发型：倾泻及腰的月华铂银披肩散落长发（不扎马尾、不盘双钻！背部与肩侧呈飘逸银河扇面自然披散）
+        px(3, 6 + bob, 26, 20, '#090612');
+        px(4, 7 + bob + hairFlow, 24, 18, '#475569');
+        px(5, 7 + bob + hairFlow, 22, 16, '#94a3b8');
+        px(6, 7 + bob + hairFlow, 20, 14, '#cbd5e1');
+        px(4, 14 + bob - hairFlow, 4, 10, '#e2e8f0');
+        px(24, 14 + bob + hairFlow, 4, 10, '#e2e8f0');
+        // 散落发梢的星辉分缕细节
+        px(3, 21 + bob - hairFlow, 3, 4, '#cbd5e1'); px(26, 21 + bob + hairFlow, 3, 4, '#cbd5e1');
+
+        // 2. 头型轮廓 + 右侧不对称【银翼冰晶发冠】头饰（参照原画右侧银白羽翼镶嵌苍蓝星晶）
+        px(7, 3 + bob, 18, 14, '#090612'); px(6, 5 + bob, 20, 11, '#090612');
+        // 右上侧不对称银翼冰晶发冠（x=20..26, y=1..6）
+        px(20, 1 + bob, 6, 5, '#090612');
+        px(21, 2 + bob, 4, 3, '#cbd5e1'); px(22, 1 + bob, 3, 2, '#ffffff');
+        px(24, 2 + bob, 2, 2, '#f8fafc'); px(21, 3 + bob, 2, 2, '#38bdf8'); px(22, 3 + bob, 1, 1, '#e0f2fe');
+
+        // 3. 头顶三阶铂银月白光影与天使环高光
+        px(8, 4 + bob, 16, 6, '#94a3b8');
+        px(9, 4 + bob, 14, 5, '#e2e8f0');
+        px(10, 5 + bob, 12, 3, '#f8fafc');
+        px(11, 5 + bob, 10, 1, '#ffffff'); px(9, 6 + bob, 3, 1, '#ffffff'); px(20, 6 + bob, 2, 1, '#ffffff');
+
+        // 4. 清冷白皙瓜子脸 + 轻盈交叉碎刘海 + 双耳苍蓝星晶耳坠
+        px(9, 8 + bob, 14, 7, '#fff5f5'); px(8, 10 + bob, 16, 5, '#fff5f5');
+        px(10, 15 + bob, 12, 2, '#e2e8f0'); px(11, 15 + bob, 10, 1, '#fff5f5');
+        // 脸侧修长铂银垂发缕与双耳冰蓝菱晶耳坠
+        px(6, 7 + bob, 3, 10, '#94a3b8'); px(7, 7 + bob, 2, 9, '#f1f5f9'); px(8, 8 + bob, 1, 6, '#ffffff');
+        px(23, 7 + bob, 3, 10, '#94a3b8'); px(23, 7 + bob, 2, 9, '#f1f5f9'); px(23, 8 + bob, 1, 6, '#ffffff');
+        px(7, 13 + bob, 1, 2, '#38bdf8'); px(24, 13 + bob, 1, 2, '#38bdf8');
+        // 清冷中分微斜碎刘海
+        px(9, 7 + bob, 5, 2, '#e2e8f0'); px(14, 7 + bob, 4, 3, '#f8fafc'); px(18, 7 + bob, 5, 2, '#e2e8f0');
+        px(12, 8 + bob, 2, 2, '#cbd5e1'); px(18, 8 + bob, 2, 2, '#cbd5e1');
+
+        // 5. 五官微雕：清冷剑眉 + 冰紫苍蓝星穹渐变瞳（#312e81 -> #6366f1 -> #bae6fd）+ 1px 纯白高光
+        px(10, 10 + bob, 4, 1, '#312e81'); px(18, 10 + bob, 4, 1, '#312e81');
+        px(10, 11 + bob, 4, 3, '#ffffff'); px(11, 11 + bob, 3, 3, '#312e81'); px(11, 12 + bob, 3, 2, '#6366f1'); px(12, 13 + bob, 2, 1, '#bae6fd'); px(11, 11 + bob, 1, 1, '#ffffff');
+        px(18, 11 + bob, 4, 3, '#ffffff'); px(18, 11 + bob, 3, 3, '#312e81'); px(18, 12 + bob, 3, 2, '#6366f1'); px(19, 13 + bob, 2, 1, '#bae6fd'); px(18, 11 + bob, 1, 1, '#ffffff');
+        px(9, 13 + bob, 2, 1, '#fbcfe8'); px(21, 13 + bob, 2, 1, '#fbcfe8'); px(15, 14 + bob, 2, 1, '#f472b6');
+
+        // 6. 上装（参照原画：玄黑高领镶蓝晶护颈 + 纯白黑V拼接女武神束腰礼装 + 银甲肩饰 + 玄黑装甲手套）
+        px(13, 16 + bob, 6, 2, '#090612'); px(15, 16 + bob, 2, 2, '#38bdf8'); px(15, 16 + bob, 1, 1, '#ffffff');
+        px(7, 17 + bob, 18, 8, '#090612');
+        // 纯白立体胸甲与玄黑V字束腰内衬 + 胸口苍蓝星芒棱晶
+        px(9, 18 + bob, 14, 6, '#f8fafc'); px(10, 18 + bob, 12, 3, '#ffffff');
+        px(13, 18 + bob, 6, 6, '#0f172a'); px(14, 19 + bob, 4, 4, '#1e293b');
+        px(15, 19 + bob, 2, 3, '#38bdf8'); px(15, 20 + bob, 2, 1, '#e0f2fe');
+        // 双肩银白雕花肩甲与白袖 + 玄黑修长装甲手套（#090612 + #38bdf8 蓝晶护腕）
+        px(7, 18 + bob, 3, 3, '#cbd5e1'); px(7, 18 + bob, 2, 2, '#ffffff'); px(7, 21 + bob, 2, 3, '#0f172a'); px(7, 21 + bob, 2, 1, '#38bdf8');
+        px(22, 18 + bob, 3, 3, '#cbd5e1'); px(23, 18 + bob, 2, 2, '#ffffff'); px(23, 21 + bob, 2, 3, '#0f172a'); px(23, 21 + bob, 2, 1, '#38bdf8');
+
+        // 7. 下装（参照原画：正中玄黑镶蓝晶菱形前摆战裙 + 两侧纯白银边燕尾长摆）
+        px(6, 23 + bob, 20, 6, '#090612');
+        // 两侧纯白银边礼装侧翼裙甲
+        px(7, 24 + bob, 5, 4, '#f8fafc'); px(8, 24 + bob, 3, 3, '#cbd5e1'); px(7, 27 + bob, 4, 1, '#38bdf8');
+        px(20, 24 + bob, 5, 4, '#f8fafc'); px(21, 24 + bob, 3, 3, '#cbd5e1'); px(21, 27 + bob, 4, 1, '#38bdf8');
+        // 正中玄黑菱形前垂战裙与冰蓝星芒镶边
+        px(12, 23 + bob, 8, 5, '#0f172a'); px(13, 24 + bob, 6, 4, '#1e293b');
+        px(12, 26 + bob, 2, 2, '#38bdf8'); px(18, 26 + bob, 2, 2, '#38bdf8'); px(15, 25 + bob, 2, 3, '#7dd3fc');
+
+        // 8. 双腿（参照原画：绝对领域 + 单侧玄黑腿环绑带 + 纯白银甲镶蓝晶过膝骑士长靴）
+        if (frameIndex === 0) {
+            px(10, 28, 4, 7, '#090612'); px(11, 28, 2, 2, '#fff5f5'); px(11, 29, 2, 1, '#0f172a');
+            px(11, 30, 2, 3, '#f8fafc'); px(11, 30, 2, 1, '#38bdf8'); px(10, 33, 4, 2, '#cbd5e1'); px(11, 33, 2, 1, '#ffffff');
+            px(18, 28, 4, 7, '#090612'); px(19, 28, 2, 2, '#fff5f5');
+            px(19, 30, 2, 3, '#f8fafc'); px(19, 30, 2, 1, '#38bdf8'); px(18, 33, 4, 2, '#cbd5e1'); px(19, 33, 2, 1, '#ffffff');
+        } else {
+            px(8, 27, 4, 7, '#090612'); px(9, 27, 2, 2, '#fff5f5'); px(9, 28, 2, 1, '#0f172a');
+            px(9, 29, 2, 3, '#f8fafc'); px(9, 29, 2, 1, '#38bdf8'); px(8, 32, 4, 2, '#cbd5e1'); px(9, 32, 2, 1, '#ffffff');
+            px(19, 28, 4, 7, '#090612'); px(20, 28, 2, 2, '#fff5f5');
+            px(20, 30, 2, 3, '#f8fafc'); px(20, 30, 2, 1, '#38bdf8'); px(19, 33, 4, 2, '#cbd5e1'); px(20, 33, 2, 1, '#ffffff');
         }
         return canvas;
     }
@@ -3254,6 +3417,90 @@
         return canvas;
     }
 
+    // 新增精英 1（地形改变）：骸骨筑墙者（身披惨白脊骨外甲、双臂搭载巨型殖装骨槌的控场感染者）
+    function createDetailedBoneWeaverSprite(frameIndex = 0, scale = 1.38) {
+        const W = 36, H = 38, canvas = document.createElement('canvas');
+        canvas.width = Math.round(W * scale); canvas.height = Math.round(H * scale);
+        const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = false;
+        const px = (x, y, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(Math.round(x * scale), Math.round(y * scale), Math.ceil(w * scale), Math.ceil(h * scale)); };
+        const step = frameIndex === 1 ? 1 : 0, crownBob = frameIndex === 1 ? -1 : 0;
+        // 背部耸立的4根惨白脊骨图腾柱（Ossuary Dorsal Spires）
+        px(6, 2 + crownBob, 4, 11, '#090d16'); px(7, 3 + crownBob, 2, 9, '#e2e8f0'); px(7, 3 + crownBob, 2, 2, '#2dd4bf');
+        px(11, 0 + crownBob, 4, 12, '#090d16'); px(12, 1 + crownBob, 2, 10, '#f8fafc'); px(12, 1 + crownBob, 2, 2, '#5eead4');
+        px(21, 0 + crownBob, 4, 12, '#090d16'); px(22, 1 + crownBob, 2, 10, '#f8fafc'); px(22, 1 + crownBob, 2, 2, '#5eead4');
+        px(26, 2 + crownBob, 4, 11, '#090d16'); px(27, 3 + crownBob, 2, 9, '#e2e8f0'); px(27, 3 + crownBob, 2, 2, '#2dd4bf');
+        // 骷髅骨冠头颅与幽冥青绿魂火眼窝
+        px(11, 6, 14, 11, '#090d16'); px(12, 7, 12, 9, '#e2e8f0'); px(13, 8, 10, 4, '#f8fafc');
+        px(13, 11, 4, 3, '#090d16'); px(14, 12, 2, 2, '#2dd4bf'); px(14, 12, 1, 1, '#ffffff');
+        px(19, 11, 4, 3, '#090d16'); px(20, 12, 2, 2, '#2dd4bf'); px(20, 12, 1, 1, '#ffffff');
+        px(15, 15, 6, 2, '#94a3b8');
+        // 胸腔外露肋骨装甲与冥魂核心
+        px(9, 16, 18, 14, '#090d16'); px(10, 17, 16, 12, '#1e293b');
+        px(15, 18, 6, 8, '#0d9488'); px(16, 19, 4, 6, '#5eead4'); px(17, 20, 2, 4, '#ffffff');
+        px(11, 18, 14, 2, '#e2e8f0'); px(11, 21, 14, 2, '#cbd5e1'); px(12, 24, 12, 2, '#94a3b8');
+        // 双臂重型地裂骨刺重锤（Slamming Bone Gauntlets）
+        px(2, 14 + step, 7, 15, '#090d16'); px(3, 15 + step, 5, 13, '#cbd5e1'); px(4, 16 + step, 3, 10, '#f8fafc'); px(4, 25 + step, 3, 2, '#2dd4bf');
+        px(27, 14 - step, 7, 15, '#090d16'); px(28, 15 - step, 5, 13, '#cbd5e1'); px(29, 16 - step, 3, 10, '#f8fafc'); px(29, 25 - step, 3, 2, '#2dd4bf');
+        // 骸骨战靴
+        px(10, 29, 6, 8 - step, '#090d16'); px(11, 29, 4, 7 - step, '#cbd5e1');
+        px(20, 29, 6, 7 + step, '#090d16'); px(21, 29, 4, 6 + step, '#cbd5e1');
+        return canvas;
+    }
+
+    // 新增精英 2（减速区域）：腐沼粘液怪（背负暗琥珀/深紫沸腾淤泥囊、沿途滴落减速粘液的沼泽畸变体）
+    function createDetailedMireDredgerSprite(frameIndex = 0, scale = 1.38) {
+        const W = 36, H = 38, canvas = document.createElement('canvas');
+        canvas.width = Math.round(W * scale); canvas.height = Math.round(H * scale);
+        const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = false;
+        const px = (x, y, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(Math.round(x * scale), Math.round(y * scale), Math.ceil(w * scale), Math.ceil(h * scale)); };
+        const swell = frameIndex === 1 ? 1 : 0;
+        // 底部拖曳的粘稠腐沼泥裙（Dripping Mire Base）
+        px(4, 29, 28, 7, '#090d16'); px(5, 30, 26, 5, '#451a03'); px(7, 31, 22, 3, '#78350f');
+        px(8 + swell, 32, 4, 2, '#d97706'); px(22 - swell, 32, 5, 2, '#a855f7');
+        // 佝偻膨胀的暗褐腐沼躯干与紫色毒囊鼓包
+        px(6, 12 - swell, 24, 19 + swell, '#090d16');
+        px(7, 13 - swell, 22, 17 + swell, '#451a03');
+        px(9, 14 - swell, 18, 15, '#78350f');
+        // 背部与肩部沸腾的琥珀泥泡与深紫粘液核
+        px(5, 8 + swell, 9, 9, '#090d16'); px(6, 9 + swell, 7, 7, '#92400e'); px(7, 10 + swell, 4, 4, '#f59e0b'); px(8, 11 + swell, 2, 2, '#fef08a');
+        px(22, 7 - swell, 10, 10, '#090d16'); px(23, 8 - swell, 8, 8, '#581c87'); px(24, 9 - swell, 5, 5, '#c084fc'); px(25, 10 - swell, 2, 2, '#fae8ff');
+        // 头部与大张的喷吐泥囊巨口
+        px(12, 6, 12, 11, '#090d16'); px(13, 7, 10, 9, '#78350f');
+        px(14, 9, 3, 2, '#fef08a'); px(19, 9, 3, 2, '#fef08a');
+        px(14, 12, 8, 5, '#090d16'); px(15, 13, 6, 3, '#d97706'); px(16, 14, 4, 2, '#fbbf24');
+        // 胸腹粘稠流淌的琥珀淤泥条纹
+        px(11, 19, 14, 8, '#92400e'); px(13, 20, 10, 6, '#d97706'); px(15, 21, 6, 3, '#fbbf24');
+        // 滴落泥浆的粗壮双爪
+        px(2, 17 - swell, 6, 12, '#090d16'); px(3, 18 - swell, 4, 10, '#78350f'); px(3, 25 - swell, 4, 3, '#f59e0b');
+        px(28, 17 + swell, 6, 12, '#090d16'); px(29, 18 + swell, 4, 10, '#78350f'); px(29, 25 + swell, 4, 3, '#c084fc');
+        return canvas;
+    }
+
+    // 新增精英 3（前向三刃移动与突刺）：三刃处刑者（黑银重甲配猩红光学目镜、正面架设三柄高周波利刃的突刺精英）
+    function createDetailedTriBladeSprite(frameIndex = 0, scale = 1.38) {
+        const W = 36, H = 38, canvas = document.createElement('canvas');
+        canvas.width = Math.round(W * scale); canvas.height = Math.round(H * scale);
+        const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = false;
+        const px = (x, y, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(Math.round(x * scale), Math.round(y * scale), Math.ceil(w * scale), Math.ceil(h * scale)); };
+        const step = frameIndex === 1 ? 1 : 0;
+        // 猩红披风残摆与黑曜石肩甲
+        px(5, 15, 26, 15, '#090d16'); px(6, 16, 24, 13, '#881337');
+        px(4, 10 + step, 8, 8, '#090d16'); px(5, 11 + step, 6, 6, '#334155'); px(6, 12 + step, 4, 2, '#f43f5e');
+        px(24, 10 - step, 8, 8, '#090d16'); px(25, 11 - step, 6, 6, '#334155'); px(26, 12 - step, 4, 2, '#f43f5e');
+        // 处刑者角盔与横向猩红激光目镜
+        px(11, 3, 14, 13, '#090d16'); px(12, 4, 12, 11, '#1e293b');
+        px(10, 2, 3, 5, '#090d16'); px(11, 3, 2, 3, '#cbd5e1');
+        px(23, 2, 3, 5, '#090d16'); px(23, 3, 2, 3, '#cbd5e1');
+        px(13, 9, 10, 3, '#090d16'); px(13, 10, 10, 2, '#f43f5e'); px(16, 10, 4, 1, '#fef08a');
+        // 银白高密度胸甲与三刃磁轨发生器核心
+        px(10, 15, 16, 14, '#090d16'); px(11, 16, 14, 12, '#334155'); px(12, 17, 12, 9, '#94a3b8');
+        px(15, 18, 6, 6, '#090d16'); px(16, 19, 4, 4, '#f43f5e'); px(17, 20, 2, 2, '#fef08a');
+        // 机动突刺机械护腿
+        px(10, 28, 6, 9 - step, '#090d16'); px(11, 29, 4, 7 - step, '#475569'); px(11, 33 - step, 4, 2, '#f43f5e');
+        px(20, 28, 6, 8 + step, '#090d16'); px(21, 29, 4, 6 + step, '#475569'); px(21, 32 + step, 4, 2, '#f43f5e');
+        return canvas;
+    }
+
     // 第五位首领专属子机：高精度像素风【天穹浮游翼（Seraphim Wing Funnel）】—— 严禁简陋几何拼接，采用多层装甲羽翼+棱镜晶核+等离子尾焰像素矩阵
     function createDetailedSeraphimFunnelSprite(frameIndex = 0, scale = 1.35, colorMode = 'cyan') {
         const W = 24, H = 30, canvas = document.createElement('canvas');
@@ -3383,6 +3630,12 @@
     const YOMI_ULT_ICON_MATRIX = [
         "..ppp..ppp..", ".pPPp..pPPp.", "pPwwp..pwwPp", "pPwp....pwPp", ".pp.oooo.pp.", "...oPPPPo...", "...oPwwPo...", "...oPPPPo...", ".pp.oooo.pp.", "pPwp....pwPp", "pPwwp..pwwPp", ".pPPp..pPPp."
     ];
+    const XINGLAN_SKILL_ICON_MATRIX = [
+        ".....bb.....", "....bwwb....", "...bBwwBb...", "...bBwwBb...", ".bb.bBBb.bb.", "bwwb.bb.bwwb", ".bBBboobBBb.", "..bbbyyybbb.", "....oyyyo...", "...oYYYYYo..", "....oyyyo...", ".....ooo...."
+    ];
+    const XINGLAN_ULT_ICON_MATRIX = [
+        "..bb....bb..", ".bwwb..bwwb.", "bBwwBbbBwwBb", ".bBBbwwbBBb.", "..bbBwwBbb..", ".bwwbBBbwwb.", ".bBBbwwbBBb.", "..bbBwwBbb..", ".bBBb..bBBb.", "bBwwB..BwwBb", ".bwwb..bwwb.", "..bb....bb.."
+    ];
     const POTION_ICON_MATRIX = ["....oooo....", "...oyyyyo...", "....oooo....", "...owwwwo...", "..oGGGGGG...", ".oGggggggGo.", "oGgwwgggggGo", "oGgwwgggggGo", "oGggggggggGo", ".oGGGGGGGGo.", "..oooooooo..", "............"];
     const TOP_ICON_WAVE_MATRIX = [".......", "..bbb..", ".bwwwb.", "bb...bb", ".bbb...", "..bwwwb", "...bbb."];
     const TOP_ICON_TIMER_MATRIX = [".yyyyy.", "ywwwwwy", ".ybbby.", "..yby..", ".ybbby.", "ywwwwwy", ".yyyyy."];
@@ -3480,6 +3733,8 @@
         sakuraBig: [createCuteAnimeSakuraSprite(0, 2.0), createCuteAnimeSakuraSprite(1, 2.0)],
         yomi: [createCuteAnimeYomiSprite(0, 1.45), createCuteAnimeYomiSprite(1, 1.45)],
         yomiBig: [createCuteAnimeYomiSprite(0, 2.0), createCuteAnimeYomiSprite(1, 2.0)],
+        xinglan: [createCuteAnimeXinglanSprite(0, 1.45), createCuteAnimeXinglanSprite(1, 1.45)],
+        xinglanBig: [createCuteAnimeXinglanSprite(0, 2.0), createCuteAnimeXinglanSprite(1, 2.0)],
         walker: [createDetailedWalkerSprite(0, 1.35), createDetailedWalkerSprite(1, 1.35)],
         dog: [createDetailedDogSprite(0, 1.35), createDetailedDogSprite(1, 1.35)],
         splitter: [createDetailedSplitterSprite(0, 1.35), createDetailedSplitterSprite(1, 1.35)],
@@ -3490,6 +3745,9 @@
         spore_lobber: [createDetailedSporeLobberSprite(0, 1.35), createDetailedSporeLobberSprite(1, 1.35)],
         airdrop_brute: [createDetailedAirdropBruteSprite(0, 1.38), createDetailedAirdropBruteSprite(1, 1.38)],
         pulse_cyborg: [createDetailedPulseCyborgSprite(0, 1.38), createDetailedPulseCyborgSprite(1, 1.38)],
+        bone_weaver: [createDetailedBoneWeaverSprite(0, 1.38), createDetailedBoneWeaverSprite(1, 1.38)],
+        mire_dredger: [createDetailedMireDredgerSprite(0, 1.38), createDetailedMireDredgerSprite(1, 1.38)],
+        tri_blade: [createDetailedTriBladeSprite(0, 1.38), createDetailedTriBladeSprite(1, 1.38)],
         boss_dummy: [createDetailedBossDummySprite(0, 2.0), createDetailedBossDummySprite(1, 2.0)],
         swarm_dummy: [createDetailedBossDummySprite(0, 1.8), createDetailedBossDummySprite(1, 1.8)],
         boss: [createDetailedTyrantBossSprite(0, 1.38), createDetailedTyrantBossSprite(1, 1.38)],
@@ -3508,6 +3766,8 @@
         sakuraUltIcon: createPixelSprite(SAKURA_ULT_ICON_MATRIX, 2),
         yomiSkillIcon: createPixelSprite(YOMI_SKILL_ICON_MATRIX, 2),
         yomiUltIcon: createPixelSprite(YOMI_ULT_ICON_MATRIX, 2),
+        xinglanSkillIcon: createPixelSprite(XINGLAN_SKILL_ICON_MATRIX, 2),
+        xinglanUltIcon: createPixelSprite(XINGLAN_ULT_ICON_MATRIX, 2),
         potionIcon: createPixelSprite(POTION_ICON_MATRIX, 2),
         topWave: createPixelSprite(TOP_ICON_WAVE_MATRIX, 2),
         topTimer: createPixelSprite(TOP_ICON_TIMER_MATRIX, 2),
@@ -3531,6 +3791,7 @@
             if (heroId === 'chinatsu') gctx.drawImage(SPRITES.shotgunSkillIcon, 4, 6, 24, 20);
             else if (heroId === 'sakura') gctx.drawImage(SPRITES.sakuraSkillIcon, 4, 4, 24, 24);
             else if (heroId === 'yomi') gctx.drawImage(SPRITES.yomiSkillIcon, 4, 4, 24, 24);
+            else if (heroId === 'xinglan') gctx.drawImage(SPRITES.xinglanSkillIcon, 4, 4, 24, 24);
             else gctx.drawImage(SPRITES.grenade, 4, 4, 24, 24);
         }
         const uBtn = document.getElementById('ultBtnCanvas');
@@ -3541,6 +3802,7 @@
             if (heroId === 'chinatsu') uctx.drawImage(SPRITES.shotgunUltIcon, 4, 5, 24, 22);
             else if (heroId === 'sakura') uctx.drawImage(SPRITES.sakuraUltIcon, 4, 4, 24, 24);
             else if (heroId === 'yomi') uctx.drawImage(SPRITES.yomiUltIcon, 4, 4, 24, 24);
+            else if (heroId === 'xinglan') uctx.drawImage(SPRITES.xinglanUltIcon, 4, 4, 24, 24);
             else uctx.drawImage(SPRITES.ultIcon, 4, 5, 24, 22);
         }
         const hudAvatar = document.getElementById('hudAvatarCanvas');
@@ -3548,8 +3810,8 @@
             const actx = hudAvatar.getContext('2d');
             actx.imageSmoothingEnabled = false;
             actx.clearRect(0, 0, 40, 40);
-            const bigSpr = heroId === 'chinatsu' ? SPRITES.chinatsuBig[0] : (heroId === 'sakura' ? SPRITES.sakuraBig[0] : (heroId === 'yomi' ? SPRITES.yomiBig[0] : SPRITES.rinneBig[0]));
-            actx.drawImage(bigSpr, 8, 2, 48, 48, 0, 0, 40, 40);
+            const bigSpr = heroId === 'chinatsu' ? SPRITES.chinatsuBig[0] : (heroId === 'sakura' ? SPRITES.sakuraBig[0] : (heroId === 'yomi' ? SPRITES.yomiBig[0] : (heroId === 'xinglan' ? SPRITES.xinglanBig[0] : SPRITES.rinneBig[0])));
+            actx.drawImage(bigSpr, 8, 1, 48, 48, 0, 0, 40, 40);
         }
     }
 
@@ -3631,6 +3893,13 @@
             yctx.imageSmoothingEnabled = false;
             yctx.clearRect(0, 0, 48, 48);
             yctx.drawImage(SPRITES.yomiBig[0], 6, 0, 52, 52, 0, 0, 48, 48);
+        }
+        const avXinglan = document.getElementById('avatarOptionXinglan');
+        if (avXinglan && SPRITES.xinglanBig) {
+            const xctx = avXinglan.getContext('2d');
+            xctx.imageSmoothingEnabled = false;
+            xctx.clearRect(0, 0, 48, 48);
+            xctx.drawImage(SPRITES.xinglanBig[0], 6, 0, 52, 52, 0, 0, 48, 48);
         }
 
         function renderUiPxIconsIn(rootEl) {
@@ -4023,6 +4292,33 @@
                     desc: '持续10秒，开启瞬间抵消周身145范围内的敌方飞行物，期间周身145范围内环绕高速旋转的冥狱刀轮切割敌人，并对范围内敌人造成20%减速。若在【缚魂索命】勾中敌人期间点击大招，会先顺链无敌位移至目标身后造成范围伤害并获得0.5秒无敌，随后开启大招。\n【升级效果】：每级刀轮伤害+10%、范围减速+6%、冷却-5%。'
                 }
             ]
+        },
+        xinglan: {
+            id: 'xinglan',
+            name: '星澜 · Xinglan',
+            tag: '星穹御剑',
+            tagCls: 'bg-indigo-600 text-white',
+            intro: '中远程星穹御剑使。初始携带4把飞剑首尾相接绕身旋转，随【扩容弹匣】同步增多（满级9把，攻击24 / 间隔0.42秒 / 射程270）；飞剑耗尽后需1秒凝聚灵气重新召唤。',
+            skills: [
+                {
+                    name: '周天剑环 · 留影（被动）',
+                    badge: '被动技能',
+                    iconSkillId: 'xl_passive_upgrade',
+                    desc: '当前留存的飞剑绕身旋转，接触敌人时造成18%攻击力伤害（同一敌人每0.33秒至多受到1次剑环伤害）；普攻飞剑在耗尽最大穿透数或达到最大飞行距离后落地留存6秒（分裂弹道仅中心主剑停留，场上至多存在数量等于当前弹药上限）。\n【升级效果】：每级剑环接触伤害+6%（满级48%）。'
+                },
+                {
+                    name: '万剑归鞘（小技能 · E）',
+                    badge: '主动技能 · 冷却18秒',
+                    iconSkillId: 'xl_skill_upgrade',
+                    desc: '瞬间收回地上所有飞剑并补充对应弹药数（不超过上限，换弹中则直接打断并补入）；首把回收飞剑对沿途敌人造成50%攻击力伤害，后续每把递减20%，最低保留当级基础伤害的20%。\n【升级效果】：每级首把回收伤害+10%（满级100%），冷却-5%（满级13.5秒）。'
+                },
+                {
+                    name: '万剑归宗（大招 · R）',
+                    badge: '终极技能 · 冷却45秒',
+                    iconSkillId: 'xl_ult_upgrade',
+                    desc: '持续8秒，背后灵阵每0.20秒自动召唤2把自动追踪飞剑攻击敌人，每把造成35%攻击力伤害；同一目标在0.4秒内连续被多把大招飞剑命中时，第2把起伤害衰减为40%。\n【升级效果】：1~5级每波召唤飞剑提升为3 / 3 / 4 / 4 / 5把，冷却-5%（满级33.8秒）。'
+                }
+            ]
         }
     };
 
@@ -4270,6 +4566,33 @@
             speed: '中等',
             xp: 9,
             intro: '双肩挂载多联装脉冲发射巢的失控重装改造兵。蓄力后先发射5枚品红扇形脉冲弹，0.28秒后朝空隙补射4枚青色交错脉冲弹。（必掉2金币）'
+        },
+        bone_weaver: {
+            id: 'bone_weaver',
+            name: '骸骨筑墙者 · Bone Weaver',
+            tag: '地形精英 (W8+)',
+            hpBase: 74,
+            speed: '中等',
+            xp: 8,
+            intro: '操控地脉骸骨的畸变感染体。锁定特工移动方向前方约100像素处，短暂预警后升起一堵持续 4.0 秒自然坍塌的骨刺障碍墙；墙体阻挡一切移动与闪避位移，专精截断风筝路线。（必掉2金币）'
+        },
+        mire_dredger: {
+            id: 'mire_dredger',
+            name: '腐沼粘液怪 · Mire Dredger',
+            tag: '控场精英 (W6+)',
+            hpBase: 80,
+            speed: '中等',
+            xp: 8,
+            intro: '体内充斥高粘度腐沼淤泥的感染体。沿移动路径不断留下粘液带，并定期朝特工移动预判方向吐出大范围粘稠泥沼；踩入区域不会受到伤害，但移速降低 40%。（必掉2金币）'
+        },
+        tri_blade: {
+            id: 'tri_blade',
+            name: '三刃处刑者 · Tri-Blade Executor',
+            tag: '追猎精英 (W11+)',
+            hpBase: 88,
+            speed: '较快',
+            xp: 9,
+            intro: '进入攻击范围后不停步拉出左、中、右 ±22° 三条红色激光预警线，短暂延迟（0.55秒）后弹出三把高周波利刃（出刃期间正面具备45%招架减伤，刀刃触碰特工造成挥砍伤害）并小幅加速（+18%）持续转向追猎；技能结束后直接收刀进入冷却，像普通丧尸一样继续追击。（必掉2金币）'
         }
     };
 
@@ -4689,6 +5012,8 @@
         const modal = document.getElementById('inGameConfirmModal');
         if (modal) modal.classList.add('hidden');
         if (act === 'restart') {
+            window.__trainingHeroSwitchPending = false;
+            window.__forceFullGameRestart = true;
             if (window.startPixelGame) window.startPixelGame();
         } else if (act === 'menu') {
             if (window.backToMainMenu) window.backToMainMenu();
@@ -5000,15 +5325,17 @@
     };
 
     window.selectHeroType = function (heroId) {
-        selectedHeroId = (heroId === 'chinatsu' || heroId === 'sakura' || heroId === 'yomi') ? heroId : 'rinne';
+        selectedHeroId = (heroId === 'chinatsu' || heroId === 'sakura' || heroId === 'yomi' || heroId === 'xinglan') ? heroId : 'rinne';
         const btnRinne = document.getElementById('btnSelectRinne');
         const btnChinatsu = document.getElementById('btnSelectChinatsu');
         const btnSakura = document.getElementById('btnSelectSakura');
         const btnYomi = document.getElementById('btnSelectYomi');
+        const btnXinglan = document.getElementById('btnSelectXinglan');
         const checkRinne = document.getElementById('avatarCheckRinne');
         const checkChinatsu = document.getElementById('avatarCheckChinatsu');
         const checkSakura = document.getElementById('avatarCheckSakura');
         const checkYomi = document.getElementById('avatarCheckYomi');
+        const checkXinglan = document.getElementById('avatarCheckXinglan');
         const avatarWrap = document.getElementById('startHeroAvatarWrap');
         const tagEl = document.getElementById('previewHeroTag');
         const nameEl = document.getElementById('previewHeroName');
@@ -5019,10 +5346,12 @@
         if (btnChinatsu) btnChinatsu.className = inactiveCls;
         if (btnSakura) btnSakura.className = inactiveCls;
         if (btnYomi) btnYomi.className = inactiveCls;
+        if (btnXinglan) btnXinglan.className = inactiveCls;
         if (checkRinne) checkRinne.classList.add('hidden');
         if (checkChinatsu) checkChinatsu.classList.add('hidden');
         if (checkSakura) checkSakura.classList.add('hidden');
         if (checkYomi) checkYomi.classList.add('hidden');
+        if (checkXinglan) checkXinglan.classList.add('hidden');
 
         const hData = HERO_DATABASE[selectedHeroId];
         if (selectedHeroId === 'rinne') {
@@ -5037,10 +5366,14 @@
             if (btnSakura) btnSakura.className = 'w-full shrink-0 group relative p-1.5 bg-[#121726] border-2 border-pink-400 shadow-[0_0_12px_rgba(244,114,182,0.35)] flex flex-col items-center gap-1 cursor-pointer transition';
             if (checkSakura) checkSakura.classList.remove('hidden');
             if (avatarWrap) avatarWrap.className = 'w-28 h-36 sm:w-44 sm:h-52 bg-[#121726] border-2 border-pink-400 flex items-center justify-center relative shadow-[0_0_24px_rgba(244,114,182,0.25)]';
-        } else {
+        } else if (selectedHeroId === 'yomi') {
             if (btnYomi) btnYomi.className = 'w-full shrink-0 group relative p-1.5 bg-[#121726] border-2 border-purple-400 shadow-[0_0_12px_rgba(192,132,252,0.35)] flex flex-col items-center gap-1 cursor-pointer transition';
             if (checkYomi) checkYomi.classList.remove('hidden');
             if (avatarWrap) avatarWrap.className = 'w-28 h-36 sm:w-44 sm:h-52 bg-[#121726] border-2 border-purple-400 flex items-center justify-center relative shadow-[0_0_24px_rgba(192,132,252,0.25)]';
+        } else {
+            if (btnXinglan) btnXinglan.className = 'w-full shrink-0 group relative p-1.5 bg-[#121726] border-2 border-indigo-400 shadow-[0_0_12px_rgba(129,140,248,0.35)] flex flex-col items-center gap-1 cursor-pointer transition';
+            if (checkXinglan) checkXinglan.classList.remove('hidden');
+            if (avatarWrap) avatarWrap.className = 'w-28 h-36 sm:w-44 sm:h-52 bg-[#121726] border-2 border-indigo-400 flex items-center justify-center relative shadow-[0_0_24px_rgba(129,140,248,0.25)]';
         }
         if (tagEl) { tagEl.textContent = hData.tag; tagEl.className = `absolute bottom-1 right-1 ${hData.tagCls} text-[9px] sm:text-[10px] px-1.5 py-0.5 font-bold`; }
         if (nameEl) nameEl.textContent = `【${hData.name}】`;
@@ -5093,7 +5426,7 @@
     function isSkillAllowedForHero(sk, heroId) {
         if (sk.movedToShop) return false;
         if (sk.meleeOnly && !MELEE_HERO_IDS.includes(heroId)) return false;
-        if (sk.heroOnly && sk.heroOnly !== heroId) return false;
+        if (sk.heroOnly && (Array.isArray(sk.heroOnly) ? !sk.heroOnly.includes(heroId) : sk.heroOnly !== heroId)) return false;
         if (sk.excludeHeroes && sk.excludeHeroes.includes(heroId)) return false;
         if (sk.excludeMelee && MELEE_HERO_IDS.includes(heroId)) return false;
         return true;
@@ -5106,7 +5439,7 @@
         const titleEl = document.getElementById('heroUpgradesSubTitle');
         const gridEl = document.getElementById('heroUpgradesSubGrid');
         if (!modal || !gridEl) return;
-        const hName = heroId === 'chinatsu' ? '千夏 · Chinatsu' : (heroId === 'sakura' ? '樱 · Sakura' : (heroId === 'yomi' ? '夜瞳 · Yomi' : '凛音 · Rinne'));
+        const hName = heroId === 'chinatsu' ? '千夏 · Chinatsu' : (heroId === 'sakura' ? '樱 · Sakura' : (heroId === 'yomi' ? '夜瞳 · Yomi' : (heroId === 'xinglan' ? '星澜 · Xinglan' : '凛音 · Rinne')));
         if (titleEl) titleEl.textContent = `${hName} · 可选升级`;
         gridEl.innerHTML = '';
 
@@ -5149,6 +5482,7 @@
                         <button onclick="window.selectCodexHero('chinatsu')" class="px-3 py-1 text-xs font-bold border-2 ${codexSelectedHero === 'chinatsu' ? 'border-amber-400 bg-amber-950 text-white' : 'border-slate-700 bg-slate-900 text-slate-400'}">千夏 · Chinatsu</button>
                         <button onclick="window.selectCodexHero('sakura')" class="px-3 py-1 text-xs font-bold border-2 ${codexSelectedHero === 'sakura' ? 'border-pink-400 bg-pink-950 text-white' : 'border-slate-700 bg-slate-900 text-slate-400'}">樱 · Sakura</button>
                         <button onclick="window.selectCodexHero('yomi')" class="px-3 py-1 text-xs font-bold border-2 ${codexSelectedHero === 'yomi' ? 'border-purple-400 bg-purple-950 text-white' : 'border-slate-700 bg-slate-900 text-slate-400'}">夜瞳 · Yomi</button>
+                        <button onclick="window.selectCodexHero('xinglan')" class="px-3 py-1 text-xs font-bold border-2 ${codexSelectedHero === 'xinglan' ? 'border-indigo-400 bg-indigo-950 text-white' : 'border-slate-700 bg-slate-900 text-slate-400'}">星澜 · Xinglan</button>
                     </div>
                     <div class="bg-[#101420] border-2 border-slate-800 p-3 sm:p-4 flex flex-row items-center gap-4">
                         <div class="flex flex-col items-center shrink-0">
@@ -5227,6 +5561,9 @@
                         <button onclick="window.selectCodexZombie('spore_lobber')" class="px-2 py-1 text-xs font-bold border-2 ${codexSelectedZombie === 'spore_lobber' ? 'border-purple-400 bg-purple-950 text-white' : 'border-slate-700 bg-slate-900 text-slate-400'}">★剧毒孢子母体</button>
                         <button onclick="window.selectCodexZombie('airdrop_brute')" class="px-2 py-1 text-xs font-bold border-2 ${codexSelectedZombie === 'airdrop_brute' ? 'border-orange-400 bg-orange-950 text-white' : 'border-slate-700 bg-slate-900 text-slate-400'}">★空投重装暴徒</button>
                         <button onclick="window.selectCodexZombie('pulse_cyborg')" class="px-2 py-1 text-xs font-bold border-2 ${codexSelectedZombie === 'pulse_cyborg' ? 'border-fuchsia-400 bg-fuchsia-950 text-white' : 'border-slate-700 bg-slate-900 text-slate-400'}">★脉冲殖装者</button>
+                        <button onclick="window.selectCodexZombie('mire_dredger')" class="px-2 py-1 text-xs font-bold border-2 ${codexSelectedZombie === 'mire_dredger' ? 'border-amber-400 bg-amber-950 text-white' : 'border-slate-700 bg-slate-900 text-slate-400'}">★腐沼粘液怪</button>
+                        <button onclick="window.selectCodexZombie('bone_weaver')" class="px-2 py-1 text-xs font-bold border-2 ${codexSelectedZombie === 'bone_weaver' ? 'border-teal-400 bg-teal-950 text-white' : 'border-slate-700 bg-slate-900 text-slate-400'}">★骸骨筑墙者</button>
+                        <button onclick="window.selectCodexZombie('tri_blade')" class="px-2 py-1 text-xs font-bold border-2 ${codexSelectedZombie === 'tri_blade' ? 'border-rose-400 bg-rose-950 text-white' : 'border-slate-700 bg-slate-900 text-slate-400'}">★三刃处刑者</button>
                     </div>
                     <div class="bg-[#101420] border-2 border-slate-800 p-3 sm:p-4 flex flex-row items-center gap-4">
                         <div class="flex flex-col items-center shrink-0">
@@ -5258,8 +5595,9 @@
                     : (sk.heroOnly === 'chinatsu' ? '<span class="absolute top-0.5 right-0.5 text-[8px] bg-amber-400 text-slate-950 px-1 font-bold">千夏</span>'
                     : (sk.heroOnly === 'sakura' ? '<span class="absolute top-0.5 right-0.5 text-[8px] bg-pink-400 text-slate-950 px-1 font-bold">樱</span>'
                     : (sk.heroOnly === 'yomi' ? '<span class="absolute top-0.5 right-0.5 text-[8px] bg-purple-400 text-slate-950 px-1 font-bold">夜瞳</span>'
+                    : (sk.heroOnly === 'xinglan' ? '<span class="absolute top-0.5 right-0.5 text-[8px] bg-indigo-400 text-slate-950 px-1 font-bold">星澜</span>'
                     : (sk.meleeOnly ? '<span class="absolute top-0.5 right-0.5 text-[8px] bg-pink-500 text-white px-1 font-bold">近战</span>'
-                    : (isInfStat ? '<span class="absolute top-0.5 right-0.5 text-[8px] bg-emerald-400 text-slate-950 px-1 font-bold">属性</span>' : '<span class="absolute top-0.5 right-0.5 text-[8px] bg-slate-700 text-slate-200 px-1 font-bold">' + sk.category.slice(0, 2) + '</span>')))));
+                    : (isInfStat ? '<span class="absolute top-0.5 right-0.5 text-[8px] bg-emerald-400 text-slate-950 px-1 font-bold">属性</span>' : '<span class="absolute top-0.5 right-0.5 text-[8px] bg-slate-700 text-slate-200 px-1 font-bold">' + sk.category.slice(0, 2) + '</span>'))))));
                 cell.innerHTML = `${heroTag}<img src="${sk.iconUrl}" class="w-7 h-7 sm:w-8 sm:h-8 pointer-events-none" alt="${sk.name}" /><span class="text-[10px] font-bold text-white truncate w-full text-center">${sk.name}</span>`;
                 const fullDesc = (isInfStat && statObj)
                     ? `【普通】：${statObj.codexDescFn ? statObj.codexDescFn(statObj.values[0]) : statObj.descFn(statObj.values[0], null)}\n【稀有】：${statObj.codexDescFn ? statObj.codexDescFn(statObj.values[1]) : statObj.descFn(statObj.values[1], null)}\n【史诗】：${statObj.codexDescFn ? statObj.codexDescFn(statObj.values[2]) : statObj.descFn(statObj.values[2], null)}\n【传说】：${statObj.codexDescFn ? statObj.codexDescFn(statObj.values[3]) : statObj.descFn(statObj.values[3], null)}`
@@ -5319,6 +5657,196 @@
     window.selectCodexBoss = function (id) { codexSelectedBoss = id; renderCodexTabContent(); };
     window.selectCodexZombie = function (id) { codexSelectedZombie = id; renderCodexTabContent(); };
 
+    // 高精度星穹冰晶飞剑通用绘制器（还原原画：银冠剑首 + 玄黑缠柄 + 展翼雕花银护手 + 星蓝棱晶核心 + 三阶冰晶修长剑刃与分形刃齿）
+    function drawXinglanCrystalSword(ctx, scale = 1.0, variant = 'normal') {
+        ctx.save();
+        if (scale !== 1.0) ctx.scale(scale, scale);
+
+        const isCrit = variant === 'crit';
+        const isUlt = variant === 'ult';
+        const bladeDark = isCrit ? '#b45309' : (isUlt ? '#3730a3' : '#0369a1');
+        const bladeMid = isCrit ? '#f59e0b' : (isUlt ? '#6366f1' : '#0284c7');
+        const bladeBright = isCrit ? '#fde047' : (isUlt ? '#a5b4fc' : '#38bdf8');
+        const bladeEdge = isCrit ? '#fef9c3' : (isUlt ? '#e0e7ff' : '#bae6fd');
+        const gemOuter = isCrit ? '#d97706' : (isUlt ? '#4f46e5' : '#0284c7');
+        const gemInner = isCrit ? '#fef08a' : (isUlt ? '#c7d2fe' : '#7dd3fc');
+
+        // 1. 剑体精工暗黑描边轮廓（含剑首冠、剑柄、展翼护手、剑肩刃齿与菱形修长剑尖）
+        ctx.fillStyle = '#090612';
+        ctx.beginPath();
+        ctx.moveTo(-15, 0);
+        ctx.lineTo(-12.5, -2.8);
+        ctx.lineTo(-10.5, -2.0);
+        ctx.lineTo(-7.5, -2.0);
+        // 上侧前掠银翼护手
+        ctx.lineTo(-5.5, -7.8);
+        ctx.lineTo(-2.2, -8.5);
+        ctx.lineTo(-1.0, -4.5);
+        // 剑肩分形刃齿（Ricasso Spurs）
+        ctx.lineTo(1.5, -5.2);
+        ctx.lineTo(3.2, -3.4);
+        // 修长剑身至锐利剑尖
+        ctx.lineTo(14.5, -2.4);
+        ctx.lineTo(20.5, 0);
+        ctx.lineTo(14.5, 2.4);
+        ctx.lineTo(3.2, 3.4);
+        ctx.lineTo(1.5, 5.2);
+        // 下侧前掠银翼护手
+        ctx.lineTo(-1.0, 4.5);
+        ctx.lineTo(-2.2, 8.5);
+        ctx.lineTo(-5.5, 7.8);
+        ctx.lineTo(-7.5, 2.0);
+        ctx.lineTo(-10.5, 2.0);
+        ctx.lineTo(-12.5, 2.8);
+        ctx.closePath();
+        ctx.fill();
+
+        // 2. 银冠剑首（Pommel）与玄黑雕纹剑柄（Grip）
+        ctx.fillStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.moveTo(-14, 0); ctx.lineTo(-12.2, -2.0); ctx.lineTo(-10.8, 0); ctx.lineTo(-12.2, 2.0);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-13, -0.8, 1.8, 1.6);
+
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(-10.8, -1.2, 4.2, 2.4);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(-9.8, -1.2, 1.0, 2.4);
+        ctx.fillRect(-7.8, -1.2, 1.0, 2.4);
+
+        // 3. 展翼雕花白银护手（Swept-Forward Filigree Guard）
+        ctx.fillStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.moveTo(-6.5, -1.8); ctx.lineTo(-4.8, -6.8); ctx.lineTo(-2.6, -7.4); ctx.lineTo(-1.8, -3.5);
+        ctx.lineTo(-1.8, 3.5); ctx.lineTo(-2.6, 7.4); ctx.lineTo(-4.8, 6.8); ctx.lineTo(-6.5, 1.8);
+        ctx.closePath(); ctx.fill();
+
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath();
+        ctx.moveTo(-5.6, -1.5); ctx.lineTo(-4.2, -5.8); ctx.lineTo(-2.8, -6.4); ctx.lineTo(-2.4, -3.2);
+        ctx.lineTo(-2.4, 3.2); ctx.lineTo(-2.8, 6.4); ctx.lineTo(-4.2, 5.8); ctx.lineTo(-5.6, 1.5);
+        ctx.closePath(); ctx.fill();
+
+        // 护手翼尖纯白高光与副翼冰晶刺
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-3.8, -6.2, 1.4, 2.2);
+        ctx.fillRect(-3.8, 4.0, 1.4, 2.2);
+        ctx.fillStyle = bladeBright;
+        ctx.fillRect(0.2, -4.2, 1.8, 1.4);
+        ctx.fillRect(0.2, 2.8, 1.8, 1.4);
+
+        // 4. 三阶冰蓝棱晶修长剑刃（下斜面深蓝 + 上斜面亮青 + 寒光刃口 + 剑脊纯白流光）
+        // 下半暗面（Shadow Bevel）
+        ctx.fillStyle = bladeDark;
+        ctx.beginPath();
+        ctx.moveTo(-2.0, 0); ctx.lineTo(14.0, 0); ctx.lineTo(19.0, 0); ctx.lineTo(14.0, 1.7); ctx.lineTo(2.5, 2.4); ctx.lineTo(-2.0, 2.0);
+        ctx.closePath(); ctx.fill();
+
+        // 上半亮面（Lit Bevel）
+        ctx.fillStyle = bladeMid;
+        ctx.beginPath();
+        ctx.moveTo(-2.0, 0); ctx.lineTo(-2.0, -2.0); ctx.lineTo(2.5, -2.4); ctx.lineTo(14.0, -1.7); ctx.lineTo(19.0, 0);
+        ctx.closePath(); ctx.fill();
+
+        // 剑身内层高饱和冰晶受光层
+        ctx.fillStyle = bladeBright;
+        ctx.beginPath();
+        ctx.moveTo(-1.0, -0.3); ctx.lineTo(2.5, -1.8); ctx.lineTo(13.5, -1.2); ctx.lineTo(18.2, 0); ctx.lineTo(13.5, 0.7); ctx.lineTo(2.5, 1.1);
+        ctx.closePath(); ctx.fill();
+
+        // 剑刃外缘极寒亮边与斜向晶面折光纹
+        ctx.fillStyle = bladeEdge;
+        ctx.fillRect(2.0, -1.7, 10.5, 0.7);
+        ctx.fillRect(5.5, -1.4, 1.2, 2.6);
+        ctx.fillRect(10.0, -1.2, 1.2, 2.2);
+
+        // 贯穿剑脊的纯白核心锋芒线（Central Spine Highlight）
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(-1.5, -0.5); ctx.lineTo(15.5, -0.4); ctx.lineTo(19.0, 0); ctx.lineTo(15.5, 0.4); ctx.lineTo(-1.5, 0.5);
+        ctx.closePath(); ctx.fill();
+
+        // 5. 护手中央镶嵌星穹菱形核心宝石（Star-Diamond Core Gem）
+        ctx.fillStyle = gemOuter;
+        ctx.beginPath();
+        ctx.moveTo(-6.2, 0); ctx.lineTo(-3.8, -2.4); ctx.lineTo(-1.2, 0); ctx.lineTo(-3.8, 2.4);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = gemInner;
+        ctx.beginPath();
+        ctx.moveTo(-5.2, 0); ctx.lineTo(-3.8, -1.4); ctx.lineTo(-2.2, 0); ctx.lineTo(-3.8, 1.4);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-4.3, -0.6, 1.2, 1.2);
+
+        ctx.restore();
+    }
+
+    // 预览界面与图鉴界面共用的星澜 3D 立体环绕飞剑渲染（分前后景两遍绘制，真实呈现环绕人物前后的纵深立体感）
+    function drawXinglanPreview3DSwords(ctx, centerX, centerY, tSec, pass, radiusX = 33, radiusY = 11.5, swordScale = 0.92) {
+        const orbitTilt = -0.18;
+        ctx.save();
+        ctx.translate(centerX, centerY);
+
+        // 先绘制半圈星轨光环（后景绘制上半暗弧，前景绘制下半亮弧）
+        ctx.save();
+        ctx.rotate(orbitTilt);
+        ctx.strokeStyle = pass === 'back' ? 'rgba(56, 189, 248, 0.22)' : 'rgba(125, 211, 252, 0.52)';
+        ctx.lineWidth = pass === 'back' ? 1.2 : 1.8;
+        ctx.beginPath();
+        if (pass === 'back') {
+            ctx.ellipse(0, 0, radiusX, radiusY, 0, Math.PI, Math.PI * 2);
+        } else {
+            ctx.ellipse(0, 0, radiusX, radiusY, 0, 0, Math.PI);
+        }
+        ctx.stroke();
+        ctx.restore();
+
+        // 计算 4 把飞剑在 3D 倾斜椭圆轨道上的实时空间坐标与前后深度 depthZ
+        const items = [];
+        for (let si = 0; si < 4; si++) {
+            const ang = tSec * 2.35 + si * (Math.PI * 0.5);
+            const depthZ = Math.sin(ang); // < 0 位于角色身后，>= 0 位于角色身前
+            if ((pass === 'back' && depthZ < 0) || (pass === 'front' && depthZ >= 0)) {
+                const rawX = Math.cos(ang) * radiusX;
+                const rawY = Math.sin(ang) * radiusY;
+                const cosT = Math.cos(orbitTilt), sinT = Math.sin(orbitTilt);
+                const sx = rawX * cosT - rawY * sinT;
+                const sy = rawX * sinT + rawY * cosT + Math.sin(tSec * 4.5 + si * 1.5) * 1.8;
+                // 3D 椭圆切线方向角度，使飞剑首尾相接沿立体轨道顺畅巡航
+                const tx = -Math.sin(ang) * radiusX;
+                const ty = Math.cos(ang) * radiusY;
+                const rotTx = tx * cosT - ty * sinT;
+                const rotTy = tx * sinT + ty * cosT;
+                const tangentAng = Math.atan2(rotTy, rotTx);
+                items.push({ si, ang, depthZ, sx, sy, tangentAng });
+            }
+        }
+        items.sort((a, b) => a.depthZ - b.depthZ);
+
+        for (let idx = 0; idx < items.length; idx++) {
+            const it = items[idx];
+            // 远小近大透视缩放与前后景明暗层次
+            const perspScale = swordScale * (0.86 + it.depthZ * 0.16);
+            const alpha = pass === 'back' ? (0.72 + (it.depthZ + 1) * 0.16) : (0.92 + it.depthZ * 0.08);
+            ctx.save();
+            ctx.globalAlpha = clampVal(alpha, 0.65, 1.0);
+            ctx.translate(it.sx, it.sy);
+            ctx.rotate(it.tangentAng);
+            // 剑尾流光拖曳短弧
+            ctx.strokeStyle = pass === 'back' ? 'rgba(56, 189, 248, 0.35)' : 'rgba(186, 230, 253, 0.75)';
+            ctx.lineWidth = 2.0 * perspScale;
+            ctx.beginPath();
+            ctx.moveTo(-20 * perspScale, 0);
+            ctx.lineTo(-11 * perspScale, 0);
+            ctx.stroke();
+
+            drawXinglanCrystalSword(ctx, perspScale, 'normal');
+            ctx.restore();
+        }
+        ctx.restore();
+    }
+
     function renderStartPreviewHero(timestamp) {
         if (canvas && !canvas.isConnected) return;
         const tSec = (timestamp || 0) * 0.001;
@@ -5330,22 +5858,27 @@
         if (pCanvas && startModal && !startModal.classList.contains('hidden')) {
             const pctx = pCanvas.getContext('2d');
             pctx.imageSmoothingEnabled = false;
+            pctx.clearRect(0, 0, pCanvas.width, pCanvas.height);
             const W = pCanvas.width, H = pCanvas.height;
-            pctx.clearRect(0, 0, W, H);
-            pctx.fillStyle = selectedHeroId === 'chinatsu' ? 'rgba(251, 191, 36, 0.22)' : (selectedHeroId === 'sakura' ? 'rgba(244, 114, 182, 0.22)' : (selectedHeroId === 'yomi' ? 'rgba(192, 132, 252, 0.22)' : 'rgba(56, 189, 248, 0.22)'));
+            pctx.fillStyle = selectedHeroId === 'chinatsu' ? 'rgba(251, 191, 36, 0.22)' : (selectedHeroId === 'sakura' ? 'rgba(244, 114, 182, 0.22)' : (selectedHeroId === 'yomi' ? 'rgba(192, 132, 252, 0.22)' : (selectedHeroId === 'xinglan' ? 'rgba(129, 140, 248, 0.24)' : 'rgba(56, 189, 248, 0.22)')));
             pctx.beginPath(); pctx.ellipse(W * 0.5, H - 16, 30, 8, 0, 0, Math.PI * 2); pctx.fill();
-            pctx.strokeStyle = selectedHeroId === 'chinatsu' ? '#fbbf24' : (selectedHeroId === 'sakura' ? '#f472b6' : (selectedHeroId === 'yomi' ? '#c084fc' : '#38bdf8'));
+            pctx.strokeStyle = selectedHeroId === 'chinatsu' ? '#fbbf24' : (selectedHeroId === 'sakura' ? '#f472b6' : (selectedHeroId === 'yomi' ? '#c084fc' : (selectedHeroId === 'xinglan' ? '#818cf8' : '#38bdf8')));
             pctx.lineWidth = 1.5; pctx.stroke();
 
-            const spriteArr = selectedHeroId === 'chinatsu' ? SPRITES.chinatsuBig : (selectedHeroId === 'sakura' ? SPRITES.sakuraBig : (selectedHeroId === 'yomi' ? SPRITES.yomiBig : SPRITES.rinneBig));
+            const spriteArr = selectedHeroId === 'chinatsu' ? SPRITES.chinatsuBig : (selectedHeroId === 'sakura' ? SPRITES.sakuraBig : (selectedHeroId === 'yomi' ? SPRITES.yomiBig : (selectedHeroId === 'xinglan' ? SPRITES.xinglanBig : SPRITES.rinneBig)));
             const sprite = spriteArr[frameIdx];
-            const drawW = 68, drawH = 78, dx = (W - drawW) * 0.5 - 3, dy = H - 14 - drawH + breathBob;
+            const drawW = 68, drawH = 78;
+            const dx = (W - drawW) * 0.5 - 3, dy = H - 14 - drawH + breathBob;
 
-            // 预览界面后景惯性随动部件（Secondary Motion · 保持头型清爽对称，仅做轻盈发尾与刀鞘随动）
+            // 星澜专属：先绘制位于角色身后的后半圈 3D 环绕飞剑（产生真实空间前后遮挡立体感）
+            if (selectedHeroId === 'xinglan') {
+                drawXinglanPreview3DSwords(pctx, W * 0.5 - 2, dy + 42, tSec, 'back', 36, 13, 1.05);
+            }
+
+            // 预览界面后景惯性随动部件
             pctx.save();
             const flX = Math.round(flutter * 2.0), flY = Math.round(Math.cos(tSec * 6.5) * 1.2);
             if (selectedHeroId === 'sakura') {
-                // 樱：绯红金蝶束腰后飘带 + 腰间斜挎朱漆描金太刀刀鞘（Saya）与绯红剑穗（Sageo）
                 pctx.fillStyle = '#090612'; pctx.fillRect(dx + 4 + flX * 0.7, dy + 44 + flY, 10, 7);
                 pctx.fillStyle = '#e11d48'; pctx.fillRect(dx + 5 + flX * 0.7, dy + 45 + flY, 8, 5);
                 pctx.fillStyle = '#facc15'; pctx.fillRect(dx + 5 + flX * 0.7, dy + 48 + flY, 6, 2);
@@ -5360,30 +5893,30 @@
                 pctx.fillStyle = '#fef08a'; pctx.fillRect(-13 + flX * 0.5, 8 + flY, 2.5, 1.5);
                 pctx.restore();
             } else if (selectedHeroId === 'chinatsu') {
-                // 千夏：纯白拼冰蓝机能短夹克后摆与高扎侧马尾蓝白发带随风微颤
                 pctx.fillStyle = '#090612'; pctx.fillRect(dx + 5 + flX * 0.7, dy + 46 + flY, 11, 7);
                 pctx.fillStyle = '#ffffff'; pctx.fillRect(dx + 6 + flX * 0.7, dy + 47 + flY, 9, 5);
                 pctx.fillStyle = '#38bdf8'; pctx.fillRect(dx + 6 + flX * 0.7, dy + 50 + flY, 7, 2);
-            } else if (selectedHeroId === 'rinne') {
-                // 凛音：战术短风衣燕尾后摆与赤红领结飘带
-                pctx.fillStyle = '#090612'; pctx.fillRect(dx + 6 + flX * 0.6, dy + 50 + flY, 12, 8);
-                pctx.fillStyle = '#1e3a8a'; pctx.fillRect(dx + 7 + flX * 0.6, dy + 51 + flY, 10, 6);
-                pctx.fillStyle = '#38bdf8'; pctx.fillRect(dx + 7 + flX * 0.6, dy + 55 + flY, 10, 2);
             } else if (selectedHeroId === 'yomi') {
-                // 夜瞳：哥特黑紫蕾丝脑后飘带
                 pctx.fillStyle = '#090612'; pctx.fillRect(dx - 6 + flX, dy + 22 + flY, 10, 12);
                 pctx.fillStyle = '#4c1d95'; pctx.fillRect(dx - 5 + flX, dy + 23 + flY, 8, 10);
                 pctx.fillStyle = '#f43f5e'; pctx.fillRect(dx - 4 + flX, dy + 30 + flY, 6, 2);
+            } else if (selectedHeroId === 'xinglan') {
+                pctx.fillStyle = '#090612'; pctx.fillRect(dx + 1 + flX * 0.8, dy + 42 + flY, 12, 16);
+                pctx.fillStyle = '#e2e8f0'; pctx.fillRect(dx + 2 + flX * 0.8, dy + 43 + flY, 10, 14);
+                pctx.fillStyle = '#38bdf8'; pctx.fillRect(dx + 3 + flX * 0.8, dy + 53 + flY, 8, 2);
+            } else {
+                pctx.fillStyle = '#090612'; pctx.fillRect(dx + 6 + flX * 0.6, dy + 50 + flY, 12, 8);
+                pctx.fillStyle = '#1e3a8a'; pctx.fillRect(dx + 7 + flX * 0.6, dy + 51 + flY, 10, 6);
+                pctx.fillStyle = '#38bdf8'; pctx.fillRect(dx + 7 + flX * 0.6, dy + 55 + flY, 10, 2);
             }
             pctx.restore();
 
             pctx.drawImage(sprite, 0, 0, sprite.width, sprite.height, dx, dy, drawW, drawH);
 
-            // 预览界面精细化武器结构渲染（4th Core Standard）
+            // 预览界面精细化武器结构渲染
             pctx.save();
             pctx.translate(W * 0.5 + 4, dy + 46 + (frameIdx === 1 ? 2 : 0));
             if (selectedHeroId === 'chinatsu') {
-                // 千夏：重装防爆霰弹炮（枪托缓冲垫+侧挂红壳霰弹+散热孔护木+冰蓝泵动滑护手+全息瞄具）
                 pctx.fillStyle = '#090d16'; pctx.fillRect(0, -6, 34, 12);
                 pctx.fillStyle = '#1e293b'; pctx.fillRect(1, -3, 8, 7);
                 pctx.fillStyle = '#38bdf8'; pctx.fillRect(1, -3, 2, 7);
@@ -5398,7 +5931,6 @@
                 pctx.fillStyle = '#7dd3fc'; pctx.fillRect(21, 1, 7, 2);
                 pctx.fillStyle = '#f43f5e'; pctx.fillRect(31, -7, 2, 2);
             } else if (selectedHeroId === 'sakura') {
-                // 樱：绯樱名刀（菱形柄卷刀柄+黄金樱花刀镡+铜habaki吞口+弧形刃纹与樱粉血槽）
                 pctx.rotate(-0.35 + flutter * 0.03);
                 pctx.fillStyle = '#090d16'; pctx.fillRect(-2, -3, 12, 6);
                 pctx.fillStyle = '#facc15'; pctx.fillRect(-2, -2, 2, 4);
@@ -5414,7 +5946,6 @@
                 pctx.fillStyle = '#ffffff'; pctx.fillRect(14, -2, 25, 1.5);
                 pctx.fillStyle = '#f43f5e'; pctx.fillRect(15, 0, 21, 1.2);
             } else if (selectedHeroId === 'yomi') {
-                // 夜瞳：哥特十字蔷薇链刃（玄铁锁链+暗金十字护手+血蔷薇核心+多层紫晶锯齿月刃）
                 pctx.rotate(-0.25 + flutter * 0.04);
                 pctx.fillStyle = '#090612'; pctx.fillRect(-6, -2, 12, 4);
                 pctx.fillStyle = '#94a3b8'; pctx.fillRect(-5, -1, 3, 2); pctx.fillRect(-1, -1, 3, 2);
@@ -5426,8 +5957,26 @@
                 pctx.fillStyle = '#ffffff'; pctx.fillRect(16, -9, 6, 4); pctx.fillRect(16, 0, 6, 2);
                 pctx.fillStyle = '#be123c'; pctx.fillRect(12, -4, 5, 5);
                 pctx.fillStyle = '#fda4af'; pctx.fillRect(13, -3, 3, 3);
+            } else if (selectedHeroId === 'xinglan') {
+                // 星澜掌心御剑星芒印（还原参考图左手托举星芒）
+                const starPulse = 0.85 + Math.sin(tSec * 10) * 0.22;
+                pctx.save();
+                pctx.translate(16, -6 + Math.sin(tSec * 6) * 1.5);
+                pctx.scale(starPulse, starPulse);
+                pctx.fillStyle = '#0284c7';
+                pctx.beginPath();
+                pctx.moveTo(0, -8); pctx.lineTo(2, -2); pctx.lineTo(8, 0); pctx.lineTo(2, 2);
+                pctx.lineTo(0, 8); pctx.lineTo(-2, 2); pctx.lineTo(-8, 0); pctx.lineTo(-2, -2);
+                pctx.closePath(); pctx.fill();
+                pctx.fillStyle = '#38bdf8';
+                pctx.beginPath();
+                pctx.moveTo(0, -5.5); pctx.lineTo(1.4, -1.4); pctx.lineTo(5.5, 0); pctx.lineTo(1.4, 1.4);
+                pctx.lineTo(0, 5.5); pctx.lineTo(-1.4, 1.4); pctx.lineTo(-5.5, 0); pctx.lineTo(-1.4, -1.4);
+                pctx.closePath(); pctx.fill();
+                pctx.fillStyle = '#ffffff';
+                pctx.fillRect(-1.5, -1.5, 3, 3);
+                pctx.restore();
             } else {
-                // 凛音：定制双色战术手枪（钛银镂空滑套+光纤准星+下挂战术红点激光器+扩容弹匣底盖）
                 pctx.fillStyle = '#090d16'; pctx.fillRect(5, -7, 24, 9);
                 pctx.fillStyle = '#1e293b'; pctx.fillRect(6, 0, 7, 8);
                 pctx.fillStyle = '#38bdf8'; pctx.fillRect(6, 7, 7, 2);
@@ -5441,6 +5990,11 @@
                 pctx.fillStyle = '#facc15'; pctx.fillRect(25, -8, 2, 2);
             }
             pctx.restore();
+
+            // 星澜专属：再绘制位于角色身前的前半圈 3D 环绕飞剑（与后半圈形成完整立体环绕）
+            if (selectedHeroId === 'xinglan') {
+                drawXinglanPreview3DSwords(pctx, W * 0.5 - 2, dy + 42, tSec, 'front', 36, 13, 1.05);
+            }
         }
         const cCanvas = document.getElementById('codexPreviewCanvas');
         const codexModal = document.getElementById('codexModal');
@@ -5449,14 +6003,43 @@
             cctx.imageSmoothingEnabled = false;
             cctx.clearRect(0, 0, cCanvas.width, cCanvas.height);
             if (currentCodexTab === 'hero') {
-                const sprArr = codexSelectedHero === 'chinatsu' ? SPRITES.chinatsuBig : (codexSelectedHero === 'sakura' ? SPRITES.sakuraBig : (codexSelectedHero === 'yomi' ? SPRITES.yomiBig : SPRITES.rinneBig));
+                const sprArr = codexSelectedHero === 'chinatsu' ? SPRITES.chinatsuBig : (codexSelectedHero === 'sakura' ? SPRITES.sakuraBig : (codexSelectedHero === 'yomi' ? SPRITES.yomiBig : (codexSelectedHero === 'xinglan' ? SPRITES.xinglanBig : SPRITES.rinneBig)));
+                if (codexSelectedHero === 'xinglan') {
+                    drawXinglanPreview3DSwords(cctx, 32, 34 + breathBob, tSec, 'back', 27, 9.5, 0.78);
+                }
                 cctx.drawImage(sprArr[frameIdx], 0, 0, sprArr[frameIdx].width, sprArr[frameIdx].height, 4, 2 + breathBob, 56, 60);
+                if (codexSelectedHero === 'xinglan') {
+                    drawXinglanPreview3DSwords(cctx, 32, 34 + breathBob, tSec, 'front', 27, 9.5, 0.78);
+                }
             } else if (currentCodexTab === 'boss') {
                 const sprArr = SPRITES[codexSelectedBoss] || SPRITES.boss;
                 cctx.drawImage(sprArr[frameIdx], 0, 0, sprArr[frameIdx].width, sprArr[frameIdx].height, 4, 4, 72, 72);
             } else if (currentCodexTab === 'zombie') {
                 const sprArr = SPRITES[codexSelectedZombie] || SPRITES.walker;
                 cctx.drawImage(sprArr[frameIdx], 0, 0, sprArr[frameIdx].width, sprArr[frameIdx].height, 10, 8, 44, 48);
+                if (codexSelectedZombie === 'tri_blade') {
+                    const spread = (22 * Math.PI) / 180;
+                    const baseA = Math.sin(tSec * 2.5) * 0.18;
+                    for (let bi = -1; bi <= 1; bi++) {
+                        const bAng = baseA + bi * spread;
+                        cctx.save();
+                        cctx.translate(32 + Math.cos(bAng) * 10, 34 + Math.sin(bAng) * 10);
+                        cctx.rotate(bAng);
+                        cctx.fillStyle = '#090d16';
+                        cctx.beginPath();
+                        cctx.moveTo(-3, -4); cctx.lineTo(24, -3); cctx.lineTo(30, 0); cctx.lineTo(24, 3); cctx.lineTo(-3, 4);
+                        cctx.closePath(); cctx.fill();
+                        cctx.fillStyle = '#e11d48'; cctx.fillRect(-2, -3, 5, 6);
+                        cctx.fillStyle = '#facc15'; cctx.fillRect(2, -4, 2, 8);
+                        cctx.fillStyle = '#475569'; cctx.fillRect(4, -2.5, 19, 2);
+                        cctx.fillStyle = '#f8fafc';
+                        cctx.beginPath();
+                        cctx.moveTo(4, -0.5); cctx.lineTo(28, 0); cctx.lineTo(22, 2.5); cctx.lineTo(4, 2.5);
+                        cctx.closePath(); cctx.fill();
+                        cctx.fillStyle = '#f43f5e'; cctx.fillRect(5, -0.8, 17, 1.3);
+                        cctx.restore();
+                    }
+                }
             }
         }
         requestAnimationFrame(renderStartPreviewHero);
@@ -5522,6 +6105,15 @@
         { id: 'ym_ult_upgrade', heroOnly: 'yomi', name: '千刃冥狱强化', category: '专属强化', catColor: 'text-rose-300 border-rose-500/60 bg-rose-950/60', order: 112, maxLv: 5, hasCd: false, iconMatrix: [
             "..ppp..ppp..", ".pPPp..pPPp.", "pPwwp..pwwPp", "pPwp....pwPp", ".pp.oooo.pp.", "...oPPPPo...", "...oPwwPo...", "...oPPPPo...", ".pp.oooo.pp.", "pPwp....pwPp", "pPwwp..pwwPp", ".pPPp..pPPp."
         ], getDesc(l) { return `冥狱刀轮伤害+10%（${50 + l * 10}%），大招范围减速+6%（${20 + l * 6}%），冷却-5%（${fmt1(45 * (1 - l * 0.05))}秒）。`; } },
+        { id: 'xl_passive_upgrade', heroOnly: 'xinglan', name: '周天剑环强化', category: '专属强化', catColor: 'text-indigo-300 border-indigo-500/60 bg-indigo-950/60', order: 113, maxLv: 5, hasCd: false, iconMatrix: [
+            "....bbbb....", "..bbwwwwbb..", ".bwwBBBBwwb.", "bwBB..ooBBwb", "bwB.oobwwobw", "bwB.obwwwobw", "bwB.oobwwobw", "bwBB..ooBBwb", ".bwwBBBBwwb.", "..bbwwwwbb..", "....bbbb....", "............"
+        ], getDesc(l) { return `周天剑环接触伤害+6%（${18 + l * 6}%攻击力；同一敌人每0.33秒至多受1次伤害）。`; } },
+        { id: 'xl_skill_upgrade', heroOnly: 'xinglan', name: '万剑归鞘强化', category: '专属强化', catColor: 'text-amber-300 border-amber-500/60 bg-amber-950/60', order: 114, maxLv: 5, hasCd: false, iconMatrix: [
+            ".b........b.", "bwb..bb..bwb", ".bwb.ww.bwb.", "..bwbwwbwb..", "...bwwwwb...", ".bbwwwwwwbb.", "..bwwwwwwb..", "...byyyyyb..", "....byyyb...", ".....ooo....", "............", "............"
+        ], getDesc(l) { return `首把回收飞剑伤害+10%（${50 + l * 10}%攻击力，后续每把递减20%，保底20%），冷却-5%（${fmt1(18 * (1 - l * 0.05))}秒）。`; } },
+        { id: 'xl_ult_upgrade', heroOnly: 'xinglan', name: '万剑归宗强化', category: '专属强化', catColor: 'text-rose-300 border-rose-500/60 bg-rose-950/60', order: 115, maxLv: 5, hasCd: false, iconMatrix: [
+            "..b..bb..b..", ".bwb.ww.bwb.", ".bwb.ww.bwb.", "..b.bwwb.b..", ".bbbwwwwbbb.", "bwwwBBBBwwwb", ".bbbwwwwbbb.", "..b.bwwb.b..", ".bwb.ww.bwb.", "..o..oo..o..", "............", "............"
+        ], getDesc(l) { const cnt = [2, 3, 3, 4, 4, 5][l] || 3; return `背后灵阵每0.20秒召唤追踪飞剑数量提升至${cnt}把（每把35%攻击力），冷却-5%（${fmt1(45 * (1 - l * 0.05))}秒）。`; } },
 
         // 2. 近战战技 (201 ~ 205) —— 全新独立像素图标设计
         { id: 'melee_charge_strike', meleeOnly: true, name: '蓄势拔刀', category: '近战战技', catColor: 'text-pink-300 border-pink-500/60 bg-pink-950/60', order: 201, maxLv: 5, hasCd: false, iconMatrix: ["....yy....", ".y..ww..y.", "..y.ww.y..", "yyyywwyyyy", "..obbbbbo.", ".obBwwwBbo", ".obBwwwBbo", "..obbbbbo.", "....oo....", ".........."], getDesc(l) { return `1.5秒内未普攻，下一次普攻伤害提高${l * 20}%。`; } },
@@ -5535,8 +6127,8 @@
         { id: 'bleed_cut', name: '流血', category: '元素特效', catColor: 'text-rose-300 border-rose-500/70 bg-rose-950/70', order: 302, maxLv: 5, hasCd: false, iconMatrix: ["....oo....", "...oRRo...", "..oRrrRo..", ".oRrwwrRo.", "oRrwrrwrRo", "oRrrrrrrRo", ".oRrrrrRo.", "..oRRRRo..", "...oooo...", ".........."], getDesc(l) { return `普攻命中叠加流血（最高10层），每0.5秒造成层数×${l}的伤害。`; } },
         { id: 'arc_lightning', name: '电弧', category: '元素特效', catColor: 'text-sky-300 border-sky-400/70 bg-sky-950/70', order: 303, maxLv: 5, hasCd: false, iconMatrix: [".....ooo..", "....obwo..", "...obwo...", "..obwwo...", ".obwwwwo..", "..oooobwo.", "....obwo..", "...obwo...", "..ooo.....", ".........."], getDesc(l) { return `每第5次普攻命中释放连锁电弧，对目标及周围2名敌人造成${l * 10}点雷电伤害。`; } },
         // 4. 枪械改造与战术体能 (401 ~ 407)
-        { id: 'multishot', heroOnly: 'rinne', name: '多重弹道', category: '枪械改造', catColor: 'text-emerald-300 border-emerald-500/60 bg-emerald-950/50', order: 401, maxLv: 5, hasCd: false, iconMatrix: [".yy.yy.yy.", ".yy.yy.yy.", ".oo.oo.oo.", ".YY.YY.YY.", ".YY.YY.YY.", ".YY.YY.YY.", ".oo.oo.oo.", "..........", "..........", ".........."], getDesc(l) { return `普攻子弹数量+1（${1 + l}发；同时命中同一目标第2发40%、第3发起20%伤害）。`; } },
-        { id: 'mag_size', excludeHeroes: ['sakura', 'yomi'], name: '扩容弹匣', category: '枪械改造', catColor: 'text-emerald-300 border-emerald-500/60 bg-emerald-950/50', order: 402, maxLv: 5, hasCd: false, iconMatrix: ["..oooooo..", ".oAAAAAao.", ".oAyyyyAo.", ".oAaaaaAo.", ".oAyyyyAo.", ".oAaaaaAo.", ".oAyyyyAo.", ".oAAAAAAo.", "..oooooo..", ".........."], getDesc(l) { const baseMag = (player && player.heroId === 'chinatsu') ? 2 : 6; return `弹匣容量+1（${baseMag + l}发）。`; } },
+        { id: 'multishot', heroOnly: ['rinne', 'xinglan'], name: '多重弹道', category: '枪械改造', catColor: 'text-emerald-300 border-emerald-500/60 bg-emerald-950/50', order: 401, maxLv: 5, hasCd: false, iconMatrix: [".yy.yy.yy.", ".yy.yy.yy.", ".oo.oo.oo.", ".YY.YY.YY.", ".YY.YY.YY.", ".YY.YY.YY.", ".oo.oo.oo.", "..........", "..........", ".........."], getDesc(l) { return `普攻投射物数量+1（${1 + l}发；同时命中同一目标第2发40%、第3发起20%伤害；星澜仅中心主剑落地留存）。`; } },
+        { id: 'mag_size', excludeHeroes: ['sakura', 'yomi'], name: '扩容弹匣', category: '枪械改造', catColor: 'text-emerald-300 border-emerald-500/60 bg-emerald-950/50', order: 402, maxLv: 5, hasCd: false, iconMatrix: ["..oooooo..", ".oAAAAAao.", ".oAyyyyAo.", ".oAaaaaAo.", ".oAyyyyAo.", ".oAaaaaAo.", ".oAyyyyAo.", ".oAAAAAAo.", "..oooooo..", ".........."], getDesc(l) { const baseMag = (player && player.heroId === 'chinatsu') ? 2 : ((player && player.heroId === 'xinglan') ? 4 : 6); return `弹匣/飞剑容量+1（${baseMag + l}发；星澜场上最大留存飞剑数同步提升至${4 + l}把）。`; } },
         { id: 'reload_speed', excludeHeroes: ['sakura', 'yomi'], name: '快速装填', category: '枪械改造', catColor: 'text-emerald-300 border-emerald-500/60 bg-emerald-950/50', order: 403, maxLv: 5, hasCd: false, iconMatrix: ["..oooooo..", ".obbbbbbo.", "obwyyyywbo", "obyooooYbo", "obyo..oYbo", "obyooooYbo", "obwyyyywbo", ".obbbbbbo.", "..oooooo..", ".........."], getDesc(l) { return `换弹时间-10%（-${l * 10}%）。`; } },
         { id: 'pierce_up', excludeHeroes: ['sakura', 'yomi'], name: '钨芯穿甲弹', category: '枪械改造', catColor: 'text-emerald-300 border-emerald-500/60 bg-emerald-950/50', order: 404, maxLv: 5, hasCd: false, iconMatrix: [".......bb.", "......bwwb", ".....bwwwb", "....bwwwb.", "...bwwwb..", "..byyyb...", ".byyyb....", "byyyb.....", "ooo.......", ".........."], getDesc(l) { return `子弹穿透数量+1（${l}只；每次穿透伤害-20%，最低保留50%）。`; } },
         { id: 'xp_magnet', name: '晶核磁力仪', category: '战术体能', catColor: 'text-slate-200 border-slate-500/60 bg-slate-800/70', order: 406, maxLv: 5, hasCd: false, iconMatrix: [".rrr..bbb.", ".rrr..bbb.", ".www..www.", ".aaaaaaaa.", ".aaaaaaaa.", "..aaaaaa..", "...oooo...", "..........", "..........", ".........."], getDesc(l) { return `拾取范围与经验获取+10%（+${l * 10}%）。`; } },
@@ -5817,6 +6409,66 @@
             if (segmentIntersectsRect(x1, y1, x2, y2, obstacles[i].x - pad, obstacles[i].y - pad, obstacles[i].w + pad * 2, obstacles[i].h + pad * 2)) return false;
         }
         return true;
+    }
+
+    // 精确有向骨墙碰撞解算：阻挡玩家一切常规移动与高速闪避/冲刺穿越
+    function resolvePlayerBoneWallsCollision(p, prevX, prevY) {
+        if (!p || !hazardZones || hazardZones.length === 0) return;
+        for (let i = 0; i < hazardZones.length; i++) {
+            const hz = hazardZones[i];
+            if (!hz || hz.type !== 'bone_wall_active') continue;
+            const halfLen = (hz.wallLength || 118) * 0.5;
+            const halfThick = (hz.wallWidth || 22) * 0.5;
+            const ang = hz.wallAngle || 0;
+            const cosA = Math.cos(ang), sinA = Math.sin(ang);
+
+            // 转换到骨墙局部坐标系（X轴沿墙长，Y轴沿墙厚法线）
+            const dxCur = p.x - hz.x, dyCur = p.y - hz.y;
+            let lx = dxCur * cosA + dyCur * sinA;
+            let ly = -dxCur * sinA + dyCur * cosA;
+
+            if (typeof prevX === 'number' && typeof prevY === 'number') {
+                const dxPrev = prevX - hz.x, dyPrev = prevY - hz.y;
+                const lpx = dxPrev * cosA + dyPrev * sinA;
+                const lpy = -dxPrev * sinA + dyPrev * cosA;
+                // 防止高速闪避（翻滚/瞬步/影袭）直接单帧跨过骨墙法线中轴
+                if ((lpy * ly < 0) && Math.abs(lpx) <= halfLen + p.radius * 0.8 && Math.abs(lx) <= halfLen + p.radius * 0.8) {
+                    const side = lpy >= 0 ? 1 : -1;
+                    ly = side * (halfThick + p.radius + 0.5);
+                    p.x = hz.x + lx * cosA - ly * sinA;
+                    p.y = hz.y + lx * sinA + ly * cosA;
+                    continue;
+                }
+            }
+
+            const closestLx = clampVal(lx, -halfLen, halfLen);
+            const closestLy = clampVal(ly, -halfThick, halfThick);
+            const diffX = lx - closestLx, diffY = ly - closestLy;
+            const distSq = diffX * diffX + diffY * diffY;
+            if (distSq < p.radius * p.radius) {
+                const dist = Math.sqrt(distSq);
+                let nlx = 0, nly = 0, overlap = 0;
+                if (dist > 0.0001) {
+                    nlx = diffX / dist;
+                    nly = diffY / dist;
+                    overlap = p.radius - dist;
+                } else {
+                    const penX = halfLen - Math.abs(lx);
+                    const penY = halfThick - Math.abs(ly);
+                    if (penY <= penX) {
+                        nly = ly >= 0 ? 1 : -1;
+                        overlap = penY + p.radius + 1;
+                    } else {
+                        nlx = lx >= 0 ? 1 : -1;
+                        overlap = penX + p.radius + 1;
+                    }
+                }
+                const worldNx = nlx * cosA - nly * sinA;
+                const worldNy = nlx * sinA + nly * cosA;
+                p.x = clampVal(p.x + worldNx * overlap, -HALF_MAP + p.radius, HALF_MAP - p.radius);
+                p.y = clampVal(p.y + worldNy * overlap, -HALF_MAP + p.radius, HALF_MAP - p.radius);
+            }
+        }
     }
 
     const NAV_CELL = 25, NAV_COLS = MAP_SIZE / NAV_CELL, NAV_ROWS = MAP_SIZE / NAV_CELL, NAV_TOTAL = NAV_COLS * NAV_ROWS;
@@ -7403,10 +8055,10 @@
     let hudCache = { hpStr: '', hpPct: -1, shieldStr: '', shieldPct: -1, xpStr: '', xpPct: -1, lv: -1, ammoStr: '', waveStr: '', timerStr: '', bossSubStr: '', aliveCount: -1, kills: -1, gold: -1, grenadeLvStr: '', grenadeCdStr: '', dodgeLvStr: '', dodgeCdStr: '', potionCount: -1, potionCdStr: '', ultLvStr: '', ultCdStr: '', ultActiveStr: '' };
 
     function createInitialPlayer(heroId = 'rinne') {
-        const isChinatsu = heroId === 'chinatsu', isSakura = heroId === 'sakura', isYomi = heroId === 'yomi';
+        const isChinatsu = heroId === 'chinatsu', isSakura = heroId === 'sakura', isYomi = heroId === 'yomi', isXinglan = heroId === 'xinglan';
         const initHp = 100;
         return {
-            heroId: isYomi ? 'yomi' : (isSakura ? 'sakura' : (isChinatsu ? 'chinatsu' : 'rinne')),
+            heroId: isXinglan ? 'xinglan' : (isYomi ? 'yomi' : (isSakura ? 'sakura' : (isChinatsu ? 'chinatsu' : 'rinne'))),
             x: 0, y: 0, radius: 16, facing: 1, aimAngle: 0, animTimer: 0, animFrame: 0, isMoving: false,
             lastMoveDirX: 1, lastMoveDirY: 0, autoCruiseActive: false, autoCruiseDirX: 0, autoCruiseDirY: 0,
             dodgeCdTimer: 0, dodgeBaseCd: 0.5, dodgeInvulnTimer: 0,
@@ -7418,22 +8070,23 @@
             muzzleFlashTimer: 0, recoilOffset: 0, level: 1, xp: 0, xpNext: getXpRequired(1),
             hp: initHp, maxHp: initHp, shield: 0, shieldTimer: 0,
             sunfireTickTimer: 1.0, periodicShieldTimer: 0,
-            baseMoveSpeed: 205, baseDamage: isYomi ? 32 : (isSakura ? 35 : (isChinatsu ? 30 : 25)),
-            baseFireInterval: isYomi ? 0.68 : (isSakura ? 0.475 : (isChinatsu ? 0.48 : 0.4)),
-            reloadDuration: isChinatsu ? 0.8 : 1.2,
-            baseAttackRange: isYomi ? 130 : (isSakura ? 105 : (isChinatsu ? 190 : 290)),
+            baseMoveSpeed: 205, baseDamage: isXinglan ? 24 : (isYomi ? 32 : (isSakura ? 35 : (isChinatsu ? 30 : 25))),
+            baseFireInterval: isXinglan ? 0.42 : (isYomi ? 0.68 : (isSakura ? 0.475 : (isChinatsu ? 0.48 : 0.4))),
+            reloadDuration: isXinglan ? 1.0 : (isChinatsu ? 0.8 : 1.2),
+            baseAttackRange: isXinglan ? 270 : (isYomi ? 130 : (isSakura ? 105 : (isChinatsu ? 190 : 290))),
             basePickupRadius: 95,
-            ammo: (isSakura || isYomi) ? 1 : (isChinatsu ? 2 : 6), maxAmmo: (isSakura || isYomi) ? 1 : (isChinatsu ? 2 : 6),
+            ammo: (isSakura || isYomi) ? 1 : (isChinatsu ? 2 : (isXinglan ? 4 : 6)), maxAmmo: (isSakura || isYomi) ? 1 : (isChinatsu ? 2 : (isXinglan ? 4 : 6)),
             fireTimer: 0, isReloading: false, reloadTimer: 0, invulnTimer: 0, upgradeInvulnTimer: 0, regenTimer: 0,
             pendingReloadStrikeTimer: 0, pendingReloadStrikeTarget: null, rangeHighlightTimer: 0,
-            grenadeCdTimer: 0, grenadeBaseCd: isYomi ? 16.0 : (isChinatsu ? 15.0 : 20.0),
-            ultCdTimer: 0, ultBaseCd: 45.0, ultActiveTimer: 0, ultDuration: (!isChinatsu && !isSakura && !isYomi) ? 8.0 : 10.0,
+            grenadeCdTimer: 0, grenadeBaseCd: isXinglan ? 18.0 : (isYomi ? 16.0 : (isChinatsu ? 15.0 : 20.0)),
+            ultCdTimer: 0, ultBaseCd: 45.0, ultActiveTimer: 0, ultDuration: (isXinglan || (!isChinatsu && !isSakura && !isYomi)) ? 8.0 : 10.0,
             sgPassiveCdTimer: 0, sgPassiveBaseCd: 10.0, sgSpeedBoostTimer: 0, sgSpeedBoostDuration: 2.0, sgNextShotBuff: false,
             sakuraSwingCount: 0, sakuraPendingSecondSlashTimer: 0, sakuraPendingSecondSlashAngle: 0, sakuraPendingComboSalvoState: null,
             sakuraPendingPhantomSlashTimer: 0, sakuraPendingPhantomSlashAngle: 0,
             yomiPendingPhantomTimer: 0, yomiPendingPhantomAngle: 0, phantomSideToggle: 1,
             sakuraSwordSwingDir: 1, sakuraSwordSwingVisualTimer: 0, sakuraPostSkillSpeedTimer: 0,
             yomiBlades: [], yomiSkillState: { active: false, timer: 0, maxTimer: 4.0, targetUid: null }, yomiPullAnim: null, yomiDashAnim: null, yomiVampBuffTimer: 0, yomiUltTickTimer: 0.25,
+            xinglanRingAngle: 0, xinglanGroundSwords: [], xinglanReturningSwords: [], xinglanUltTickTimer: 0,
             noAttackTimer: 0, battleSpiritStacks: 0, battleSpiritTimer: 0, phantomAfterglowTimer: 0,
             swordWaveTimer: 0, swordWaveReady: false,
             droneFireTimer: 0.8, execMarkCdTimer: 0, holoDecoyTimer: 2.0, bailoutUsedThisWave: false,
@@ -7448,6 +8101,7 @@
                 sg_passive_upgrade: 0, sg_skill_upgrade: 0, sg_ult_upgrade: 0,
                 sk_passive_upgrade: 0, sk_skill_upgrade: 0, sk_ult_upgrade: 0,
                 ym_passive_upgrade: 0, ym_skill_upgrade: 0, ym_ult_upgrade: 0,
+                xl_passive_upgrade: 0, xl_skill_upgrade: 0, xl_ult_upgrade: 0,
                 melee_charge_strike: 0, melee_armor_break: 0, melee_phantom_slash: 0, melee_battle_spirit: 0,
                 radial_burst: 0, rocket_barrage: 0, frost_nova: 0, global_xp_collect: 0,
                 burn_mark: 0, bleed_cut: 0, arc_lightning: 0, multishot: 0,
@@ -7499,12 +8153,13 @@
 
     function getPlayerStats(p) {
         const s = p.skills, sb = p.statBonuses || {}, tr = p.trinkets || {};
-        const isChinatsu = p.heroId === 'chinatsu', isSakura = p.heroId === 'sakura', isYomi = p.heroId === 'yomi';
+        const isChinatsu = p.heroId === 'chinatsu', isSakura = p.heroId === 'sakura', isYomi = p.heroId === 'yomi', isXinglan = p.heroId === 'xinglan';
         const isMelee = MELEE_HERO_IDS.includes(p.heroId);
         const reloadLv = s.reload_upgrade || 0, grenadeLv = s.grenade_upgrade || 0, ultLv = s.ult_upgrade || 0;
         const sgPassLv = s.sg_passive_upgrade || 0, sgSkillLv = s.sg_skill_upgrade || 0, sgUltLv = s.sg_ult_upgrade || 0;
         const skPassLv = s.sk_passive_upgrade || 0, skSkillLv = s.sk_skill_upgrade || 0, skUltLv = s.sk_ult_upgrade || 0;
         const ymPassLv = s.ym_passive_upgrade || 0, ymSkillLv = s.ym_skill_upgrade || 0, ymUltLv = s.ym_ult_upgrade || 0;
+        const xlPassLv = s.xl_passive_upgrade || 0, xlSkillLv = s.xl_skill_upgrade || 0, xlUltLv = s.xl_ult_upgrade || 0;
         const reloadSpdLv = s.reload_speed || 0, lifestealLv = s.lifesteal || 0;
         const battleSpiritLv = s.melee_battle_spirit || 0;
         const activeSpiritStacks = (battleSpiritLv > 0 && (p.battleSpiritTimer || 0) > 0) ? (p.battleSpiritStacks || 0) : 0;
@@ -7624,13 +8279,13 @@
             armorReduction: Math.min(0.50, combinedDr),
             bulletCount: isChinatsu ? 6 : (1 + s.multishot),
             bulletPierce: 1 + s.pierce_up,
-            maxAmmo: (isSakura || isYomi) ? 1 : ((isChinatsu ? 2 : 6) + (s.mag_size || 0)),
+            maxAmmo: (isSakura || isYomi) ? 1 : ((isChinatsu ? 2 : (isXinglan ? 4 : 6)) + (s.mag_size || 0)),
             reloadStrikeCount: 1 + reloadLv,
             reloadStrikePierce: 2 + reloadLv,
             reloadStrikeDmgMult: 1.50 + reloadLv * 0.20,
             grenadeCount: 1 + grenadeLv,
-            grenadeMaxCd: round1((isYomi ? 16.0 : (isSakura ? (20.0 * (1 - skSkillLv * 0.05)) : (isChinatsu ? (15.0 * (1 - sgSkillLv * 0.05)) : (p.grenadeBaseCd * (1 - grenadeLv * 0.05))))) * quantumWatchMult),
-            ultMaxCd: isYomi ? (p.ultBaseCd * (1 - ymUltLv * 0.05)) : (isSakura ? (p.ultBaseCd * (1 - skUltLv * 0.05)) : (isChinatsu ? (p.ultBaseCd * (1 - sgUltLv * 0.05)) : (p.ultBaseCd * (1 - ultLv * 0.05)))),
+            grenadeMaxCd: round1((isXinglan ? (18.0 * (1 - xlSkillLv * 0.05)) : (isYomi ? 16.0 : (isSakura ? (20.0 * (1 - skSkillLv * 0.05)) : (isChinatsu ? (15.0 * (1 - sgSkillLv * 0.05)) : (p.grenadeBaseCd * (1 - grenadeLv * 0.05)))))) * quantumWatchMult),
+            ultMaxCd: isXinglan ? round1(p.ultBaseCd * (1 - xlUltLv * 0.05)) : (isYomi ? (p.ultBaseCd * (1 - ymUltLv * 0.05)) : (isSakura ? (p.ultBaseCd * (1 - skUltLv * 0.05)) : (isChinatsu ? (p.ultBaseCd * (1 - sgUltLv * 0.05)) : (p.ultBaseCd * (1 - ultLv * 0.05))))),
             sgPassiveMaxCd: 10.0 * (1 - sgPassLv * 0.05),
             sgPassiveDmgMult: 0.50 * (1 + sgPassLv * 0.10),
             sgSkillNextDmgBonus: 0.20 + sgSkillLv * 0.10,
@@ -7649,6 +8304,10 @@
             ymUltWheelDmgMult: 0.50 + ymUltLv * 0.10,
             ymUltSlowPct: 0.20 + ymUltLv * 0.06,
             ymUltExtraBladeDmgMult: 0.60 + ymUltLv * 0.10,
+            xlRingDmgMult: 0.18 + xlPassLv * 0.06,
+            xlRecallBaseDmgMult: 0.50 + xlSkillLv * 0.10,
+            xlUltSwordsPerWave: [2, 3, 3, 4, 4, 5][xlUltLv] || 2,
+            xlUltSwordDmgMult: 0.35,
             lifestealRate: totalLifestealRate,
             dodgeChance: Math.min(0.50, Math.max(0, ((sb.dodgePct || 0) + (s.dodge_chance || 0) * 2) * 0.01)),
             sunfireLv: s.sunfire_aegis || 0,
@@ -8207,12 +8866,14 @@
         const anchorY = (lastT && lastT.hp > 0) ? lastT.y : (vs.lastAnchorY ?? player.y);
         const anchorR = (lastT && lastT.hp > 0) ? (lastT.radius || 16) : (vs.lastAnchorRadius || 16);
         const landDist = anchorR + player.radius + 26;
+        const prevLandX = player.x, prevLandY = player.y;
         player.x = clampVal(anchorX + dirX * landDist, -HALF_MAP + player.radius, HALF_MAP - player.radius);
         player.y = clampVal(anchorY + dirY * landDist, -HALF_MAP + player.radius, HALF_MAP - player.radius);
         for (let i = 0; i < obstacles.length; i++) {
             const col = resolveCircleRectCollision(player.x, player.y, player.radius, obstacles[i]);
             if (col) { player.x += col.nx * col.overlap; player.y += col.ny * col.overlap; }
         }
+        resolvePlayerBoneWallsCollision(player, prevLandX, prevLandY);
         if (Math.abs(dirX) > 0.05) player.facing = dirX > 0 ? 1 : -1;
         vs.active = false; vs.finishingNextTick = false; vs.currentTarget = null; vs.visitedIds.clear(); vs.targetHitCounts = {};
         player.invulnTimer = Math.max(player.invulnTimer, 0.5);
@@ -8336,7 +8997,7 @@
         }
         for (let i = hazardZones.length - 1; i >= 0; i--) {
             const hz = hazardZones[i];
-            if (hz && (hz.type === 'elite_acid_warn' || hz.type === 'elite_spore_bomb') && typeof hz.startX === 'number') {
+            if (hz && (hz.type === 'elite_acid_warn' || hz.type === 'elite_spore_bomb' || hz.type === 'mire_spit_warn') && typeof hz.startX === 'number') {
                 const prog = Math.min(1, (hz.timer || 0) / Math.max(0.01, hz.duration || 1));
                 const curX = hz.startX + (hz.x - hz.startX) * prog;
                 const curY = hz.startY + (hz.y - hz.startY) * prog;
@@ -8425,6 +9086,15 @@
             sfx.levelUp(); sfx.shotgunBlast(true);
             spawnPixelParticles(player.x, player.y, '#38bdf8', 22, 180, 4, 0.4);
             spawnFloatingText(player.x, player.y - 44, `重装壁垒! 护盾+${fmt1(gainShield)}`, '#38bdf8', 14, -48);
+            updateHUD(true);
+            return;
+        }
+        if (player.heroId === 'xinglan') {
+            player.isReloading = false; player.reloadTimer = 0; player.ammo = stats.maxAmmo;
+            player.xinglanUltTickTimer = 0.02;
+            sfx.levelUp(); sfx.swordSlash(true);
+            spawnPixelParticles(player.x, player.y, '#818cf8', 24, 195, 4, 0.42);
+            spawnFloatingText(player.x, player.y - 44, `万剑归宗(8s)! 每波${stats.xlUltSwordsPerWave}剑`, '#818cf8', 14, -48);
             updateHUD(true);
             return;
         }
@@ -8556,6 +9226,44 @@
             player.sakuraVanishState = { active: true, decoyX: player.x, decoyY: player.y, totalStrikes, strikesLeft: totalStrikes, stepTimer: 0.02, finishingNextTick: false, currentTarget: nearest, lastAnchorX: nearest.x, lastAnchorY: nearest.y, lastAnchorRadius: nearest.radius || 16, visitedIds: new Set(), targetHitCounts: {} };
             spawnPixelParticles(player.x, player.y, '#f472b6', 18, 160, 4, 0.32);
             spawnFloatingText(player.x, player.y - 42, '影袭斩!', '#f472b6', 14, -46);
+            updateHUD(true);
+            return;
+        }
+        if (player.heroId === 'xinglan') {
+            const gSwords = player.xinglanGroundSwords || [];
+            if (gSwords.length === 0) {
+                spawnFloatingText(player.x, player.y - 36, '场上无留存飞剑!', '#93c5fd', 12, -38);
+                return;
+            }
+            player.grenadeCdTimer = stats.grenadeMaxCd;
+            const recallCount = gSwords.length;
+            if (player.isReloading) {
+                player.isReloading = false;
+                player.reloadTimer = 0;
+                player.ammo = Math.min(stats.maxAmmo, recallCount);
+            } else {
+                player.ammo = Math.min(stats.maxAmmo, player.ammo + recallCount);
+            }
+            const castHitCounts = {};
+            const baseRecallDmg = stats.damage * stats.xlRecallBaseDmgMult;
+            if (!player.xinglanReturningSwords) player.xinglanReturningSwords = [];
+            for (let i = 0; i < gSwords.length; i++) {
+                const gs = gSwords[i];
+                spawnPixelParticles(gs.x, gs.y, '#38bdf8', 6, 110, 3, 0.24);
+                player.xinglanReturningSwords.push({
+                    x: gs.x,
+                    y: gs.y,
+                    baseDmg: baseRecallDmg,
+                    castHitCounts,
+                    hitIds: new Set(),
+                    speed: 1080 + i * 25
+                });
+            }
+            player.xinglanGroundSwords = [];
+            sfx.swordSlash(true);
+            sfx.reloadStrike();
+            spawnPixelParticles(player.x, player.y, '#818cf8', 16, 155, 4, 0.32);
+            spawnFloatingText(player.x, player.y - 42, `万剑归鞘! 回收x${recallCount}`, '#38bdf8', 14, -46);
             updateHUD(true);
             return;
         }
@@ -8998,11 +9706,14 @@
 
         let chosenKind = 'walker';
         if (isSpawningElite) {
-            // 按 20 波解锁表平滑混编已解锁的精英怪种：W2 自爆 | W5 酸液 | W7 骨刺 | W10 孢子 | W13 空投暴徒 | W15 脉冲殖装者
+            // 按 20 波解锁表平滑混编已解锁的精英怪种：W2 自爆 | W5 酸液 | W6 腐沼粘液怪 | W7 骨刺 | W8 骸骨筑墙者 | W10 孢子 | W11 三刃处刑者 | W13 空投暴徒 | W15 脉冲殖装者
             const unlockedElites = ['exploder'];
             if (curWave >= 5) unlockedElites.push('spitter');
+            if (curWave >= 6) unlockedElites.push('mire_dredger');
             if (curWave >= 7) unlockedElites.push('bone_thrower');
+            if (curWave >= 8) unlockedElites.push('bone_weaver');
             if (curWave >= 10) unlockedElites.push('spore_lobber');
+            if (curWave >= 11) unlockedElites.push('tri_blade');
             if (curWave >= 13 && Math.random() < 0.16) {
                 chosenKind = 'airdrop_brute';
             } else {
@@ -9052,7 +9763,10 @@
         else if (kind === 'exploder') { isElite = true; hp = round1(48 * hpScale); speed = (76 + Math.random() * 10) * 1.10; dmg = round1(12 * scale); xp = 6; radius = 15; }
         else if (kind === 'bone_thrower') { isElite = true; hp = round1(56 * hpScale); speed = (92 + Math.random() * 10) * 1.10; dmg = round1(11 * scale); xp = 6; radius = 14; skillCd = 1.6 + Math.random() * 0.8; }
         else if (kind === 'spitter') { isElite = true; hp = round1(72 * hpScale); speed = (80 + Math.random() * 10) * 1.10; dmg = round1(12 * scale); xp = 7; radius = 15; skillCd = 2.2 + Math.random() * 1.0; }
+        else if (kind === 'mire_dredger') { isElite = true; hp = round1(80 * hpScale); speed = (76 + Math.random() * 10) * 1.10; dmg = round1(11 * scale); xp = 8; radius = 16; skillCd = 1.8 + Math.random() * 0.8; }
+        else if (kind === 'bone_weaver') { isElite = true; hp = round1(74 * hpScale); speed = (78 + Math.random() * 10) * 1.10; dmg = round1(12 * scale); xp = 8; radius = 15; skillCd = 2.0 + Math.random() * 0.8; }
         else if (kind === 'spore_lobber') { isElite = true; hp = round1(78 * hpScale); speed = (74 + Math.random() * 10) * 1.10; dmg = round1(12 * scale); xp = 8; radius = 16; skillCd = 2.6 + Math.random() * 1.0; }
+        else if (kind === 'tri_blade') { isElite = true; hp = round1(88 * hpScale); speed = (86 + Math.random() * 10) * 1.10; dmg = round1(13 * scale); xp = 9; radius = 16; skillCd = 1.6 + Math.random() * 0.7; }
         else if (kind === 'pulse_cyborg') { isElite = true; hp = round1(82 * hpScale); speed = (80 + Math.random() * 10) * 1.10; dmg = round1(13 * scale); xp = 9; radius = 16; skillCd = 2.0 + Math.random() * 0.8; }
 
         // W10+ 解锁【血色狂暴精英】（30% 概率）：生命×1.5、伤害×1.15、移速+15%、击退抗性+60%、双倍经验与双倍金币
@@ -9073,6 +9787,7 @@
             burnStacks: 0, burnDecayTimer: 0, burnActiveTimer: 0, burnTickTimer: 0,
             bleedStacks: 0, bleedDecayTimer: 0, bleedTickTimer: 0, armorBreakStacks: 0, armorBreakTimer: 0,
             skillCd, aimTimer: 0, aimDuration: 0.55, aimAngle: 0, followUpTimer: 0, followUpAngle: 0,
+            triState: 'guard', triTimer: 0, triDuration: 0, bladeDirAngle: player ? Math.atan2(player.y - pos.y, player.x - pos.x) : 0, mireTrailDist: 0,
             spawnEmergeTimer: emergeDur, spawnEmergeMax: emergeDur, fromVent: Boolean(pos.fromVent), ventColor: pos.ventColor || '#38bdf8'
         });
         return 1;
@@ -10225,6 +10940,22 @@
         if (z.isVoidBoss && z.voidShieldActive) {
             mult *= 0.25;
         }
+        // 三刃处刑者：三把利刃弹出期间具备 45% 正面招架减伤，激光预警阶段、侧翼/背后与收刀冷却期间无防御
+        if (z.kind === 'tri_blade' && (z.triActiveTimer || 0) > 0 && (z.triWarnTimer || 0) <= 0 && player) {
+            const angToPlayer = Math.atan2(player.y - z.y, player.x - z.x);
+            const bDir = typeof z.bladeDirAngle === 'number' ? z.bladeDirAngle : (z.facing >= 0 ? 0 : Math.PI);
+            let angDiff = Math.abs(angToPlayer - bDir) % (Math.PI * 2);
+            if (angDiff > Math.PI) angDiff = Math.PI * 2 - angDiff;
+            if (angDiff <= (46 * Math.PI) / 180) {
+                mult *= 0.55;
+                if (globalTime - (z.lastFrontParryFxTime || -10) >= 0.16) {
+                    z.lastFrontParryFxTime = globalTime;
+                    const fxX = z.x + Math.cos(bDir) * 16, fxY = (z.y - 4) + Math.sin(bDir) * 16;
+                    spawnPixelParticles(fxX, fxY, '#fef08a', 4, 95, 2.5, 0.16);
+                    sfx.playTone({ type: 'triangle', freq: 920, endFreq: 1320, duration: 0.035, gain: 0.03 });
+                }
+            }
+        }
         if ((z.deathMarkTimer || 0) > 0 && player) {
             mult *= (1 + (z.deathMarkPct || 0.20));
         }
@@ -10317,7 +11048,7 @@
             player.shield = Math.min(maxUltCap, round1((player.shield || 0) + player.maxHp * stats.sgUltKillShieldPct));
         }
 
-        const skipBossRushXp = ((waveState.mode === 'boss_rush' || waveState.mode === 'training') && z.isBoss);
+        const skipBossRushXp = (waveState.mode === 'training') || (waveState.mode === 'boss_rush' && z.isBoss);
         const delayFlameBossXp = (z.isBoss && z.isFlameBoss);
         if (!z.isMinion && !skipBossRushXp && !delayFlameBossXp) {
             const count = Math.max(1, Math.round(z.xpValue || 1));
@@ -10418,7 +11149,7 @@
             }
             if (z.isFlameBoss) {
                 const scale = getBossDamageScale(z.kind);
-                hazardZones.push({ type: 'flame_boss_death_nova', x: z.x, y: z.y, radius: 195, timer: 0, duration: 0.90, playerDamage: round1(46 * scale), zombieDamage: round1(320 * scale), bossUid: z.uid, xpDropCount: Math.max(1, Math.round(z.xpValue || 65)), triggerEndlessWaveAdvance: false });
+                hazardZones.push({ type: 'flame_boss_death_nova', x: z.x, y: z.y, radius: 195, timer: 0, duration: 0.90, playerDamage: round1(46 * scale), zombieDamage: round1(320 * scale), bossUid: z.uid, xpDropCount: Math.max(1, Math.round(z.xpValue || 65)), triggerEndlessWaveAdvance: true });
                 spawnFloatingText(z.x, z.y - 46, '烈焰暴君熔核即将自爆!', '#fb923c', 16, -32);
                 return;
             }
@@ -10427,7 +11158,7 @@
                     hazardZones.splice(k, 1);
                 }
             }
-            spawnFloatingText(z.x, z.y - 40, '暴君已击毙! 清剿剩余残敌即可通关本波', '#fbbf24', 15, -36);
+            spawnFloatingText(z.x, z.y - 40, '暴君已击毙! 直接进入下一波!', '#fbbf24', 15, -36);
             checkAndTriggerWaveClear();
         }
     }
@@ -10491,8 +11222,20 @@
 
     function checkAndTriggerWaveClear() {
         if (!waveState || waveState.mode !== 'endless' || gameState !== 'PLAYING' || waveState.waveCleared) return false;
+        if (waveState.isBossWave) {
+            // BOSS波次：BOSS被击败后无需等待场上剩余丧尸全部消灭或剩余配额刷完，场上剩余丧尸依旧留存，直接进入下一波
+            if (!waveState.bossSpawned || !waveState.bossKilled) return false;
+            for (let i = 0; i < hazardZones.length; i++) {
+                const hz = hazardZones[i];
+                if (hz && (hz.type === 'flame_boss_death_nova' || hz.type === 'flame_nova_blast_fx')) {
+                    return false;
+                }
+            }
+            waveState.waveCleared = true;
+            advanceToNextWave();
+            return true;
+        }
         if ((waveState.spawnedCount || 0) < (waveState.totalQuota || 1)) return false;
-        if (waveState.isBossWave && (!waveState.bossSpawned || !waveState.bossKilled)) return false;
         for (let i = 0; i < zombies.length; i++) {
             const z = zombies[i];
             if (z && z.hp > 0 && !z.isDummy) return false;
@@ -11945,6 +12688,101 @@
         updateHUD(true);
     };
 
+    // 训练营：召唤指定类型的丧尸（含普通感染者与全部精英丧尸）
+    window.trainingSpawnZombie = function (kindArg) {
+        if (!player || !waveState) return;
+        const kind = (kindArg && ZOMBIE_DATABASE[kindArg]) ? kindArg : 'walker';
+        const scale = getWaveScale(), hpScale = getWaveHpScale();
+
+        if (kind === 'airdrop_brute') {
+            const tPos = getPlayerTrackingPos(), lineAng = Math.random() * Math.PI * 2, spacing = 54;
+            for (let k = 0; k < 3; k++) {
+                const offsetIdx = k - 1;
+                let dropX = clampVal(tPos.x + Math.cos(lineAng) * (offsetIdx * spacing), -HALF_MAP + 65, HALF_MAP - 65);
+                let dropY = clampVal(tPos.y + Math.sin(lineAng) * (offsetIdx * spacing), -HALF_MAP + 65, HALF_MAP - 65);
+                for (let obIdx = 0; obIdx < obstacles.length; obIdx++) {
+                    const col = resolveCircleRectCollision(dropX, dropY, 20, obstacles[obIdx]);
+                    if (col) {
+                        dropX = clampVal(dropX + col.nx * (col.overlap + 6), -HALF_MAP + 65, HALF_MAP - 65);
+                        dropY = clampVal(dropY + col.ny * (col.overlap + 6), -HALF_MAP + 65, HALF_MAP - 65);
+                    }
+                }
+                hazardZones.push({ type: 'elite_airdrop_warn', x: dropX, y: dropY, radius: 38, timer: 0, duration: 0.95, scale, playerDamage: round1(18 * scale) });
+            }
+            sfx.playTone({ type: 'sawtooth', freq: 340, endFreq: 140, duration: 0.22, gain: 0.06 });
+            spawnFloatingText(player.x, player.y - 42, '召唤: ★空投重装暴徒小队!', '#fb923c', 13, -40);
+            updateHUD(true);
+            return;
+        }
+
+        const pos = findValidSpawnPosition(135, 235, 18, false);
+        let isElite = false, hp = round1(32 * hpScale), speed = (88 + Math.random() * 14) * 1.10, dmg = round1(10 * scale), xp = 3, radius = 14, skillCd = 0.6;
+        if (kind === 'dog') { hp = round1(20 * hpScale); speed = (142 + Math.random() * 15) * 1.10; dmg = round1(9 * scale); xp = 4; radius = 12; }
+        else if (kind === 'splitter') { hp = round1(42 * hpScale); speed = (92 + Math.random() * 12) * 1.10; dmg = round1(10 * scale); xp = 4; radius = 15; }
+        else if (kind === 'exploder') { isElite = true; hp = round1(48 * hpScale); speed = (76 + Math.random() * 10) * 1.10; dmg = round1(12 * scale); xp = 6; radius = 15; }
+        else if (kind === 'bone_thrower') { isElite = true; hp = round1(56 * hpScale); speed = (92 + Math.random() * 10) * 1.10; dmg = round1(11 * scale); xp = 6; radius = 14; skillCd = 0.8; }
+        else if (kind === 'spitter') { isElite = true; hp = round1(72 * hpScale); speed = (80 + Math.random() * 10) * 1.10; dmg = round1(12 * scale); xp = 7; radius = 15; skillCd = 0.8; }
+        else if (kind === 'mire_dredger') { isElite = true; hp = round1(80 * hpScale); speed = (76 + Math.random() * 10) * 1.10; dmg = round1(11 * scale); xp = 8; radius = 16; skillCd = 0.8; }
+        else if (kind === 'bone_weaver') { isElite = true; hp = round1(74 * hpScale); speed = (78 + Math.random() * 10) * 1.10; dmg = round1(12 * scale); xp = 8; radius = 15; skillCd = 0.7; }
+        else if (kind === 'spore_lobber') { isElite = true; hp = round1(78 * hpScale); speed = (74 + Math.random() * 10) * 1.10; dmg = round1(12 * scale); xp = 8; radius = 16; skillCd = 0.9; }
+        else if (kind === 'tri_blade') { isElite = true; hp = round1(88 * hpScale); speed = (86 + Math.random() * 10) * 1.10; dmg = round1(13 * scale); xp = 9; radius = 16; skillCd = 0.6; }
+        else if (kind === 'pulse_cyborg') { isElite = true; hp = round1(82 * hpScale); speed = (80 + Math.random() * 10) * 1.10; dmg = round1(13 * scale); xp = 9; radius = 16; skillCd = 0.8; }
+
+        zombies.push({
+            uid: nextZombieUid++, kind, isBoss: false, isElite, isBerserkElite: false, isMinion: false,
+            x: pos.x, y: pos.y, radius, hp, maxHp: hp, speed,
+            contactDamage: dmg, xpValue: xp, facing: player.x >= pos.x ? 1 : -1,
+            animTimer: 0, animFrame: 0, hitFlashTimer: 0, freezeTimer: 0, freezeVuln: 0, knockVx: 0, knockVy: 0,
+            waypoint: null, waypointTimer: 0, stuckTimer: 0, lastX: pos.x, lastY: pos.y,
+            burnStacks: 0, burnDecayTimer: 0, burnActiveTimer: 0, burnTickTimer: 0,
+            bleedStacks: 0, bleedDecayTimer: 0, bleedTickTimer: 0, armorBreakStacks: 0, armorBreakTimer: 0,
+            skillCd, aimTimer: 0, aimDuration: 0.55, aimAngle: 0, followUpTimer: 0, followUpAngle: 0,
+            triState: 'guard', triTimer: 0, triDuration: 0, bladeDirAngle: Math.atan2(player.y - pos.y, player.x - pos.x), mireTrailDist: 0,
+            spawnEmergeTimer: 0.25, spawnEmergeMax: 0.25, fromVent: false, ventColor: '#34d399'
+        });
+        spawnPixelParticles(pos.x, pos.y, isElite ? '#34d399' : '#38bdf8', 10, 110, 3, 0.25);
+        sfx.pickupXp();
+        const zInfo = ZOMBIE_DATABASE[kind];
+        const shortName = zInfo ? zInfo.name.split(' · ')[0] : kind;
+        spawnFloatingText(pos.x, pos.y - 32, `召唤: ${shortName}`, isElite ? '#34d399' : '#bae6fd', 12, -36);
+        updateHUD(true);
+    };
+
+    // 训练营：一键消除场上所有普通与精英丧尸及伴生骨墙/泥沼/毒池（保留木偶与Boss）
+    window.trainingClearAllZombies = function () {
+        let removed = 0;
+        for (let i = zombies.length - 1; i >= 0; i--) {
+            const z = zombies[i];
+            if (z && !z.isDummy && !z.isBoss && z.kind !== 'void_obelisk') {
+                if (player && player.yomiSkillState && player.yomiSkillState.active && player.yomiSkillState.targetUid === z.uid) {
+                    player.yomiSkillState.active = false;
+                    player.yomiSkillState.targetUid = null;
+                }
+                spawnPixelParticles(z.x, z.y, '#34d399', 8, 95, 3, 0.22);
+                zombies.splice(i, 1);
+                removed++;
+            }
+        }
+        for (let i = hazardZones.length - 1; i >= 0; i--) {
+            const t = hazardZones[i].type || '';
+            if (t.includes('elite') || t.includes('splitter') || t.includes('exploder') || t.includes('bone_wall') || t.includes('mire_')) {
+                hazardZones.splice(i, 1);
+            }
+        }
+        for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
+            const k = enemyProjectiles[i].kind || '';
+            if (k === 'elite_bone_spike' || k === 'pulse_cyborg_orb') {
+                enemyProjectiles.splice(i, 1);
+            }
+        }
+        if (player) player.mireSlowTimer = 0;
+        sfx.pickupXp();
+        if (player) {
+            spawnFloatingText(player.x, player.y - 42, removed > 0 ? `已消除全部丧尸 (${removed})` : '已清理丧尸与场地障碍', '#fda4af', 13, -40);
+        }
+        updateHUD(true);
+    };
+
     // ============================================================================
     // 【升级项自由配置页面】（支持技能升级项 + 13项属性强化自由选择，点击卡片弹出详情，仅保留 -1 / +1 与重置按钮）
     // ============================================================================
@@ -12536,11 +13374,11 @@
         if (force || Math.abs(hudCache.xpPct - xpPct) > 0.2) { hudCache.xpPct = xpPct; document.getElementById('hudXpBar').style.width = `${xpPct}%`; }
         if (force || hudCache.lv !== player.level) { hudCache.lv = player.level; document.getElementById('hudLvBadge').textContent = `LV.${player.level}`; }
 
-        const ammoKey = isSakura
+        const ammoKey = `${player.heroId}-` + (isSakura
             ? `sakura-${player.sakuraSwingCount || 0}-${(player.ultActiveTimer || 0) > 0 ? 1 : 0}`
             : (player.heroId === 'yomi'
                 ? `yomi-${(player.yomiBlades && player.yomiBlades.some(b => b.isPrimary)) ? 0 : 1}-${(player.ultActiveTimer || 0) > 0 ? 1 : 0}`
-                : `${player.ammo}/${stats.maxAmmo}-${player.isReloading ? 1 : 0}-${(player.ultActiveTimer || 0) > 0 ? (player.secondGun ? player.secondGun.ammo : 0) : -1}-${player.sgNextShotBuff ? 1 : 0}`);
+                : `${player.ammo}/${stats.maxAmmo}-${player.isReloading ? 1 : 0}-${(player.ultActiveTimer || 0) > 0 ? (player.secondGun ? player.secondGun.ammo : 0) : -1}-${player.sgNextShotBuff ? 1 : 0}`));
         if (force || hudCache.ammoStr !== ammoKey) {
             hudCache.ammoStr = ammoKey;
             const pipsEl = document.getElementById('hudAmmoPips'), reloadText = document.getElementById('hudReloadStateText');
@@ -12556,6 +13394,17 @@
                 pipsEl.innerHTML = `<div class="ammo-pip ${bladeOut ? 'empty' : 'loaded'}"></div>`;
                 reloadText.textContent = (player.ultActiveTimer || 0) > 0 ? '千刃冥狱锁镰' : (bladeOut ? '锁镰回收中...' : '断魂回旋锁镰');
                 reloadText.className = (player.ultActiveTimer || 0) > 0 ? 'text-[11px] text-purple-300 font-bold' : 'text-[11px] text-fuchsia-300 font-bold';
+            } else if (player.heroId === 'xinglan') {
+                let html = '';
+                for (let i = 0; i < stats.maxAmmo; i++) html += `<div class="ammo-pip ${i < player.ammo ? 'loaded' : 'empty'}"></div>`;
+                pipsEl.innerHTML = html;
+                if (player.isReloading) {
+                    reloadText.textContent = '凝剑召唤中...'; reloadText.className = 'text-[11px] text-sky-400 font-bold';
+                } else if ((player.ultActiveTimer || 0) > 0) {
+                    reloadText.textContent = `万剑归宗 (${player.ammo}/${stats.maxAmmo})`; reloadText.className = 'text-[11px] text-indigo-300 font-bold';
+                } else {
+                    reloadText.textContent = `星穹飞剑 (${player.ammo}/${stats.maxAmmo})`; reloadText.className = 'text-[11px] text-indigo-300 font-bold';
+                }
             } else {
                 let html = '';
                 for (let i = 0; i < stats.maxAmmo; i++) html += `<div class="ammo-pip ${i < player.ammo ? 'loaded' : 'empty'}"></div>`;
@@ -12646,7 +13495,7 @@
             }
         }
 
-        const gLv = player.heroId === 'yomi' ? (player.skills.ym_skill_upgrade || 0) : (isSakura ? (player.skills.sk_skill_upgrade || 0) : (isChinatsu ? (player.skills.sg_skill_upgrade || 0) : (player.skills.grenade_upgrade || 0)));
+        const gLv = player.heroId === 'xinglan' ? (player.skills.xl_skill_upgrade || 0) : (player.heroId === 'yomi' ? (player.skills.ym_skill_upgrade || 0) : (isSakura ? (player.skills.sk_skill_upgrade || 0) : (isChinatsu ? (player.skills.sg_skill_upgrade || 0) : (player.skills.grenade_upgrade || 0))));
         const gLvStr = gLv > 0 ? toRoman(gLv) : '';
         if (force || hudCache.grenadeLvStr !== gLvStr) {
             hudCache.grenadeLvStr = gLvStr;
@@ -12701,7 +13550,7 @@
             }
         }
 
-        const dLv = isChinatsu ? (player.skills.sg_passive_upgrade || 0) : 0, dLvStr = dLv > 0 ? toRoman(dLv) : '';
+        const dLv = isChinatsu ? (player.skills.sg_passive_upgrade || 0) : (player.heroId === 'xinglan' ? (player.skills.xl_passive_upgrade || 0) : 0), dLvStr = dLv > 0 ? toRoman(dLv) : '';
         if (force || hudCache.dodgeLvStr !== dLvStr) {
             hudCache.dodgeLvStr = dLvStr;
             const dBadge = document.getElementById('hudDodgeLvBadge');
@@ -12741,7 +13590,7 @@
             }
         }
 
-        const uLv = player.heroId === 'yomi' ? (player.skills.ym_ult_upgrade || 0) : (isSakura ? (player.skills.sk_ult_upgrade || 0) : (isChinatsu ? (player.skills.sg_ult_upgrade || 0) : (player.skills.ult_upgrade || 0)));
+        const uLv = player.heroId === 'xinglan' ? (player.skills.xl_ult_upgrade || 0) : (player.heroId === 'yomi' ? (player.skills.ym_ult_upgrade || 0) : (isSakura ? (player.skills.sk_ult_upgrade || 0) : (isChinatsu ? (player.skills.sg_ult_upgrade || 0) : (player.skills.ult_upgrade || 0))));
         const uLvStr = uLv > 0 ? toRoman(uLv) : '';
         if (force || hudCache.ultLvStr !== uLvStr) {
             hudCache.ultLvStr = uLvStr;
@@ -13081,6 +13930,115 @@
             }
         }
 
+        // 星澜被动【周天剑环 · 留影】、小技能【万剑归鞘】回收与大招【万剑归宗】追踪飞剑
+        if (player.heroId === 'xinglan') {
+            player.xinglanRingAngle = (player.xinglanRingAngle || 0) + dt * 4.2;
+            player.xinglanSwordRingAngle = player.xinglanRingAngle;
+            const orbitCount = player.isReloading ? 0 : Math.max(0, player.ammo || 0);
+            if (orbitCount > 0) {
+                const ringRadius = 72;
+                const ringRawDmg = stats.damage * stats.xlRingDmgMult;
+                for (let si = 0; si < orbitCount; si++) {
+                    const sAng = player.xinglanRingAngle + (Math.PI * 2 * si) / orbitCount;
+                    const sx = player.x + Math.cos(sAng) * ringRadius;
+                    const sy = (player.y - 4) + Math.sin(sAng) * ringRadius;
+                    for (let j = 0; j < zombies.length; j++) {
+                        const z = zombies[j];
+                        if (!z || z.hp <= 0 || z.isHidden) continue;
+                        if (globalTime - (z.lastSwordRingHitTime || -999) < 0.33) continue;
+                        if (Math.hypot(z.x - sx, z.y - sy) <= z.radius + 18) {
+                            z.lastSwordRingHitTime = globalTime;
+                            const isCrit = stats.critRate > 0 && Math.random() < stats.critRate;
+                            const finalRingDmg = isCrit ? round1(ringRawDmg * stats.critDamageMult) : round1(ringRawDmg);
+                            damageZombie(z, finalRingDmg, 0, 0, '#60a5fa', isCrit);
+                            spawnPixelParticles(z.x, z.y, '#38bdf8', 3, 85, 2.5, 0.16);
+                            sfx.playTone({ type: 'triangle', freq: 680, endFreq: 960, duration: 0.04, gain: 0.03 });
+                        }
+                    }
+                }
+            }
+            if (player.xinglanGroundSwords && player.xinglanGroundSwords.length > 0) {
+                for (let i = player.xinglanGroundSwords.length - 1; i >= 0; i--) {
+                    const gs = player.xinglanGroundSwords[i];
+                    gs.life -= dt;
+                    if (gs.life <= 0) {
+                        player.xinglanGroundSwords.splice(i, 1);
+                    }
+                }
+            }
+            if (player.xinglanReturningSwords && player.xinglanReturningSwords.length > 0) {
+                for (let i = player.xinglanReturningSwords.length - 1; i >= 0; i--) {
+                    const rs = player.xinglanReturningSwords[i];
+                    const prevX = rs.x, prevY = rs.y;
+                    rs.prevX = prevX; rs.prevY = prevY;
+                    const dx = player.x - rs.x, dy = (player.y - 4) - rs.y;
+                    const dist = Math.hypot(dx, dy);
+                    const step = (rs.speed || 1100) * dt;
+                    if (dist <= step + 14) {
+                        rs.x = player.x;
+                        rs.y = player.y - 4;
+                    } else {
+                        rs.x += (dx / dist) * step;
+                        rs.y += (dy / dist) * step;
+                    }
+                    rs.angle = Math.atan2(dy, dx);
+                    const segLen = Math.hypot(rs.x - prevX, rs.y - prevY) || 1;
+                    const ux = (rs.x - prevX) / segLen, uy = (rs.y - prevY) / segLen;
+                    for (let j = 0; j < zombies.length; j++) {
+                        const z = zombies[j];
+                        if (!z || z.hp <= 0 || z.isHidden || rs.hitIds.has(z.uid)) continue;
+                        const tProj = clampVal((z.x - prevX) * ux + (z.y - prevY) * uy, 0, segLen);
+                        const closestX = prevX + ux * tProj, closestY = prevY + uy * tProj;
+                        if (Math.hypot(z.x - closestX, z.y - closestY) <= z.radius + 18) {
+                            rs.hitIds.add(z.uid);
+                            const hitIdx = rs.castHitCounts[z.uid] || 0;
+                            rs.castHitCounts[z.uid] = hitIdx + 1;
+                            const decayMult = Math.max(0.20, 1.0 - hitIdx * 0.20);
+                            const rawRecallDmg = rs.baseDmg * decayMult;
+                            const isCrit = stats.critRate > 0 && Math.random() < stats.critRate;
+                            const finalRecallDmg = isCrit ? round1(rawRecallDmg * stats.critDamageMult) : round1(rawRecallDmg);
+                            damageZombie(z, finalRecallDmg, 0, 0, '#38bdf8', isCrit);
+                            spawnPixelParticles(z.x, z.y, '#7dd3fc', 5, 115, 3, 0.2);
+                        }
+                    }
+                    if (dist <= step + 14) {
+                        player.xinglanReturningSwords.splice(i, 1);
+                    }
+                }
+            }
+            if ((player.ultActiveTimer || 0) > 0) {
+                player.xinglanUltTickTimer = (typeof player.xinglanUltTickTimer === 'number' ? player.xinglanUltTickTimer : 0.20) - dt;
+                if (player.xinglanUltTickTimer <= 0) {
+                    player.xinglanUltTickTimer += 0.20;
+                    const swordCnt = stats.xlUltSwordsPerWave || 2;
+                    const ultRawDmg = stats.damage * (stats.xlUltSwordDmgMult || 0.35);
+                    const aliveTargets = zombies.filter(z => z && z.hp > 0 && !z.isHidden && Math.hypot(z.x - player.x, z.y - player.y) <= 520)
+                        .sort((a, b) => (b.kind === 'void_obelisk' ? 1 : 0) - (a.kind === 'void_obelisk' ? 1 : 0) || Math.hypot(a.x - player.x, a.y - player.y) - Math.hypot(b.x - player.x, b.y - player.y));
+                    for (let sIdx = 0; sIdx < swordCnt; sIdx++) {
+                        const offsetIdx = sIdx - (swordCnt - 1) * 0.5;
+                        const spawnX = player.x - player.facing * 16 + offsetIdx * 8;
+                        const spawnY = player.y - 20 - Math.abs(offsetIdx) * 5;
+                        const tgt = aliveTargets.length > 0 ? aliveTargets[sIdx % aliveTargets.length] : null;
+                        const initAng = tgt
+                            ? Math.atan2(tgt.y - spawnY, tgt.x - spawnX) + offsetIdx * 0.16
+                            : (player.aimAngle + offsetIdx * 0.22);
+                        const isCrit = stats.critRate > 0 && Math.random() < stats.critRate;
+                        const bulletDmg = isCrit ? round1(ultRawDmg * stats.critDamageMult) : round1(ultRawDmg);
+                        bullets.push({
+                            x: spawnX, y: spawnY,
+                            vx: Math.cos(initAng) * 720, vy: Math.sin(initAng) * 720,
+                            speed: 720, radius: 6, damage: bulletDmg, isCrit,
+                            pierce: 1, knockback: 0, type: 'xinglan_ult_sword',
+                            isXinglanSword: true, isXinglanUltSword: true,
+                            targetUid: tgt ? tgt.uid : null,
+                            hitIds: new Set(), life: 1.05
+                        });
+                    }
+                    sfx.playTone({ type: 'triangle', freq: 740, endFreq: 1120, duration: 0.045, gain: 0.035 });
+                }
+            }
+        }
+
         // 更新夜瞳往返实体锁镰（高速无阻尼突刺与抽回，无击退、无拉回、无僵直）
         if (player.yomiBlades && player.yomiBlades.length > 0) {
             for (let bIdx = player.yomiBlades.length - 1; bIdx >= 0; bIdx--) {
@@ -13215,6 +14173,9 @@
             }
         }
 
+        const prevPlayerFrameX = player.x, prevPlayerFrameY = player.y;
+        if ((player.mireSlowTimer || 0) > 0) player.mireSlowTimer = Math.max(0, player.mireSlowTimer - dt);
+
         if (player.sakuraVanishState && player.sakuraVanishState.active) {
             const vs = player.sakuraVanishState;
             vs.stepTimer -= dt;
@@ -13265,7 +14226,9 @@
                 if (hasManualInput) player.autoCruiseActive = false;
                 else if (player.autoCruiseActive) { moveX = player.autoCruiseDirX; moveY = player.autoCruiseDirY; }
             }
-            const effectiveMoveSpeed = stats.moveSpeed * ((player.slowTimer || 0) > 0 ? (player.slowFactor || 0.5) : 1.0);
+            const baseSlowMult = (player.slowTimer || 0) > 0 ? (player.slowFactor || 0.5) : 1.0;
+            const mireSlowMult = (player.mireSlowTimer || 0) > 0 ? 0.60 : 1.0;
+            const effectiveMoveSpeed = stats.moveSpeed * Math.min(baseSlowMult, mireSlowMult);
             const moveLen = Math.hypot(moveX, moveY);
             if (moveLen > 0.01) {
                 moveX /= Math.max(1, moveLen); moveY /= Math.max(1, moveLen);
@@ -13291,6 +14254,9 @@
                 const col = resolveCircleRectCollision(player.x, player.y, player.radius, obstacles[i]);
                 if (col) { player.x += col.nx * col.overlap; player.y += col.ny * col.overlap; }
             }
+            resolvePlayerBoneWallsCollision(player, prevPlayerFrameX, prevPlayerFrameY);
+        } else {
+            resolvePlayerBoneWallsCollision(player, prevPlayerFrameX, prevPlayerFrameY);
         }
 
         const trackPos = getPlayerTrackingPos();
@@ -13599,6 +14565,9 @@
                     player.ammo--; player.fireTimer = stats.fireInterval;
                     if (player.ammo <= 0) { player.isReloading = true; player.reloadTimer = 0; }
                 } else {
+                    const isXinglan = player.heroId === 'xinglan';
+                    const projSpeed = isXinglan ? 640 : 620;
+                    const projLife = isXinglan ? (stats.attackRange / projSpeed) : 1.1;
                     player.muzzleFlashTimer = 0.08; player.recoilOffset = 4.5;
                     const count = stats.bulletCount, bulletAngles = getRinneSalvoBulletAngles(aimAng, count);
                     const salvoState = createSalvoState(1);
@@ -13614,19 +14583,27 @@
                         const bulletDmg = isCrit ? round1(stats.damage * stats.critDamageMult) : stats.damage;
                         bullets.push({
                             x: player.x + Math.cos(ang) * 28, y: player.y - 4 + Math.sin(ang) * 28,
-                            vx: Math.cos(ang) * 620, vy: Math.sin(ang) * 620, radius: 4, damage: bulletDmg, isCrit,
+                            vx: Math.cos(ang) * projSpeed, vy: Math.sin(ang) * projSpeed, radius: isXinglan ? 6 : 4, damage: bulletDmg, isCrit,
                             pierce: stats.bulletPierce, knockback: 0, type: 'normal', gunIndex: 1,
+                            isXinglanSword: isXinglan, canPlantSword: isXinglan && (b === centerIdx),
                             canLifestealCenter: (b === centerIdx), centerLifestealUsed: false,
-                            salvoState, hitIds: new Set(), life: 1.1
+                            salvoState, hitIds: new Set(), life: projLife
                         });
                     }
-                    const ejectAng = aimAng + (player.facing > 0 ? -2.2 : 2.2) + (Math.random() - 0.5) * 0.4;
-                    shellCasings.push({ x: player.x + Math.cos(aimAng) * 16, y: player.y - 6 + Math.sin(aimAng) * 16, vx: Math.cos(ejectAng) * (55 + Math.random() * 35), vy: Math.sin(ejectAng) * (55 + Math.random() * 35) - 30, life: 0.55 });
-                    sfx.shoot();
+                    if (isXinglan) {
+                        sfx.swordSlash(false);
+                        spawnPixelParticles(player.x + Math.cos(aimAng) * 22, player.y - 4 + Math.sin(aimAng) * 22, '#38bdf8', 4, 90, 2.5, 0.18);
+                    } else {
+                        const ejectAng = aimAng + (player.facing > 0 ? -2.2 : 2.2) + (Math.random() - 0.5) * 0.4;
+                        shellCasings.push({ x: player.x + Math.cos(aimAng) * 16, y: player.y - 6 + Math.sin(aimAng) * 16, vx: Math.cos(ejectAng) * (55 + Math.random() * 35), vy: Math.sin(ejectAng) * (55 + Math.random() * 35) - 30, life: 0.55 });
+                        sfx.shoot();
+                    }
                     player.ammo--; player.fireTimer = stats.fireInterval;
                     if (player.ammo <= 0) {
                         player.isReloading = true; player.reloadTimer = 0;
-                        player.pendingReloadStrikeTimer = 0.10; player.pendingReloadStrikeTarget = primaryTarget;
+                        if (player.heroId === 'rinne') {
+                            player.pendingReloadStrikeTimer = 0.10; player.pendingReloadStrikeTarget = primaryTarget;
+                        }
                     }
                 }
             }
@@ -13703,10 +14680,61 @@
             }
         }
 
+        function plantXinglanGroundSword(bx, by, bAng) {
+            if (!player || player.heroId !== 'xinglan') return;
+            if (!player.xinglanGroundSwords) player.xinglanGroundSwords = [];
+            const maxGroundSwords = Math.max(4, stats.maxAmmo || 4);
+            while (player.xinglanGroundSwords.length >= maxGroundSwords) {
+                player.xinglanGroundSwords.shift();
+            }
+            player.xinglanGroundSwordSeq = (player.xinglanGroundSwordSeq || 0) + 1;
+            player.xinglanGroundSwords.push({
+                uid: player.xinglanGroundSwordSeq,
+                x: clampVal(bx, -HALF_MAP + 16, HALF_MAP - 16),
+                y: clampVal(by, -HALF_MAP + 16, HALF_MAP - 16),
+                angle: bAng,
+                life: 6.0,
+                maxLife: 6.0
+            });
+            spawnPixelParticles(bx, by, '#38bdf8', 4, 70, 2.5, 0.22);
+        }
+
         for (let i = bullets.length - 1; i >= 0; i--) {
             const b = bullets[i];
+            if (b.isXinglanUltSword) {
+                let tgt = b.targetUid ? zombies.find(z => z && z.hp > 0 && !z.isHidden && z.uid === b.targetUid) : null;
+                if (!tgt) {
+                    let minD = 420;
+                    for (let k = 0; k < zombies.length; k++) {
+                        const zk = zombies[k];
+                        if (zk && zk.hp > 0 && !zk.isHidden) {
+                            const dk = Math.hypot(zk.x - b.x, zk.y - b.y);
+                            if (dk < minD) { minD = dk; tgt = zk; }
+                        }
+                    }
+                    if (tgt) b.targetUid = tgt.uid;
+                }
+                if (tgt) {
+                    const curAng = Math.atan2(b.vy, b.vx);
+                    const wantAng = Math.atan2(tgt.y - b.y, tgt.x - b.x);
+                    let diff = wantAng - curAng;
+                    while (diff > Math.PI) diff -= Math.PI * 2;
+                    while (diff < -Math.PI) diff += Math.PI * 2;
+                    const maxTurn = 10.5 * dt;
+                    const newAng = curAng + clampVal(diff, -maxTurn, maxTurn);
+                    const spd = b.speed || 720;
+                    b.vx = Math.cos(newAng) * spd;
+                    b.vy = Math.sin(newAng) * spd;
+                }
+            }
             b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
-            if (b.life <= 0 || Math.abs(b.x) > HALF_MAP + 60 || Math.abs(b.y) > HALF_MAP + 60) { bullets.splice(i, 1); continue; }
+            if (b.life <= 0 || Math.abs(b.x) > HALF_MAP + 60 || Math.abs(b.y) > HALF_MAP + 60) {
+                if (b.canPlantSword && b.life <= 0) {
+                    plantXinglanGroundSword(b.x, b.y, Math.atan2(b.vy, b.vx));
+                }
+                bullets.splice(i, 1);
+                continue;
+            }
             let removed = false;
             for (let j = 0; j < zombies.length; j++) {
                 const z = zombies[j];
@@ -13716,7 +14744,7 @@
                     const piercedCountBeforeHit = b.hitIds.size;
                     b.hitIds.add(z.uid);
                     const ang = Math.atan2(b.vy, b.vx);
-                    const color = b.type === 'reload_strike' ? '#38bdf8' : (b.type === 'radial' ? '#c084fc' : (b.type === 'drone' || b.type === 'turret' ? '#38bdf8' : '#ffffff'));
+                    const color = b.isXinglanSword ? '#60a5fa' : (b.type === 'reload_strike' ? '#38bdf8' : (b.type === 'radial' ? '#c084fc' : (b.type === 'drone' || b.type === 'turret' ? '#38bdf8' : '#ffffff')));
                     const isCrit = Boolean(b.isCrit);
                     let effectiveBulletDmg = b.damage;
                     // 子弹穿透衰减：每次穿透伤害 -20%，最低保留 50% 伤害
@@ -13724,8 +14752,8 @@
                         const pierceMult = Math.max(0.50, 1 - piercedCountBeforeHit * 0.20);
                         effectiveBulletDmg = round1(effectiveBulletDmg * pierceMult);
                     }
-                    // 凛音分裂子弹（含多重弹道与装填打击）同时命中同一目标时，第2发40%、第3发及以后20%伤害
-                    if (player.heroId === 'rinne' && (b.type === 'normal' || b.type === 'reload_strike') && b.salvoState) {
+                    // 分裂弹道（含多重弹道与装填打击）同时命中同一目标时，第2发40%、第3发及以后20%伤害
+                    if ((player.heroId === 'rinne' || player.heroId === 'xinglan') && (b.type === 'normal' || b.type === 'reload_strike') && b.salvoState) {
                         if (!b.salvoState.multiHitCounts) b.salvoState.multiHitCounts = {};
                         const prevHitCnt = b.salvoState.multiHitCounts[z.uid] || 0;
                         b.salvoState.multiHitCounts[z.uid] = prevHitCnt + 1;
@@ -13734,6 +14762,13 @@
                         } else if (prevHitCnt >= 2) {
                             effectiveBulletDmg = round1(effectiveBulletDmg * 0.20);
                         }
+                    }
+                    // 星澜大招飞剑：同一目标在0.4秒内连续被多把大招飞剑命中时，第2把起伤害衰减为40%
+                    if (b.isXinglanUltSword) {
+                        if (globalTime - (z.lastXinglanUltHitTime || -999) <= 0.40) {
+                            effectiveBulletDmg = round1(effectiveBulletDmg * 0.40);
+                        }
+                        z.lastXinglanUltHitTime = globalTime;
                     }
                     const actualDealtDmg = damageZombie(z, effectiveBulletDmg, Math.cos(ang) * (b.knockback || 0), Math.sin(ang) * (b.knockback || 0), color, isCrit);
                     applyRangedBulletLifestealOnHit(b, actualDealtDmg || effectiveBulletDmg);
@@ -13744,9 +14779,16 @@
                         spawnFloatingText(player.x, player.y - 34, `+${fmt1(healAmt)}`, '#4ade80', 12, -38);
                     }
                     if (b.type === 'normal') applyNormalBulletOnHitEffects(z, isFirstHitOfBullet, b.gunIndex || 1, b.salvoState || null);
-                    spawnPixelParticles(b.x, b.y, isCrit ? '#facc15' : (b.type === 'reload_strike' ? '#38bdf8' : '#fde047'), isCrit ? 7 : 4, 90, 3, 0.2);
+                    spawnPixelParticles(b.x, b.y, isCrit ? '#facc15' : (b.isXinglanSword || b.type === 'reload_strike' ? '#38bdf8' : '#fde047'), isCrit ? 7 : 4, 90, 3, 0.2);
                     b.pierce--;
-                    if (b.pierce <= 0) { bullets.splice(i, 1); removed = true; break; }
+                    if (b.pierce <= 0) {
+                        if (b.canPlantSword) {
+                            plantXinglanGroundSword(b.x, b.y, ang);
+                        }
+                        bullets.splice(i, 1);
+                        removed = true;
+                        break;
+                    }
                 }
             }
             if (removed) continue;
@@ -13827,6 +14869,33 @@
                     }
                 } else hz.tickTimer = 0;
                 if (hz.timer >= hz.duration) hazardZones.splice(i, 1);
+                continue;
+            }
+            if (hz.type === 'mire_pool' || hz.type === 'mire_trail_pool') {
+                if (!isSakuraVanished && Math.hypot(player.x - hz.x, player.y - hz.y) <= hz.radius + player.radius * 0.45) {
+                    player.mireSlowTimer = 0.16;
+                    if (globalTime - (player.lastMireHintTime || -10) >= 1.8) {
+                        player.lastMireHintTime = globalTime;
+                        spawnFloatingText(player.x, player.y - 36, '泥沼减速 -40%', '#d97706', 11, -32);
+                        spawnPixelParticles(player.x, player.y + 8, '#92400e', 3, 45, 2.5, 0.22);
+                    }
+                }
+                if (hz.timer >= hz.duration) hazardZones.splice(i, 1);
+                continue;
+            }
+            if (hz.type === 'bone_wall_active') {
+                if (hz.timer >= hz.duration) {
+                    // 持续 4.0 秒后自然坍塌
+                    sfx.playTone({ type: 'triangle', freq: 260, endFreq: 110, duration: 0.12, gain: 0.045 });
+                    const cosA = Math.cos(hz.wallAngle || 0), sinA = Math.sin(hz.wallAngle || 0);
+                    const halfL = (hz.wallLength || 118) * 0.5;
+                    for (let k = -2; k <= 2; k++) {
+                        const px = hz.x + cosA * (k * halfL * 0.45);
+                        const py = hz.y + sinA * (k * halfL * 0.45);
+                        spawnPixelParticles(px, py, '#cbd5e1', 4, 90, 3, 0.26);
+                    }
+                    hazardZones.splice(i, 1);
+                }
                 continue;
             }
             if (hz.type === 'rinne_grenade_fire') {
@@ -14264,7 +15333,8 @@
                         advanceBossRushStage();
                         break;
                     } else if (waveState.mode === 'endless' && gameState === 'PLAYING' && player.hp > 0) {
-                        if (shouldAdvanceEndlessWave) {
+                        if (shouldAdvanceEndlessWave && !waveState.waveCleared) {
+                            waveState.waveCleared = true;
                             advanceToNextWave();
                             break;
                         } else {
@@ -14287,6 +15357,35 @@
                     hazardZones.push({ type: 'explosion_ring_fx', x: hz.x, y: hz.y, radius: hz.radius, timer: 0, duration: 0.26, color: '#fb923c' });
                     if (!isSakuraVanished && Math.hypot(player.x - hz.x, player.y - hz.y) <= hz.radius + player.radius) damagePlayer(hz.playerDamage);
                     spawnAirdropBruteAt(hz.x, hz.y, hz.scale || getWaveScale());
+                } else if (hz.type === 'mire_spit_warn') {
+                    sfx.playTone({ type: 'sine', freq: 310, endFreq: 140, duration: 0.14, gain: 0.05 });
+                    spawnPixelParticles(hz.x, hz.y, '#d97706', 10, 105, 3, 0.28);
+                    spawnPixelParticles(hz.x, hz.y, '#a855f7', 6, 85, 2.5, 0.25);
+                    hazardZones.push({ type: 'mire_pool', x: hz.x, y: hz.y, radius: hz.radius || 56, timer: 0, duration: 4.5 });
+                } else if (hz.type === 'bone_wall_warn') {
+                    sfx.playTone({ type: 'sawtooth', freq: 180, endFreq: 420, duration: 0.15, gain: 0.055 });
+                    const cosA = Math.cos(hz.wallAngle || 0), sinA = Math.sin(hz.wallAngle || 0);
+                    const halfL = (hz.wallLength || 118) * 0.5;
+                    for (let k = -3; k <= 3; k++) {
+                        const px = hz.x + cosA * (k * halfL * 0.32);
+                        const py = hz.y + sinA * (k * halfL * 0.32);
+                        spawnPixelParticles(px, py, '#e2e8f0', 5, 115, 3.2, 0.28);
+                        spawnPixelParticles(px, py, '#2dd4bf', 2, 85, 2.5, 0.22);
+                    }
+                    // 升起持续 4.0 秒自然坍塌的骨刺障碍墙
+                    hazardZones.push({
+                        type: 'bone_wall_active',
+                        x: hz.x,
+                        y: hz.y,
+                        wallAngle: hz.wallAngle || 0,
+                        wallLength: hz.wallLength || 118,
+                        wallWidth: hz.wallWidth || 22,
+                        timer: 0,
+                        duration: 4.0
+                    });
+                    if (player) {
+                        resolvePlayerBoneWallsCollision(player, player.x, player.y);
+                    }
                 }
                 hazardZones.splice(i, 1);
             }
@@ -14502,28 +15601,194 @@
                         sfx.playTone({ type: 'triangle', freq: 620, endFreq: 960, duration: 0.12, gain: 0.05 });
                     }
                 }
+            } else if (z.kind === 'bone_weaver') {
+                z.skillCd = (z.skillCd || 0) - dt;
+                if (z.skillCd <= 0 && canCastEliteSkill && distToTrack <= 340) {
+                    let activeWallCount = 0;
+                    for (let hIdx = 0; hIdx < hazardZones.length; hIdx++) {
+                        const ht = hazardZones[hIdx].type;
+                        if (ht === 'bone_wall_warn' || ht === 'bone_wall_active') activeWallCount++;
+                    }
+                    if (activeWallCount < 3) {
+                        z.skillCd = (5.6 + Math.random() * 1.0) * eliteCdMult;
+                        waveState.eliteGlobalCastLock = bossAliveOnField ? 1.25 : 0.65;
+                        // 锁定玩家前方约 100 像素处（优先取玩家当前移动方向，静止时取背对筑墙者的撤退方向）
+                        let dirX = 0, dirY = 0;
+                        if (player && (player.isMoving || player.isDodging) && Math.hypot(player.lastMoveDirX || 0, player.lastMoveDirY || 0) > 0.1) {
+                            const dl = Math.hypot(player.lastMoveDirX, player.lastMoveDirY);
+                            dirX = player.lastMoveDirX / dl;
+                            dirY = player.lastMoveDirY / dl;
+                        } else {
+                            const awayAng = Math.atan2(trackPos.y - z.y, trackPos.x - z.x);
+                            dirX = Math.cos(awayAng);
+                            dirY = Math.sin(awayAng);
+                        }
+                        const wx = clampVal(trackPos.x + dirX * 100, -HALF_MAP + 75, HALF_MAP - 75);
+                        const wy = clampVal(trackPos.y + dirY * 100, -HALF_MAP + 75, HALF_MAP - 75);
+                        const wallAngle = Math.atan2(dirY, dirX) + Math.PI * 0.5;
+                        hazardZones.push({
+                            type: 'bone_wall_warn',
+                            x: wx,
+                            y: wy,
+                            wallAngle,
+                            wallLength: 118,
+                            wallWidth: 22,
+                            timer: 0,
+                            duration: 0.80
+                        });
+                        z.facing = trackPos.x >= z.x ? 1 : -1;
+                        sfx.playTone({ type: 'square', freq: 340, endFreq: 580, duration: 0.11, gain: 0.045 });
+                    }
+                }
+            } else if (z.kind === 'mire_dredger') {
+                z.skillCd = (z.skillCd || 0) - dt;
+                if (z.skillCd <= 0 && canCastEliteSkill && distToTrack <= 330) {
+                    z.skillCd = (4.2 + Math.random() * 0.9) * eliteCdMult;
+                    waveState.eliteGlobalCastLock = bossAliveOnField ? 1.25 : 0.65;
+                    let leadX = (Math.random() - 0.5) * 28, leadY = (Math.random() - 0.5) * 28;
+                    if (player && player.isMoving && Math.hypot(player.lastMoveDirX || 0, player.lastMoveDirY || 0) > 0.1) {
+                        leadX = player.lastMoveDirX * 82;
+                        leadY = player.lastMoveDirY * 82;
+                    }
+                    const tx = clampVal(trackPos.x + leadX, -HALF_MAP + 60, HALF_MAP - 60);
+                    const ty = clampVal(trackPos.y + leadY, -HALF_MAP + 60, HALF_MAP - 60);
+                    hazardZones.push({
+                        type: 'mire_spit_warn',
+                        startX: z.x,
+                        startY: z.y - 8,
+                        x: tx,
+                        y: ty,
+                        radius: 56,
+                        timer: 0,
+                        duration: 0.80
+                    });
+                    sfx.playTone({ type: 'sine', freq: 390, endFreq: 190, duration: 0.12, gain: 0.05 });
+                }
+            } else if (z.kind === 'tri_blade') {
+                const targetAng = Math.atan2(trackPos.y - z.y, trackPos.x - z.x);
+                if (typeof z.bladeDirAngle !== 'number') z.bladeDirAngle = targetAng;
+                const turnToward = (curA, tgtA, maxStep) => {
+                    let diff = (tgtA - curA) % (Math.PI * 2);
+                    if (diff > Math.PI) diff -= Math.PI * 2;
+                    if (diff < -Math.PI) diff += Math.PI * 2;
+                    if (Math.abs(diff) <= maxStep) return tgtA;
+                    return curA + Math.sign(diff) * maxStep;
+                };
+
+                if ((z.triActiveTimer || 0) > 0) {
+                    // 阶段1（triWarnTimer > 0）：不停步拉出三条红色激光预警线，持续转向锁定玩家
+                    // 阶段2（triWarnTimer <= 0）：短暂延迟后弹出三把实体刀刃，触碰玩家造成挥砍伤害
+                    z.triHitCooldown = Math.max(0, (z.triHitCooldown || 0) - dt);
+                    z.bladeDirAngle = turnToward(z.bladeDirAngle, targetAng, 2.40 * dt);
+
+                    if ((z.triWarnTimer || 0) > 0) {
+                        z.triWarnTimer -= dt;
+                        if (z.triWarnTimer <= 0) {
+                            z.triWarnTimer = 0;
+                            sfx.swordSlash(true);
+                            spawnPixelParticles(
+                                z.x + Math.cos(z.bladeDirAngle) * 18,
+                                (z.y - 4) + Math.sin(z.bladeDirAngle) * 18,
+                                '#f43f5e', 7, 115, 3, 0.20
+                            );
+                        }
+                    } else {
+                        z.triActiveTimer -= dt;
+                        // 三把实体长刃已弹出：检测左(-22°)、中(0°)、右(+22°)三把实体长刃与玩家的触碰伤害（刀刃总延伸长度 84px）
+                        if (!isSakuraVanished && z.triHitCooldown <= 0) {
+                            const spreadRad = (22 * Math.PI) / 180;
+                            const bladeReach = 84;
+                            for (let bi = -1; bi <= 1; bi++) {
+                                const bAng = z.bladeDirAngle + bi * spreadRad;
+                                const bUx = Math.cos(bAng), bUy = Math.sin(bAng);
+                                const proj = clampVal((player.x - z.x) * bUx + (player.y - (z.y - 4)) * bUy, 10, bladeReach);
+                                const cx = z.x + bUx * proj, cy = (z.y - 4) + bUy * proj;
+                                if (Math.hypot(player.x - cx, player.y - cy) <= player.radius + 10) {
+                                    z.triHitCooldown = 0.45;
+                                    damagePlayer(round1(16 * curWaveScale * berserkDmgMult));
+                                    spawnPixelParticles(player.x, player.y, '#f43f5e', 10, 140, 3.5, 0.25);
+                                    sfx.swordSlash(true);
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (z.triActiveTimer <= 0) {
+                            // 无硬直：收刀后直接转入普通丧尸追击状态，和其他精英一样进入技能CD
+                            z.triActiveTimer = 0;
+                            z.triWarnTimer = 0;
+                            z.skillCd = (3.8 + Math.random() * 0.8) * eliteCdMult;
+                        }
+                    }
+                } else {
+                    // 收刀后：像普通丧尸一样追踪玩家，等待技能冷却完毕且进入攻击范围时再次开启激光预警
+                    z.bladeDirAngle = turnToward(z.bladeDirAngle, targetAng, 4.5 * dt);
+                    z.skillCd = (z.skillCd || 0) - dt;
+                    if (z.skillCd <= 0 && canCastEliteSkill && distToTrack <= 215 && hasLineOfSight(z.x, z.y, trackPos.x, trackPos.y, obstacles, 4)) {
+                        waveState.eliteGlobalCastLock = bossAliveOnField ? 1.25 : 0.65;
+                        z.triWarnDuration = 0.55;
+                        z.triWarnTimer = 0.55;
+                        z.triActiveDuration = 2.40;
+                        z.triActiveTimer = 2.40;
+                        z.triHitCooldown = 0;
+                        z.bladeDirAngle = targetAng;
+                        z.facing = Math.cos(targetAng) >= 0 ? 1 : -1;
+                        sfx.playTone({ type: 'sawtooth', freq: 580, endFreq: 940, duration: 0.14, gain: 0.048 });
+                    }
+                }
             }
 
             z.animTimer += dt;
-            if (z.animTimer >= 0.22) { z.animTimer = 0; z.animFrame = 1 - z.animFrame; }
+            const isTriBladeActive = z.kind === 'tri_blade' && (z.triActiveTimer || 0) > 0;
+            const isTriBladeUnsheathed = isTriBladeActive && (z.triWarnTimer || 0) <= 0;
+            if (z.animTimer >= (isTriBladeActive ? 0.16 : 0.22)) { z.animTimer = 0; z.animFrame = 1 - z.animFrame; }
 
-            const flowDir = sampleFlowFieldDirection(z, trackPos.x, trackPos.y, obstacles);
-            if (!z.smoothUx && !z.smoothUy) { z.smoothUx = flowDir.ux; z.smoothUy = flowDir.uy; }
-            else {
-                const blend = Math.min(1, dt * 14);
-                z.smoothUx += (flowDir.ux - z.smoothUx) * blend;
-                z.smoothUy += (flowDir.uy - z.smoothUy) * blend;
-                const sLen = Math.hypot(z.smoothUx, z.smoothUy) || 1;
-                z.smoothUx /= sLen; z.smoothUy /= sLen;
+            let ux, uy;
+            if (isTriBladeActive) {
+                // 激光预警与三刃出刀追踪期间：沿持续转向的追踪角逼近
+                ux = Math.cos(z.bladeDirAngle);
+                uy = Math.sin(z.bladeDirAngle);
+                z.smoothUx = ux;
+                z.smoothUy = uy;
+                z.facing = ux >= 0 ? 1 : -1;
+            } else {
+                const flowDir = sampleFlowFieldDirection(z, trackPos.x, trackPos.y, obstacles);
+                if (!z.smoothUx && !z.smoothUy) { z.smoothUx = flowDir.ux; z.smoothUy = flowDir.uy; }
+                else {
+                    const blend = Math.min(1, dt * 14);
+                    z.smoothUx += (flowDir.ux - z.smoothUx) * blend;
+                    z.smoothUy += (flowDir.uy - z.smoothUy) * blend;
+                    const sLen = Math.hypot(z.smoothUx, z.smoothUy) || 1;
+                    z.smoothUx /= sLen; z.smoothUy /= sLen;
+                }
+                ux = z.smoothUx; uy = z.smoothUy;
+                z.facing = Math.abs(ux) > 0.12 ? (ux > 0 ? 1 : -1) : (trackPos.x >= z.x ? 1 : -1);
             }
-            const ux = z.smoothUx, uy = z.smoothUy;
-            z.facing = Math.abs(ux) > 0.12 ? (ux > 0 ? 1 : -1) : (trackPos.x >= z.x ? 1 : -1);
 
             const isRooted = (z.rootTimer || 0) > 0;
             const inYomiUltSlow = player.heroId === 'yomi' && (player.ultActiveTimer || 0) > 0 && Math.hypot(z.x - player.x, z.y - player.y) <= 145 + z.radius;
             const slowMult = Math.min((z.grenadeFireSlowTimer || 0) > 0 ? 0.5 : 1.0, inYomiUltSlow ? Math.max(0.15, 1 - (stats.ymUltSlowPct || 0.20)) : 1.0);
-            const zEffSpeed = isRooted ? 0 : (z.speed * slowMult);
-            z.x += ux * zEffSpeed * dt; z.y += uy * zEffSpeed * dt;
+            // 降低移速加成（预警期间 +8%，出刀期间 +14%），确保玩家反应及时可脱离三把实体长刃的攻击距离
+            const triSpeedMult = isTriBladeUnsheathed ? 1.14 : (isTriBladeActive ? 1.08 : 1.0);
+            const zEffSpeed = isRooted ? 0 : (z.speed * slowMult * triSpeedMult);
+            const stepMoveX = ux * zEffSpeed * dt, stepMoveY = uy * zEffSpeed * dt;
+            z.x += stepMoveX; z.y += stepMoveY;
+
+            // 腐沼粘液怪：沿移动路径留下粘液带（仅减速 40%，无伤害）
+            if (z.kind === 'mire_dredger' && !isRooted) {
+                z.mireTrailDist = (z.mireTrailDist || 0) + Math.hypot(stepMoveX, stepMoveY);
+                if (z.mireTrailDist >= 26) {
+                    z.mireTrailDist = 0;
+                    hazardZones.push({
+                        type: 'mire_trail_pool',
+                        x: z.x,
+                        y: z.y + 5,
+                        radius: 22,
+                        timer: 0,
+                        duration: 3.2
+                    });
+                }
+            }
 
             for (let k = 0; k < obstacles.length; k++) {
                 const col = resolveCircleRectCollision(z.x, z.y, z.radius, obstacles[k]);
@@ -14999,6 +16264,101 @@
                     ctx.fillStyle = '#bef264';
                     ctx.fillRect(bx - 2, by - 2, 4, 4);
                 }
+                ctx.restore();
+            } else if (hz.type === 'mire_spit_warn') {
+                ctx.save();
+                ctx.fillStyle = 'rgba(180, 83, 9, 0.20)'; ctx.beginPath(); ctx.arc(hz.x, hz.y, hz.radius, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = 'rgba(217, 119, 6, 0.36)'; ctx.beginPath(); ctx.arc(hz.x, hz.y, hz.radius * progress, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2; ctx.stroke();
+                const curX = hz.startX + (hz.x - hz.startX) * progress;
+                const curY = hz.startY + (hz.y - hz.startY) * progress - Math.sin(progress * Math.PI) * 56;
+                ctx.fillStyle = '#78350f'; ctx.beginPath(); ctx.arc(curX, curY, 7, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.arc(curX, curY, 4.5, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#c084fc'; ctx.fillRect(curX - 2, curY - 2, 3, 3);
+                ctx.restore();
+            } else if (hz.type === 'mire_pool' || hz.type === 'mire_trail_pool') {
+                ctx.save();
+                const isTrail = hz.type === 'mire_trail_pool';
+                const fadeOut = hz.duration - hz.timer < 0.65 ? (hz.duration - hz.timer) / 0.65 : 1.0;
+                ctx.globalAlpha = Math.max(0, fadeOut);
+                ctx.fillStyle = isTrail ? 'rgba(69, 26, 3, 0.56)' : 'rgba(69, 26, 3, 0.68)';
+                ctx.beginPath(); ctx.arc(hz.x, hz.y, hz.radius, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = 'rgba(146, 64, 14, 0.55)';
+                ctx.beginPath(); ctx.arc(hz.x, hz.y, hz.radius * 0.78, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = 'rgba(126, 34, 206, 0.28)';
+                ctx.beginPath(); ctx.arc(hz.x, hz.y, hz.radius * 0.48, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#d97706';
+                ctx.lineWidth = isTrail ? 1.3 : 1.8;
+                ctx.beginPath(); ctx.arc(hz.x, hz.y, hz.radius, 0, Math.PI * 2); ctx.stroke();
+                const bubbleCnt = isTrail ? 2 : 5;
+                for (let b = 0; b < bubbleCnt; b++) {
+                    const bang = globalTime * 1.6 + b * 1.45;
+                    const br = hz.radius * (0.22 + ((b * 0.21) % 0.48));
+                    const bx = hz.x + Math.cos(bang) * br, by = hz.y + Math.sin(bang) * br;
+                    ctx.fillStyle = b % 2 === 0 ? '#fbbf24' : '#c084fc';
+                    ctx.fillRect(bx - 2, by - 2, 3.5, 3.5);
+                }
+                ctx.restore();
+            } else if (hz.type === 'bone_wall_warn') {
+                ctx.save();
+                ctx.translate(hz.x, hz.y);
+                ctx.rotate(hz.wallAngle || 0);
+                const wLen = hz.wallLength || 118, wWid = hz.wallWidth || 22;
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.65)';
+                ctx.fillRect(-wLen * 0.5, -wWid * 0.5, wLen, wWid);
+                ctx.fillStyle = 'rgba(45, 212, 191, 0.35)';
+                ctx.fillRect(-wLen * 0.5 * progress, -wWid * 0.5, wLen * progress, wWid);
+                ctx.strokeStyle = progress > 0.75 ? '#fef08a' : '#2dd4bf';
+                ctx.lineWidth = 2.2;
+                ctx.strokeRect(-wLen * 0.5, -wWid * 0.5, wLen, wWid);
+                // 地面裂隙骨尖露头预览
+                const spikeCnt = 7;
+                for (let s = 0; s < spikeCnt; s++) {
+                    const sx = -wLen * 0.42 + (wLen * 0.84 * s) / (spikeCnt - 1);
+                    ctx.fillStyle = '#e2e8f0';
+                    ctx.fillRect(sx - 2, -3, 4, 6);
+                }
+                ctx.restore();
+            } else if (hz.type === 'bone_wall_active') {
+                ctx.save();
+                ctx.translate(hz.x, hz.y);
+                ctx.rotate(hz.wallAngle || 0);
+                const wLen = hz.wallLength || 118, wWid = hz.wallWidth || 22;
+                const rem = Math.max(0, hz.duration - hz.timer);
+                const riseScale = hz.timer < 0.14 ? (hz.timer / 0.14) : (rem < 0.25 ? (rem / 0.25) : 1.0);
+                // 底部地裂黑影基座
+                ctx.fillStyle = 'rgba(9, 13, 22, 0.88)';
+                ctx.fillRect(-wLen * 0.5 - 2, -wWid * 0.5 - 2, wLen + 4, wWid + 4);
+                ctx.fillStyle = '#134e4a';
+                ctx.fillRect(-wLen * 0.5, -wWid * 0.5, wLen, wWid);
+                // 交错耸立的7根巨型惨白骨刺柱与幽冥青绿骨髓符文
+                const spikeCnt = 7;
+                for (let s = 0; s < spikeCnt; s++) {
+                    const sx = -wLen * 0.43 + (wLen * 0.86 * s) / (spikeCnt - 1);
+                    const sh = (15 + (s % 2) * 4) * riseScale;
+                    ctx.fillStyle = '#090d16';
+                    ctx.beginPath();
+                    ctx.moveTo(sx - 8, wWid * 0.35);
+                    ctx.lineTo(sx, -sh);
+                    ctx.lineTo(sx + 8, wWid * 0.35);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.fillStyle = s % 2 === 0 ? '#f8fafc' : '#cbd5e1';
+                    ctx.beginPath();
+                    ctx.moveTo(sx - 6, wWid * 0.28);
+                    ctx.lineTo(sx, -sh + 2);
+                    ctx.lineTo(sx + 6, wWid * 0.28);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.fillStyle = '#2dd4bf';
+                    ctx.fillRect(sx - 1.5, -2, 3, 5);
+                }
+                // 横向锁链肋骨梁与剩余时间进度细条
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillRect(-wLen * 0.45, 2, wLen * 0.90, 3);
+                const lifePct = clampVal(rem / hz.duration, 0, 1);
+                ctx.fillStyle = '#2dd4bf';
+                ctx.fillRect(-wLen * 0.45, wWid * 0.5 - 2.5, wLen * 0.90 * lifePct, 2);
                 ctx.restore();
             } else if (hz.type === 'elite_spore_bomb') {
                 ctx.save();
@@ -15595,7 +16955,7 @@
         renderQueue.push({ kind: 'player', sortY: player.y + player.radius });
         renderQueue.sort((a, b) => a.sortY - b.sortY);
 
-        const heroSprArr = player.heroId === 'yomi' ? SPRITES.yomi : (isSakura ? SPRITES.sakura : (isChinatsu ? SPRITES.chinatsu : SPRITES.rinne));
+        const heroSprArr = player.heroId === 'xinglan' ? SPRITES.xinglan : (player.heroId === 'yomi' ? SPRITES.yomi : (isSakura ? SPRITES.sakura : (isChinatsu ? SPRITES.chinatsu : SPRITES.rinne)));
         for (let i = 0; i < dodgeAfterimages.length; i++) {
             const img = dodgeAfterimages[i], spr = heroSprArr[img.frame % 2];
             ctx.save();
@@ -16078,6 +17438,156 @@
                     ctx.restore();
                 }
 
+                // 三刃处刑者：先拉出三条红色激光预警线（0.55s延迟），随后弹出三把醒目的高周波实体长刃（触碰玩家造成伤害）
+                if (z.kind === 'tri_blade' && (z.triActiveTimer || 0) > 0) {
+                    const bBaseAng = typeof z.bladeDirAngle === 'number' ? z.bladeDirAngle : (z.facing >= 0 ? 0 : Math.PI);
+                    const spreadRad = (22 * Math.PI) / 180;
+                    const isWarnPhase = (z.triWarnTimer || 0) > 0;
+                    const warnProg = isWarnPhase ? clampVal(1 - (z.triWarnTimer || 0) / Math.max(0.1, z.triWarnDuration || 0.55), 0, 1) : 1;
+                    const pulse = 0.5 + 0.5 * Math.sin(globalTime * 18);
+                    ctx.save();
+
+                    if (isWarnPhase) {
+                        // 阶段1（0.55s 激光预警）：拉出左(-22°)、中(0°)、右(+22°)三条红色激光预警线，预览三把长刃即将弹出的轨迹
+                        const rayLen = 96;
+                        ctx.fillStyle = `rgba(244, 63, 94, ${0.10 + warnProg * 0.14})`;
+                        ctx.beginPath();
+                        ctx.moveTo(z.x, z.y - 4);
+                        ctx.arc(z.x, z.y - 4, rayLen, bBaseAng - spreadRad, bBaseAng + spreadRad);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        for (let bi = -1; bi <= 1; bi++) {
+                            const lAng = bBaseAng + bi * spreadRad;
+                            const ex = z.x + Math.cos(lAng) * rayLen;
+                            const ey = (z.y - 4) + Math.sin(lAng) * rayLen;
+                            ctx.strokeStyle = `rgba(244, 63, 94, ${0.32 + warnProg * 0.48})`;
+                            ctx.lineWidth = 6.0 - warnProg * 2.0;
+                            ctx.beginPath(); ctx.moveTo(z.x, z.y - 4); ctx.lineTo(ex, ey); ctx.stroke();
+
+                            ctx.strokeStyle = warnProg > 0.72 ? '#fef08a' : '#fb7185';
+                            ctx.lineWidth = 2.2;
+                            ctx.beginPath(); ctx.moveTo(z.x, z.y - 4); ctx.lineTo(ex, ey); ctx.stroke();
+
+                            // 身前刀柄蓄势闪光
+                            const hx = z.x + Math.cos(lAng) * 14, hy = (z.y - 4) + Math.sin(lAng) * 14;
+                            ctx.fillStyle = '#fef08a';
+                            ctx.beginPath(); ctx.arc(hx, hy, 2.5 + warnProg * 2, 0, Math.PI * 2); ctx.fill();
+                        }
+
+                        // 头顶闪烁感叹号提示即将出刀
+                        ctx.fillStyle = '#090d16'; ctx.fillRect(z.x - 5, z.y - z.radius - 26, 10, 14);
+                        ctx.fillStyle = '#f43f5e'; ctx.fillRect(z.x - 4, z.y - z.radius - 25, 8, 12);
+                        ctx.fillStyle = '#fef08a';
+                        ctx.fillRect(z.x - 1.5, z.y - z.radius - 23, 3, 5);
+                        ctx.fillRect(z.x - 1.5, z.y - z.radius - 16, 3, 2);
+                    } else {
+                        // 阶段2（三把实体长刃出鞘）：绘制正面 ±45° 招架护盾弧线 + 左、中、右三把巨型实体高周波长刃（从身前延伸至 84px）
+                        ctx.fillStyle = `rgba(244, 63, 94, ${0.08 + pulse * 0.05})`;
+                        ctx.beginPath();
+                        ctx.moveTo(z.x, z.y - 4);
+                        ctx.arc(z.x, z.y - 4, 84, bBaseAng - spreadRad, bBaseAng + spreadRad);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        ctx.strokeStyle = 'rgba(244, 63, 94, 0.75)';
+                        ctx.lineWidth = 2.4;
+                        ctx.beginPath();
+                        ctx.arc(z.x, z.y - 4, z.radius + 7, bBaseAng - 0.78, bBaseAng + 0.78);
+                        ctx.stroke();
+
+                        const bladeBaseDist = 14;
+                        const bladeLen = 70; // 14 + 70 = 84px 实体长刃总触及距离
+                        for (let bi = -1; bi <= 1; bi++) {
+                            const bAng = bBaseAng + bi * spreadRad;
+                            const bx = z.x + Math.cos(bAng) * bladeBaseDist;
+                            const by = (z.y - 4) + Math.sin(bAng) * bladeBaseDist;
+                            ctx.save();
+                            ctx.translate(bx, by);
+                            ctx.rotate(bAng);
+
+                            // 1) 外圈高周波赤红刀罡残影
+                            ctx.fillStyle = `rgba(244, 63, 94, ${0.28 + pulse * 0.18})`;
+                            ctx.beginPath();
+                            ctx.moveTo(-4, -8);
+                            ctx.lineTo(bladeLen - 8, -6);
+                            ctx.lineTo(bladeLen + 5, 0);
+                            ctx.lineTo(bladeLen - 8, 6);
+                            ctx.lineTo(-4, 8);
+                            ctx.closePath();
+                            ctx.fill();
+
+                            // 2) 实体长刃像素黑边轮廓 (#090d16)
+                            ctx.fillStyle = '#090d16';
+                            ctx.beginPath();
+                            ctx.moveTo(-6, -5.5);
+                            ctx.lineTo(6, -5.5);
+                            ctx.lineTo(6, -8.5);
+                            ctx.lineTo(12, -8.5);
+                            ctx.lineTo(12, -5.5);
+                            ctx.lineTo(bladeLen - 12, -5.0);
+                            ctx.lineTo(bladeLen + 2, 0);
+                            ctx.lineTo(bladeLen - 10, 5.2);
+                            ctx.lineTo(12, 5.5);
+                            ctx.lineTo(12, 8.5);
+                            ctx.lineTo(6, 8.5);
+                            ctx.lineTo(6, 5.5);
+                            ctx.lineTo(-6, 5.5);
+                            ctx.closePath();
+                            ctx.fill();
+
+                            // 3) 机械刀柄与黄金护手刀锷
+                            ctx.fillStyle = '#9f1239';
+                            ctx.fillRect(-4.5, -3.5, 11, 7);
+                            ctx.fillStyle = '#fb7185';
+                            ctx.fillRect(-3, -2, 3, 4);
+                            ctx.fillStyle = '#2563eb';
+                            ctx.fillRect(1.5, -2, 3, 4);
+                            ctx.fillStyle = '#facc15';
+                            ctx.fillRect(7.2, -7, 3.4, 14);
+
+                            // 4) 实体长刃上半部厚重暗钢刀背 (#334155 -> #64748b)
+                            ctx.fillStyle = '#334155';
+                            ctx.beginPath();
+                            ctx.moveTo(11, -3.8);
+                            ctx.lineTo(bladeLen - 13, -3.5);
+                            ctx.lineTo(bladeLen - 2, -0.2);
+                            ctx.lineTo(11, -0.2);
+                            ctx.closePath();
+                            ctx.fill();
+
+                            // 刀背战术锯齿刻痕
+                            ctx.fillStyle = '#94a3b8';
+                            for (let sk = 18; sk < bladeLen - 18; sk += 10) {
+                                ctx.fillRect(sk, -3.6, 5, 1.4);
+                            }
+
+                            // 5) 实体长刃下半部雪亮银白锋刃 (#f8fafc)
+                            ctx.fillStyle = '#f8fafc';
+                            ctx.beginPath();
+                            ctx.moveTo(11, -0.2);
+                            ctx.lineTo(bladeLen, 0);
+                            ctx.lineTo(bladeLen - 11, 3.8);
+                            ctx.lineTo(11, 3.8);
+                            ctx.closePath();
+                            ctx.fill();
+
+                            // 刀锋寒光亮边 (#e2e8f0)
+                            ctx.fillStyle = '#cbd5e1';
+                            ctx.fillRect(11, 0.2, bladeLen - 22, 1.3);
+
+                            // 6) 贯穿长刃中央的高周波赤红/亮黄能量血槽
+                            ctx.fillStyle = '#e11d48';
+                            ctx.fillRect(12, -1.3, bladeLen - 20, 2.4);
+                            ctx.fillStyle = pulse > 0.5 ? '#fef08a' : '#fda4af';
+                            ctx.fillRect(13, -0.6, bladeLen - 24, 1.2);
+
+                            ctx.restore();
+                        }
+                    }
+                    ctx.restore();
+                }
+
                 const burnAct = (z.burnActiveTimer || 0) > 0;
                 const burnStk = z.burnStacks || 0;
                 const bleedStk = z.bleedStacks || 0;
@@ -16174,7 +17684,7 @@
 
                     if (!isChinatsu && (player.ultActiveTimer || 0) > 0) {
                         ctx.save();
-                        ctx.strokeStyle = player.heroId === 'yomi' ? 'rgba(192, 132, 252, 0.85)' : (isSakura ? 'rgba(244, 114, 182, 0.85)' : 'rgba(244, 63, 94, 0.78)');
+                        ctx.strokeStyle = player.heroId === 'xinglan' ? 'rgba(129, 140, 248, 0.85)' : (player.heroId === 'yomi' ? 'rgba(192, 132, 252, 0.85)' : (isSakura ? 'rgba(244, 114, 182, 0.85)' : 'rgba(244, 63, 94, 0.78)'));
                         ctx.lineWidth = 2.2;
                         ctx.beginPath(); ctx.arc(player.x, player.y + 14, 20 + Math.sin(globalTime * 16) * 2, 0, Math.PI * 2); ctx.stroke();
                         ctx.restore();
@@ -16189,6 +17699,128 @@
                     const trailLift = Math.cos(wavePhase * 1.15) * (1.6 * moveSpeedFactor);
 
                     const heroSprite = heroSprArr[player.animFrame % 2];
+
+                    // 星澜大招【万剑归宗】专属后景：脚下太虚星罗地阵 + 背后悬浮天枢星穹剑轮与七曜剑冠（绘制于角色精灵背后，形成神圣剑阵背光）
+                    if (player.heroId === 'xinglan' && isUltOn) {
+                        ctx.save();
+                        // 1) 脚下太虚周天星盘地阵
+                        ctx.save();
+                        ctx.translate(player.x, player.y + 14);
+                        ctx.scale(1, 0.44);
+                        ctx.rotate(globalTime * 1.8);
+                        ctx.fillStyle = 'rgba(2, 132, 199, 0.16)';
+                        ctx.beginPath(); ctx.arc(0, 0, 36, 0, Math.PI * 2); ctx.fill();
+                        ctx.strokeStyle = 'rgba(56, 189, 248, 0.75)';
+                        ctx.lineWidth = 2.4;
+                        ctx.beginPath(); ctx.arc(0, 0, 35, 0, Math.PI * 2); ctx.stroke();
+                        ctx.strokeStyle = 'rgba(129, 140, 248, 0.65)';
+                        ctx.lineWidth = 1.6;
+                        ctx.setLineDash([7, 5]);
+                        ctx.beginPath(); ctx.arc(0, 0, 27, 0, Math.PI * 2); ctx.stroke();
+                        ctx.setLineDash([]);
+                        // 地阵八方星芒阵眼
+                        for (let k = 0; k < 8; k++) {
+                            const ka = (Math.PI * 0.25) * k;
+                            const kx = Math.cos(ka) * 35, ky = Math.sin(ka) * 35;
+                            ctx.fillStyle = k % 2 === 0 ? '#ffffff' : '#38bdf8';
+                            ctx.fillRect(kx - 2.2, ky - 2.2, 4.4, 4.4);
+                        }
+                        ctx.restore();
+
+                        // 2) 背后悬浮【天枢星穹剑轮】与【七曜飞剑剑冠】
+                        const backDir = player.facing > 0 ? -1 : 1;
+                        const formX = player.x + backDir * 8;
+                        const formY = player.y - 17 + breathY + Math.sin(globalTime * 5.5) * 1.8;
+                        ctx.translate(formX, formY);
+
+                        // 外围扇形展开的 7 把【七曜星穹灵剑冠】（呈孔雀开屏/剑翼状环拱于角色双肩与头顶后方）
+                        const crownCount = 7;
+                        const centerTilt = backDir < 0 ? -Math.PI * 0.56 : -Math.PI * 0.44;
+                        const arcSpan = Math.PI * 0.88;
+                        for (let cIdx = 0; cIdx < crownCount; cIdx++) {
+                            const frac = (cIdx / (crownCount - 1)) - 0.5;
+                            const cAng = centerTilt + frac * arcSpan + Math.sin(globalTime * 4 + cIdx) * 0.03;
+                            const thrustOffset = Math.sin(globalTime * 14 + cIdx * 1.3) * 2.8;
+                            const cDist = 23 + (1 - Math.abs(frac) * 0.5) * 5 + thrustOffset;
+                            const cx = Math.cos(cAng) * cDist;
+                            const cy = Math.sin(cAng) * cDist;
+
+                            ctx.save();
+                            ctx.translate(cx, cy);
+                            ctx.rotate(cAng);
+                            // 剑冠灵剑与阵心之间的星丝灵脉连线
+                            ctx.strokeStyle = 'rgba(125, 211, 252, 0.45)';
+                            ctx.lineWidth = 1.4;
+                            ctx.beginPath(); ctx.moveTo(-14, 0); ctx.lineTo(-4, 0); ctx.stroke();
+                            ctx.globalAlpha = 0.90;
+                            drawXinglanCrystalSword(ctx, 0.78, cIdx % 2 === 0 ? 'normal' : 'ult');
+                            ctx.restore();
+                        }
+
+                        // 剑轮主体：三层逆向旋转的星罗天罡法阵环
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.48)';
+                        ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.fill();
+                        ctx.fillStyle = 'rgba(56, 189, 248, 0.20)';
+                        ctx.beginPath(); ctx.arc(0, 0, 18 + Math.sin(globalTime * 10) * 1.5, 0, Math.PI * 2); ctx.fill();
+
+                        // 外层黑金/星蓝刻度环与八枚星钻符文节点
+                        ctx.save();
+                        ctx.rotate(globalTime * 2.2);
+                        ctx.strokeStyle = '#090612';
+                        ctx.lineWidth = 4.2;
+                        ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.stroke();
+                        ctx.strokeStyle = '#38bdf8';
+                        ctx.lineWidth = 2.0;
+                        ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.stroke();
+
+                        for (let rIdx = 0; rIdx < 8; rIdx++) {
+                            ctx.save();
+                            ctx.rotate(rIdx * (Math.PI * 0.25));
+                            ctx.fillStyle = '#090612';
+                            ctx.fillRect(19.5, -2.5, 5, 5);
+                            ctx.fillStyle = rIdx % 2 === 0 ? '#ffffff' : '#7dd3fc';
+                            ctx.fillRect(20.5, -1.5, 3, 3);
+                            ctx.restore();
+                        }
+                        ctx.restore();
+
+                        // 中层逆向旋转双六芒星轨剑印
+                        ctx.save();
+                        ctx.rotate(-globalTime * 3.4);
+                        ctx.strokeStyle = 'rgba(129, 140, 248, 0.90)';
+                        ctx.lineWidth = 1.6;
+                        for (let t = 0; t < 2; t++) {
+                            ctx.beginPath();
+                            for (let v = 0; v < 3; v++) {
+                                const va = t * (Math.PI / 3) + (v * Math.PI * 2) / 3;
+                                const vx = Math.cos(va) * 17.5, vy = Math.sin(va) * 17.5;
+                                if (v === 0) ctx.moveTo(vx, vy);
+                                else ctx.lineTo(vx, vy);
+                            }
+                            ctx.closePath();
+                            ctx.stroke();
+                        }
+                        ctx.strokeStyle = '#e0f2fe';
+                        ctx.lineWidth = 1.2;
+                        ctx.beginPath(); ctx.arc(0, 0, 11, 0, Math.PI * 2); ctx.stroke();
+                        ctx.restore();
+
+                        // 阵眼核心：璀璨十字星芒阵心
+                        const coreScale = 0.85 + Math.sin(globalTime * 16) * 0.22;
+                        ctx.save();
+                        ctx.scale(coreScale, coreScale);
+                        ctx.fillStyle = '#38bdf8';
+                        ctx.beginPath();
+                        ctx.moveTo(0, -9); ctx.lineTo(2.2, -2.2); ctx.lineTo(9, 0); ctx.lineTo(2.2, 2.2);
+                        ctx.lineTo(0, 9); ctx.lineTo(-2.2, 2.2); ctx.lineTo(-9, 0); ctx.lineTo(-2.2, -2.2);
+                        ctx.closePath(); ctx.fill();
+                        ctx.fillStyle = '#ffffff';
+                        ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fill();
+                        ctx.restore();
+
+                        ctx.restore();
+                    }
+
                     ctx.save();
                     ctx.translate(player.x, player.y - 6 + breathY);
                     if (player.facing < 0) ctx.scale(-1, 1);
@@ -16231,6 +17863,20 @@
                         ctx.fillRect(-18 + sx * 0.7, -7 + sy * 0.6, 2, 3);
                         ctx.fillStyle = '#c084fc';
                         ctx.fillRect(-22 + sx, 10 - sy * 0.7, 8, 1.5);
+                    } else if (player.heroId === 'xinglan') {
+                        const sx = -trailStretch * 0.95, sy = trailLift;
+                        // 星澜：纯白流光燕尾披风长摆与星蓝银羽飘带随风曳动
+                        ctx.fillStyle = '#090612';
+                        ctx.fillRect(-20 + sx * 0.75, -6 + sy * 0.5, 10, 5);
+                        ctx.fillRect(-23 + sx, 6 - sy * 0.7, 13, 6);
+                        ctx.fillStyle = '#e2e8f0';
+                        ctx.fillRect(-19 + sx * 0.75, -5 + sy * 0.5, 8, 3);
+                        ctx.fillStyle = '#f8fafc';
+                        ctx.fillRect(-22 + sx, 7 - sy * 0.7, 11, 4);
+                        ctx.fillStyle = '#38bdf8';
+                        ctx.fillRect(-19 + sx * 0.75, -5 + sy * 0.5, 2.5, 3);
+                        ctx.fillStyle = '#0284c7';
+                        ctx.fillRect(-22 + sx, 9.5 - sy * 0.7, 9, 1.5);
                     } else {
                         const sx = -trailStretch, sy = trailLift;
                         // 凛音：宝蓝战术短风衣燕尾后摆 + 赤红领结随风飘带
@@ -16270,9 +17916,9 @@
                     // 4. 头部五官与表情动态微雕联动：大招觉醒流光瞳 & 受击紧蹙微表情
                     const bobPx = (player.animFrame % 2 === 1) ? 1.45 : 0;
                     if (isUltOn) {
-                        const eyeGlowCol = player.heroId === 'yomi' ? '#e879f9' : (isSakura ? '#f0abfc' : (isChinatsu ? '#facc15' : '#38bdf8'));
+                        const eyeGlowCol = player.heroId === 'xinglan' ? '#38bdf8' : (player.heroId === 'yomi' ? '#e879f9' : (isSakura ? '#f0abfc' : (isChinatsu ? '#facc15' : '#38bdf8')));
                         const eyeCoreCol = '#ffffff';
-                        const leftEyeX = -6.5, rightEyeX = player.heroId === 'yomi' ? 4.8 : 3.6;
+                        const leftEyeX = -6.5, rightEyeX = (player.heroId === 'yomi' || player.heroId === 'xinglan') ? 4.8 : 3.6;
                         const eyeY = -9.5 + bobPx;
                         ctx.fillStyle = eyeGlowCol;
                         ctx.fillRect(leftEyeX - 1, eyeY, 4, 2.5);
@@ -16428,6 +18074,37 @@
                             ctx.fillStyle = '#ea580c'; ctx.fillRect(38, -12, 14, 16);
                             ctx.fillStyle = '#facc15'; ctx.fillRect(38, -9, 17, 10);
                             ctx.fillStyle = '#ffffff'; ctx.fillRect(39, -6, 10, 4);
+                        }
+                    } else if (player.heroId === 'xinglan') {
+                        // 星澜：黑银雕花御剑护手与指尖星芒剑诀（还原参考图左手托举蓝色星芒御剑姿态）
+                        ctx.rotate(-0.15);
+                        ctx.fillStyle = '#090612'; ctx.fillRect(-2, -3.5, 9, 7);
+                        ctx.fillStyle = '#f8fafc'; ctx.fillRect(-1, -2.5, 4, 5);
+                        ctx.fillStyle = '#94a3b8'; ctx.fillRect(2, -2.5, 2, 5);
+                        ctx.fillStyle = '#1e293b'; ctx.fillRect(4, -2, 5, 4);
+                        ctx.fillStyle = '#38bdf8'; ctx.fillRect(3, -1.5, 1.5, 3);
+                        // 掌心上方悬浮跃动的星穹蓝晶剑印星芒
+                        const starPulse = 0.85 + Math.sin(globalTime * 14) * 0.25;
+                        const starX = 12, starY = -3 + Math.sin(globalTime * 9) * 1.5;
+                        ctx.save();
+                        ctx.translate(starX, starY);
+                        ctx.scale(starPulse, starPulse);
+                        ctx.fillStyle = isUltOn ? '#818cf8' : '#0284c7';
+                        ctx.beginPath();
+                        ctx.moveTo(0, -8); ctx.lineTo(2, -2); ctx.lineTo(8, 0); ctx.lineTo(2, 2);
+                        ctx.lineTo(0, 8); ctx.lineTo(-2, 2); ctx.lineTo(-8, 0); ctx.lineTo(-2, -2);
+                        ctx.closePath(); ctx.fill();
+                        ctx.fillStyle = '#38bdf8';
+                        ctx.beginPath();
+                        ctx.moveTo(0, -5.5); ctx.lineTo(1.4, -1.4); ctx.lineTo(5.5, 0); ctx.lineTo(1.4, 1.4);
+                        ctx.lineTo(0, 5.5); ctx.lineTo(-1.4, 1.4); ctx.lineTo(-5.5, 0); ctx.lineTo(-1.4, -1.4);
+                        ctx.closePath(); ctx.fill();
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(-1.5, -1.5, 3, 3);
+                        ctx.restore();
+                        if (player.muzzleFlashTimer > 0) {
+                            ctx.fillStyle = '#38bdf8'; ctx.fillRect(14, -7, 12, 8);
+                            ctx.fillStyle = '#ffffff'; ctx.fillRect(16, -5, 10, 4);
                         }
                     } else {
                         // 凛音：主手定制战术手枪（钛银镂空滑套、抛壳口、前后光纤准星、下挂红点激光指示器与天蓝扩容弹匣底座）
@@ -16963,6 +18640,103 @@
             }
         }
 
+        // 渲染星澜（Xinglan）的【留影】地面驻留飞剑、【万剑归鞘】回收飞剑与【周天剑环】护体飞剑
+        if (player.heroId === 'xinglan') {
+            // 1) 场上插地留存飞剑（最大数量等于弹药上限，斜插地面，带星蓝法阵底座与剩余寿命光环）
+            if (player.xinglanGroundSwords && player.xinglanGroundSwords.length > 0) {
+                for (let gIdx = 0; gIdx < player.xinglanGroundSwords.length; gIdx++) {
+                    const gs = player.xinglanGroundSwords[gIdx];
+                    const lifeRatio = clampVal(gs.life / (gs.maxLife || 6.0), 0, 1);
+                    ctx.save();
+                    ctx.translate(gs.x, gs.y);
+                    // 地面剑气小法阵与寿命进度弧
+                    ctx.fillStyle = 'rgba(2, 132, 199, 0.24)';
+                    ctx.beginPath(); ctx.ellipse(0, 5, 15, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = lifeRatio < 0.25 ? '#f43f5e' : '#38bdf8';
+                    ctx.lineWidth = 1.8;
+                    ctx.beginPath(); ctx.arc(0, 5, 12, -Math.PI * 0.5, -Math.PI * 0.5 + Math.PI * 2 * lifeRatio); ctx.stroke();
+
+                    // 斜插地面的高精度星穹冰晶飞剑（剑尖入地，银翼护手与星蓝宝石朝上共鸣）
+                    const uidNum = gs.uid || (gIdx + 1);
+                    const tilt = ((uidNum % 5) - 2) * 0.08 + Math.sin(globalTime * 9 + uidNum) * 0.03;
+                    ctx.translate(0, -6);
+                    ctx.rotate(Math.PI * 0.5 + tilt);
+                    drawXinglanCrystalSword(ctx, 1.05, 'normal');
+                    ctx.restore();
+                }
+            }
+
+            // 2) 【万剑归鞘】高速倒飞回鞘的穿透飞剑
+            if (player.xinglanReturningSwords && player.xinglanReturningSwords.length > 0) {
+                for (let rIdx = 0; rIdx < player.xinglanReturningSwords.length; rIdx++) {
+                    const rs = player.xinglanReturningSwords[rIdx];
+                    const ang = typeof rs.angle === 'number' ? rs.angle : Math.atan2(player.y - rs.y, player.x - rs.x);
+                    ctx.save();
+                    if (typeof rs.prevX === 'number') {
+                        ctx.strokeStyle = 'rgba(56, 189, 248, 0.82)';
+                        ctx.lineWidth = 7.2;
+                        ctx.beginPath(); ctx.moveTo(rs.prevX, rs.prevY); ctx.lineTo(rs.x, rs.y); ctx.stroke();
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2.6;
+                        ctx.beginPath(); ctx.moveTo(rs.prevX, rs.prevY); ctx.lineTo(rs.x, rs.y); ctx.stroke();
+                    }
+                    ctx.translate(rs.x, rs.y);
+                    ctx.rotate(ang);
+                    drawXinglanCrystalSword(ctx, 1.15, 'normal');
+                    ctx.restore();
+                }
+            }
+
+            // 3) 【周天剑环】当前留存的飞剑首尾相接绕身高速旋转（半径提升至 72，飞剑尺寸提升约 20%）
+            const orbitCnt = player.isReloading ? 0 : Math.max(0, player.ammo || 0);
+            const ringR = 72;
+            if (player.isReloading) {
+                ctx.save();
+                const pct = clampVal(player.reloadTimer / Math.max(0.1, stats.reloadTime), 0, 1);
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.58)';
+                ctx.lineWidth = 2.2;
+                ctx.setLineDash([7, 5]);
+                ctx.lineDashOffset = -globalTime * 45;
+                ctx.beginPath(); ctx.arc(player.x, player.y - 4, ringR * (1.22 - pct * 0.22), 0, Math.PI * 2); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.restore();
+            } else if (orbitCnt > 0) {
+                ctx.save();
+                // 剑环周天星轨淡蓝光圈
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.28)';
+                ctx.lineWidth = 2.0;
+                ctx.beginPath(); ctx.arc(player.x, player.y - 4, ringR, 0, Math.PI * 2); ctx.stroke();
+
+                const baseA = typeof player.xinglanRingAngle === 'number' ? player.xinglanRingAngle : (globalTime * 4.2);
+                for (let sIdx = 0; sIdx < orbitCnt; sIdx++) {
+                    const sAng = baseA + (Math.PI * 2 * sIdx) / orbitCnt;
+                    const sx = player.x + Math.cos(sAng) * ringR;
+                    const sy = (player.y - 4) + Math.sin(sAng) * ringR;
+                    // 首尾相接切线方向旋转（tangent = sAng + Math.PI / 2）
+                    const tangentAng = sAng + Math.PI * 0.5;
+
+                    // 剑尾星光拖曳彗尾弧线
+                    ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+                    ctx.lineWidth = 4.6;
+                    ctx.beginPath();
+                    ctx.arc(player.x, player.y - 4, ringR, sAng - 0.36, sAng - 0.06);
+                    ctx.stroke();
+                    ctx.strokeStyle = 'rgba(224, 242, 254, 0.85)';
+                    ctx.lineWidth = 2.0;
+                    ctx.beginPath();
+                    ctx.arc(player.x, player.y - 4, ringR, sAng - 0.24, sAng - 0.04);
+                    ctx.stroke();
+
+                    ctx.save();
+                    ctx.translate(sx, sy);
+                    ctx.rotate(tangentAng);
+                    drawXinglanCrystalSword(ctx, 1.10, 'normal');
+                    ctx.restore();
+                }
+                ctx.restore();
+            }
+        }
+
         // 渲染重装哨戒炮台
         for (let i = 0; i < sentryTurrets.length; i++) {
             const tur = sentryTurrets[i];
@@ -17040,7 +18814,15 @@
             const b = bullets[i];
             ctx.save();
             ctx.translate(b.x, b.y); ctx.rotate(Math.atan2(b.vy, b.vx));
-            if (b.type === 'reload_strike') {
+            if (b.isXinglanSword) {
+                // 星澜专属高精度飞剑弹体（带破空流光尾迹 + 银翼护手星穹冰晶飞剑）
+                const isUltSw = Boolean(b.isXinglanUltSword);
+                ctx.fillStyle = b.isCrit ? 'rgba(250, 204, 21, 0.35)' : (isUltSw ? 'rgba(129, 140, 248, 0.38)' : 'rgba(56, 189, 248, 0.35)');
+                ctx.beginPath();
+                ctx.moveTo(-30, 0); ctx.lineTo(-11, -4.2); ctx.lineTo(-11, 4.2);
+                ctx.closePath(); ctx.fill();
+                drawXinglanCrystalSword(ctx, isUltSw ? 1.08 : 1.16, b.isCrit ? 'crit' : (isUltSw ? 'ult' : 'normal'));
+            } else if (b.type === 'reload_strike') {
                 ctx.fillStyle = b.isCrit ? '#facc15' : '#38bdf8'; ctx.fillRect(-9, -4, 18, 8);
                 ctx.fillStyle = '#ffffff'; ctx.fillRect(-5, -2, 12, 4);
             } else if (b.type === 'radial' || b.type === 'drone' || b.type === 'turret') {
@@ -17213,11 +18995,18 @@
 
     window.startPixelGame = function () {
         sfx.init();
-        if (window.__trainingHeroSwitchPending && player && waveState && waveState.mode === 'training') {
+        const isForceRestart = Boolean(window.__forceFullGameRestart);
+        window.__forceFullGameRestart = false;
+        const startEl = document.getElementById('startModal');
+        // 防止 touchend + click 或双事件重复触发导致已进入局内时误重开
+        if (!isForceRestart && gameState === 'PLAYING' && startEl && startEl.classList.contains('hidden')) {
+            return;
+        }
+        // 训练营局内更换英雄：若所选英雄与当前英雄相同，直接恢复对局且保留全部局内状态；若不同则局内无缝切换英雄
+        if (!isForceRestart && (window.__trainingHeroSwitchPending || (player && waveState && waveState.mode === 'training' && gameState === 'PAUSED'))) {
             window.__trainingHeroSwitchPending = false;
-            const startEl = document.getElementById('startModal');
             if (startEl) startEl.classList.add('hidden');
-            if (selectedHeroId && selectedHeroId !== player.heroId) {
+            if (selectedHeroId && player && selectedHeroId !== player.heroId) {
                 window.trainingSwitchHero(selectedHeroId);
             }
             gameState = 'PLAYING';
@@ -17355,10 +19144,12 @@
             trainingTopBarEl.addEventListener('touchstart', (e) => {
                 e.stopPropagation();
                 const gmPanelEl = document.getElementById('gmDrawerPanel');
+                const zScrollEl = document.getElementById('gmZombieScrollBox');
                 for (let i = 0; i < e.changedTouches.length; i++) {
                     const t = e.changedTouches[i];
                     const targetEl = t.target || e.target;
                     const btn = targetEl && targetEl.closest ? targetEl.closest('button') : null;
+                    const inZombieBox = zScrollEl && targetEl && zScrollEl.contains(targetEl) ? zScrollEl : null;
                     const inGmPanel = gmPanelEl && targetEl && gmPanelEl.contains(targetEl) ? gmPanelEl : null;
                     activePanelTouches.set(t.identifier, {
                         startX: t.clientX,
@@ -17366,7 +19157,8 @@
                         lastY: t.clientY,
                         moved: false,
                         targetBtn: (btn && trainingTopBarEl.contains(btn)) ? btn : null,
-                        scrollEl: inGmPanel
+                        scrollEl: inZombieBox || inGmPanel,
+                        parentScrollEl: inZombieBox ? inGmPanel : null
                     });
                 }
             }, { passive: true });
@@ -17385,7 +19177,14 @@
                         st.moved = true;
                     }
                     if (st.scrollEl && st.scrollEl.scrollHeight > st.scrollEl.clientHeight) {
+                        const prevTop = st.scrollEl.scrollTop;
                         st.scrollEl.scrollTop -= stepDy;
+                        if (st.scrollEl.scrollTop === prevTop && st.parentScrollEl && st.parentScrollEl.scrollHeight > st.parentScrollEl.clientHeight) {
+                            st.parentScrollEl.scrollTop -= stepDy;
+                        }
+                        if (e.cancelable) e.preventDefault();
+                    } else if (st.parentScrollEl && st.parentScrollEl.scrollHeight > st.parentScrollEl.clientHeight) {
+                        st.parentScrollEl.scrollTop -= stepDy;
                         if (e.cancelable) e.preventDefault();
                     }
                 }
@@ -17421,6 +19220,8 @@
                 }
                 const btn = e.target && e.target.closest ? e.target.closest('button') : null;
                 const gmPanelEl = document.getElementById('gmDrawerPanel');
+                const zScrollEl = document.getElementById('gmZombieScrollBox');
+                const inZombieBox = zScrollEl && e.target && zScrollEl.contains(e.target) ? zScrollEl : null;
                 const inGmPanel = gmPanelEl && e.target && gmPanelEl.contains(e.target) ? gmPanelEl : null;
                 if (btn && trainingTopBarEl.contains(btn)) {
                     e.preventDefault();
@@ -17433,7 +19234,8 @@
                     lastY: e.clientY,
                     moved: false,
                     targetBtn: (btn && trainingTopBarEl.contains(btn)) ? btn : null,
-                    scrollEl: inGmPanel
+                    scrollEl: inZombieBox || inGmPanel,
+                    parentScrollEl: inZombieBox ? inGmPanel : null
                 };
             });
 
@@ -17447,7 +19249,11 @@
                     mousePanelState.moved = true;
                 }
                 if (mousePanelState.moved && mousePanelState.scrollEl && mousePanelState.scrollEl.scrollHeight > mousePanelState.scrollEl.clientHeight) {
+                    const prevTop = mousePanelState.scrollEl.scrollTop;
                     mousePanelState.scrollEl.scrollTop -= stepDy;
+                    if (mousePanelState.scrollEl.scrollTop === prevTop && mousePanelState.parentScrollEl && mousePanelState.parentScrollEl.scrollHeight > mousePanelState.parentScrollEl.clientHeight) {
+                        mousePanelState.parentScrollEl.scrollTop -= stepDy;
+                    }
                 }
             });
 
@@ -17590,7 +19396,7 @@
             gameState = 'PAUSED';
             const headerBadge = document.getElementById('pauseHeroHeaderBadge');
             if (headerBadge) {
-                const heroTitle = player.heroId === 'yomi' ? '夜瞳 · 哥特链刃' : (player.heroId === 'chinatsu' ? '千夏 · 重装霰弹' : (player.heroId === 'sakura' ? '樱 · 疾风剑姬' : '凛音 · 战术双枪'));
+                const heroTitle = player.heroId === 'xinglan' ? '星澜 · 星穹御剑' : (player.heroId === 'yomi' ? '夜瞳 · 哥特链刃' : (player.heroId === 'chinatsu' ? '千夏 · 重装霰弹' : (player.heroId === 'sakura' ? '樱 · 疾风剑姬' : '凛音 · 战术双枪')));
                 headerBadge.textContent = `${heroTitle} (LV.${player.level})`;
             }
             renderPlayer12StatsGrid('pauseStatsBox');
@@ -17624,7 +19430,7 @@
         if (modalBox) modalBox.className = 'pixel-box w-full max-w-md max-h-[94vh] overflow-y-auto p-5 sm:p-6 border-2 border-amber-400 text-center space-y-4';
         if (badgeEl) { badgeEl.textContent = '20 WAVES CLEARED!'; badgeEl.className = 'bg-amber-400 text-slate-950 font-pixel-en text-[10px] px-2 py-0.5 font-bold'; }
         if (goTitle) {
-            const heroName = player && player.heroId === 'yomi' ? '夜瞳' : (player && player.heroId === 'chinatsu' ? '千夏' : (player && player.heroId === 'sakura' ? '樱' : '凛音'));
+            const heroName = player && player.heroId === 'xinglan' ? '星澜' : (player && player.heroId === 'yomi' ? '夜瞳' : (player && player.heroId === 'chinatsu' ? '千夏' : (player && player.heroId === 'sakura' ? '樱' : '凛音')));
             goTitle.textContent = `街区突围通关 · ${heroName}全歼终焉！`;
             goTitle.className = 'text-xl sm:text-2xl font-bold text-amber-300 mt-2';
         }
@@ -17668,7 +19474,7 @@
         if (modalBox) modalBox.className = 'pixel-box w-full max-w-md max-h-[94vh] overflow-y-auto p-5 sm:p-6 border-2 border-amber-400 text-center space-y-4';
         if (badgeEl) { badgeEl.textContent = 'BOSS RUSH CLEARED!'; badgeEl.className = 'bg-amber-400 text-slate-950 font-pixel-en text-[10px] px-2 py-0.5 font-bold'; }
         if (goTitle) {
-            const heroName = player && player.heroId === 'yomi' ? '夜瞳' : (player && player.heroId === 'chinatsu' ? '千夏' : (player && player.heroId === 'sakura' ? '樱' : '凛音'));
+            const heroName = player && player.heroId === 'xinglan' ? '星澜' : (player && player.heroId === 'yomi' ? '夜瞳' : (player && player.heroId === 'chinatsu' ? '千夏' : (player && player.heroId === 'sakura' ? '樱' : '凛音')));
             goTitle.textContent = `首领挑战通关 · ${heroName}制霸全场！`;
             goTitle.className = 'text-xl sm:text-2xl font-bold text-amber-300 mt-2';
         }
@@ -17692,7 +19498,7 @@
         if (modalBox) modalBox.className = 'pixel-box w-full max-w-md max-h-[94vh] overflow-y-auto p-5 sm:p-6 border-2 border-rose-500 text-center space-y-4';
         if (badgeEl) { badgeEl.textContent = 'MISSION FAILED'; badgeEl.className = 'bg-rose-600 text-white font-pixel-en text-[10px] px-2 py-0.5'; }
         if (goTitle) {
-            const heroName = player && player.heroId === 'yomi' ? '夜瞳' : (player && player.heroId === 'chinatsu' ? '千夏' : (player && player.heroId === 'sakura' ? '樱' : '凛音'));
+            const heroName = player && player.heroId === 'xinglan' ? '星澜' : (player && player.heroId === 'yomi' ? '夜瞳' : (player && player.heroId === 'chinatsu' ? '千夏' : (player && player.heroId === 'sakura' ? '樱' : '凛音')));
             goTitle.textContent = `防线失守 · ${heroName}倒下了`;
             goTitle.className = 'text-xl sm:text-3xl font-bold text-rose-400 mt-2';
         }
