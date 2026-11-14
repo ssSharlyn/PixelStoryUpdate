@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>像素物语 V0.5.6</title>
+    <script>window.__mountPixelStoryGame = null; window.__pixelGameBooted = false;</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
@@ -425,70 +426,81 @@
             });
         }
 
-        // 1. 实时获取最新 version.json 与最新 Commit SHA（彻底绕过 jsDelivr @main 分支缓存延迟）
-        async function fetchRealtimeVersionAndSha(timeoutMs = 3000) {
+        // 1. 实时获取最新 version.json 与最新 Commit SHA（多路无缓存源并发，彻底解决国内 API 超时与 jsDelivr @main 缓存锁死问题）
+        async function fetchRealtimeVersionAndSha(timeoutMs = 3500) {
             const ts = Date.now();
-            // 顺手触发 jsDelivr 缓存刷新
-            fetch(`https://purge.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/version.json`).catch(() => {});
+            const rawVerUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/version.json?t=${ts}`;
+            const atomUrl = `https://github.com/${GITHUB_USER}/${GITHUB_REPO}/commits/${GITHUB_BRANCH}.atom?t=${ts}`;
 
-            const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), timeoutMs);
+            const fetchTextWithTimeout = (url, ms) => new Promise((resolve, reject) => {
+                const ctrl = new AbortController();
+                const tid = setTimeout(() => { ctrl.abort(); reject(new Error("timeout")); }, ms);
+                fetch(url, { cache: "no-store", signal: ctrl.signal })
+                    .then(r => r.ok ? r.text() : Promise.reject(new Error("status " + r.status)))
+                    .then(txt => { clearTimeout(tid); resolve(txt); })
+                    .catch(err => { clearTimeout(tid); reject(err); });
+            });
 
-            try {
-                // 优先通过 GitHub 官方免缓存 API 同时获取最新 Commit SHA 与实时 version.json
-                const [commitRes, verApiRes] = await Promise.allSettled([
-                    fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/commits/${GITHUB_BRANCH}?t=${ts}`, { cache: "no-store", signal: controller.signal }),
-                    fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/version.json?ref=${GITHUB_BRANCH}&t=${ts}`, { cache: "no-store", signal: controller.signal })
-                ]);
-                clearTimeout(timer);
-
-                let latestSha = GITHUB_BRANCH;
-                if (commitRes.status === "fulfilled" && commitRes.value.ok) {
-                    const commitData = await commitRes.value.json();
-                    if (commitData && commitData.sha) latestSha = commitData.sha;
+            // 并发获取最新 Commit SHA（GitHub API + 免限流 Atom Feed 国内镜像）与实时无缓存 version.json
+            const shaPromise = (async () => {
+                const shaTasks = [
+                    fetchJsonWithTimeout(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/commits/${GITHUB_BRANCH}?t=${ts}`, timeoutMs)
+                        .then(d => (d && d.sha) ? d.sha : Promise.reject()),
+                    fetchTextWithTimeout(`https://gh-proxy.com/${atomUrl}`, timeoutMs)
+                        .then(txt => { const m = txt && txt.match(/Commit\/([0-9a-f]{40})/i); return m ? m[1] : Promise.reject(); }),
+                    fetchTextWithTimeout(`https://ghfast.top/${atomUrl}`, timeoutMs)
+                        .then(txt => { const m = txt && txt.match(/Commit\/([0-9a-f]{40})/i); return m ? m[1] : Promise.reject(); })
+                ];
+                const settled = await Promise.allSettled(shaTasks);
+                for (const s of settled) {
+                    if (s.status === "fulfilled" && s.value) return s.value;
                 }
+                return GITHUB_BRANCH;
+            })();
 
-                if (verApiRes.status === "fulfilled" && verApiRes.value.ok) {
-                    const verData = await verApiRes.value.json();
-                    if (verData && verData.content) {
-                        const jsonStr = decodeBase64Utf8(verData.content);
-                        return { config: JSON.parse(jsonStr), commitSha: latestSha };
-                    }
-                }
-
-                // 若获取到 latestSha，直接用 @latestSha 从国内 CDN 秒拉无缓存 version.json
-                if (latestSha !== GITHUB_BRANCH) {
-                    const cdnVerText = await raceMirrors("version.json", latestSha, ts, 2200);
-                    return { config: JSON.parse(cdnVerText), commitSha: latestSha };
-                }
-            } catch (e) {
-                clearTimeout(timer);
-            }
-
-            // 兜底：从多路镜像拉取 version.json（带 2.5s 严格超时），并选出版本号最高的一份
-            const rawMain = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/version.json?t=${ts}`;
-            const fallbackUrls = [
-                `https://mirror.ghproxy.com/${rawMain}`,
-                `${rawMain}`,
-                `https://fastly.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/version.json?t=${ts}`,
-                `https://testingcf.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/version.json?t=${ts}`
+            const verTasks = [
+                fetchJsonWithTimeout(`https://ghfast.top/${rawVerUrl}`, timeoutMs),
+                fetchJsonWithTimeout(`https://gh-proxy.com/${rawVerUrl}`, timeoutMs),
+                fetchJsonWithTimeout(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/version.json?ref=${GITHUB_BRANCH}&t=${ts}`, timeoutMs)
+                    .then(d => (d && d.content) ? JSON.parse(decodeBase64Utf8(d.content)) : Promise.reject()),
+                fetchJsonWithTimeout(rawVerUrl, timeoutMs),
+                fetchJsonWithTimeout(`https://testingcf.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/version.json?t=${ts}`, timeoutMs),
+                fetchJsonWithTimeout(`https://fastly.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/version.json?t=${ts}`, timeoutMs)
             ];
-            const results = await Promise.allSettled(
-                fallbackUrls.map(u => fetchJsonWithTimeout(u, 2500))
-            );
+
+            const [latestSha, verResults] = await Promise.all([
+                shaPromise,
+                Promise.allSettled(verTasks)
+            ]);
+
             let bestCfg = null;
-            for (const r of results) {
-                if (r.status === "fulfilled" && r.value) {
-                    if (!bestCfg || (r.value.hotPatchVersion || 0) > (bestCfg.hotPatchVersion || 0) || (r.value.minApkVersion || 0) > (bestCfg.minApkVersion || 0)) {
+            for (const r of verResults) {
+                if (r.status === "fulfilled" && r.value && typeof r.value === "object") {
+                    if (
+                        !bestCfg ||
+                        (r.value.minApkVersion || 0) > (bestCfg.minApkVersion || 0) ||
+                        ((r.value.minApkVersion || 0) === (bestCfg.minApkVersion || 0) && (r.value.hotPatchVersion || 0) > (bestCfg.hotPatchVersion || 0))
+                    ) {
                         bestCfg = r.value;
                     }
                 }
             }
-            if (bestCfg) return { config: bestCfg, commitSha: GITHUB_BRANCH };
+
+            // 若获得了精确 Commit SHA，再用 @latestSha 从 jsDelivr 二次校验一次，确保拿到最高版本配置
+            if (latestSha !== GITHUB_BRANCH) {
+                try {
+                    const shaCfg = await fetchJsonWithTimeout(`https://testingcf.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${latestSha}/version.json?t=${ts}`, 2000);
+                    if (shaCfg && (!bestCfg || (shaCfg.hotPatchVersion || 0) >= (bestCfg.hotPatchVersion || 0))) {
+                        bestCfg = shaCfg;
+                    }
+                } catch (e) {}
+            }
+
+            if (bestCfg) return { config: bestCfg, commitSha: latestSha };
             throw new Error("Version check failed");
         }
 
-        // 2. 构建多路下载源：若未拿到精确 Commit SHA（如海外 VPN 触发 GitHub API 403 限流），优先走无分支缓存的 GitHub Raw 与 ghproxy，延迟 jsDelivr @main 防止抢先返回旧缓存
+        // 2. 构建多路下载源：结合国内实时免缓存镜像（ghfast.top / gh-proxy.com）与精确 Commit SHA 的 jsDelivr 节点
         function getMirrorUrls(filePath, refShaOrBranch, cacheBuster) {
             const ref = refShaOrBranch || GITHUB_BRANCH;
             const hasExactSha = ref !== GITHUB_BRANCH;
@@ -497,23 +509,25 @@
             if (hasExactSha) {
                 return [
                     { url: `https://testingcf.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 0 },
+                    { url: `https://ghfast.top/${rawUrl}${q}`, delay: 0 },
+                    { url: `https://gh-proxy.com/${rawUrl}${q}`, delay: 0 },
                     { url: `https://fastly.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 0 },
                     { url: `https://gcore.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 0 },
-                    { url: `https://mirror.ghproxy.com/${rawUrl}${q}`, delay: 0 },
                     { url: `${rawUrl}${q}`, delay: 0 }
                 ];
             }
-            // 未拿到精确 SHA 时，raw 与 ghproxy 0ms 立即并发，jsdelivr @main 延后 1500ms 并配合内容新鲜度校验
+            // 未拿到精确 SHA 时，优先使用无分支缓存的国内实时镜像与 GitHub Raw，延后 jsDelivr @main
             return [
+                { url: `https://ghfast.top/${rawUrl}${q}`, delay: 0 },
+                { url: `https://gh-proxy.com/${rawUrl}${q}`, delay: 0 },
                 { url: `${rawUrl}${q}`, delay: 0 },
-                { url: `https://mirror.ghproxy.com/${rawUrl}${q}`, delay: 0 },
-                { url: `https://testingcf.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 1500 },
-                { url: `https://fastly.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 1500 },
-                { url: `https://gcore.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 1500 }
+                { url: `https://testingcf.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 1200 },
+                { url: `https://fastly.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 1200 },
+                { url: `https://gcore.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${ref}/${filePath}${q}`, delay: 1200 }
             ];
         }
 
-        // 提取 HTML 标题中的语义化版本号（如 "像素物语 V0.5.4" -> 5004），彻底杜绝海外 CDN 旧缓存导致版本倒退回 0.5.0
+        // 提取 HTML 标题中的语义化版本号（如 "像素物语 V0.5.6" -> 5006）
         function extractHtmlSemVer(htmlOrTitle) {
             if (!htmlOrTitle) return 0;
             const m = String(htmlOrTitle).match(/V(\d+)\.(\d+)\.(\d+)/i);
@@ -521,14 +535,25 @@
             return parseInt(m[1], 10) * 1000000 + parseInt(m[2], 10) * 1000 + parseInt(m[3], 10);
         }
 
-        // 校验下载到的新补丁是否真正为新版本（自动比对代码内容与语义化版本号，严禁旧版本覆盖新版本）
+        // 校验本地缓存补丁是否完整有效（专供 fallbackLocal 使用，严禁与自身做相等排斥比对）
+        function isValidCachedPatchHtml(htmlText) {
+            if (!htmlText || !htmlText.includes("<canvas") || !htmlText.includes("</html>")) return false;
+            const titleMatch = htmlText.match(/<title>([^<]*)<\/title>/i);
+            const cachedSemVer = extractHtmlSemVer(titleMatch ? titleMatch[1].trim() : "");
+            const builtInSemVer = extractHtmlSemVer(document.title || "");
+            if (builtInSemVer > 0 && cachedSemVer > 0 && cachedSemVer < builtInSemVer) {
+                return false;
+            }
+            return true;
+        }
+
+        // 校验远端下载的新补丁是否完整且不低于当前语义版本号（允许同版本号微调热更，严禁旧版本覆盖新版本）
         function isFreshValidPatchHtml(htmlText) {
             if (!htmlText || !htmlText.includes("<canvas") || !htmlText.includes("</html>")) return false;
             const titleMatch = htmlText.match(/<title>([^<]*)<\/title>/i);
             const newTitle = titleMatch ? titleMatch[1].trim() : "";
             const newSemVer = extractHtmlSemVer(newTitle);
 
-            // 1. 与本地已缓存的热更代码比对：若新包版本号低于本地缓存版本，或代码完全一模一样，说明海外/边缘 CDN 返回了旧缓存
             const oldCachedCode = safeGetItem("LOCAL_HOT_PATCH_CODE");
             if (oldCachedCode) {
                 const cachedTitleMatch = oldCachedCode.match(/<title>([^<]*)<\/title>/i);
@@ -536,20 +561,11 @@
                 if (cachedSemVer > 0 && newSemVer > 0 && newSemVer < cachedSemVer) {
                     return false;
                 }
-                if (htmlText.length === oldCachedCode.length && htmlText.trim() === oldCachedCode.trim()) {
-                    return false;
-                }
             }
-            // 2. 与当前正在运行的页面标题及主脚本比对：严禁低于当前运行版本的旧包覆盖，且拒绝完全相同的旧包
             try {
                 const curTitle = document.title || "";
                 const curSemVer = extractHtmlSemVer(curTitle);
                 if (curSemVer > 0 && newSemVer > 0 && newSemVer < curSemVer) {
-                    return false;
-                }
-                const scripts = document.getElementsByTagName("script");
-                const lastScript = scripts.length > 1 ? (scripts[scripts.length - 1].textContent || "").trim() : "";
-                if (curTitle && newTitle === curTitle && lastScript.length > 50000 && htmlText.includes(lastScript)) {
                     return false;
                 }
             } catch (e) {}
@@ -709,6 +725,43 @@
 
         if (window.__GAME_ENGINE_BOOTED__) {
             window.__UPDATE_CHECK_PENDING__ = false;
+            if (!window.__HOT_ENGINE_V2_FIXED__) {
+                const patchHtmlToPersist = safeGetItem("LOCAL_HOT_PATCH_CODE");
+                const patchVerToPersist = safeGetItem("LOCAL_HOT_PATCH_VER") || "6";
+                // 先设为 1 防止旧版 V0.5.5 壳在未完成底座覆写前掉入旧壳 fallbackLocal 自比对死锁
+                safeRemoveItem("LOCAL_HOT_PATCH_CODE");
+                safeSetItem("LOCAL_HOT_PATCH_VER", "1");
+                // 若处于 5+ App (runmode: liberate) 环境，自动将修复后的新版 HTML 静默覆写至 _www/index.html 底座，
+                // 覆写成功后恢复 LOCAL_HOT_PATCH_VER，使后续启动直接判定为已是最新版，不再重复触发下载或显示 smallUpdateLog！
+                const tryUpgradeLiberateWww = () => {
+                    if (!window.plus || !window.plus.io || !patchHtmlToPersist) return;
+                    const writeEntry = (fileEntry) => {
+                        try {
+                            fileEntry.createWriter((writer) => {
+                                writer.onwriteend = () => {
+                                    safeSetItem("LOCAL_HOT_PATCH_CODE", patchHtmlToPersist);
+                                    safeSetItem("LOCAL_HOT_PATCH_VER", patchVerToPersist);
+                                };
+                                writer.seek(0);
+                                writer.write(patchHtmlToPersist);
+                            }, () => {});
+                        } catch (e) {}
+                    };
+                    try {
+                        window.plus.io.resolveLocalFileSystemURL("_www/index.html", (entry) => {
+                            writeEntry(entry);
+                            if (entry && typeof entry.toLocalURL === "function") {
+                                const localUrl = entry.toLocalURL();
+                                if (localUrl && localUrl !== "_www/index.html") {
+                                    window.plus.io.resolveLocalFileSystemURL(localUrl, (realEntry) => writeEntry(realEntry), () => {});
+                                }
+                            }
+                        }, () => {});
+                    } catch (e) {}
+                };
+                if (window.plus) tryUpgradeLiberateWww();
+                else document.addEventListener("plusready", tryUpgradeLiberateWww, false);
+            }
             const oldOverlay = document.getElementById('bootEngineOverlay');
             if (oldOverlay) oldOverlay.style.display = 'none';
             return;
@@ -724,7 +777,7 @@
             return;
         }
 
-        // 若覆盖安装了新版 APK（LOCAL_APK_VERSION 变化、BASE_PATCH_VERSION > 缓存版本、或内置语义版本号高于旧缓存代码），自动清空旧 APK 残留的热更缓存并将本地热更号重置为 1
+        // 若覆盖安装了新版 APK（LOCAL_APK_VERSION 变化、BASE_PATCH_VERSION > 缓存版本、或内置语义版本号严格高于旧缓存代码），自动清空旧 APK 残留的热更缓存
         const savedApkVer = parseInt(safeGetItem("LOCAL_APK_VER") || "0", 10);
         const cachedVer = parseInt(safeGetItem("LOCAL_HOT_PATCH_VER") || "0", 10);
         const cachedCodeCheck = safeGetItem("LOCAL_HOT_PATCH_CODE");
@@ -733,7 +786,7 @@
             const cTitleMatch = cachedCodeCheck.match(/<title>([^<]*)<\/title>/i);
             const cachedSem = extractHtmlSemVer(cTitleMatch ? cTitleMatch[1] : "");
             const builtInSem = extractHtmlSemVer(document.title || "");
-            if (builtInSem > 0 && cachedSem > 0 && cachedSem <= builtInSem) {
+            if (builtInSem > 0 && cachedSem > 0 && cachedSem < builtInSem) {
                 isCachedCodeOlderThanApk = true;
             }
         }
@@ -762,7 +815,6 @@
                 if (bar) bar.style.width = "65%";
                 if (tip) tip.innerText = config.smallUpdateLog || `正在同步 V${config.hotPatchVersion} 热更补丁...`;
 
-                fetch(`https://purge.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/game.html`).catch(() => {});
                 const newGameCode = await raceMirrors(
                     "game.html",
                     commitSha,
@@ -788,7 +840,7 @@
             console.log("未检测到更新或当前节点缓存未刷新，本次先启动本地版本，下次启动将继续检测");
         }
 
-        // ====== 分支 C：无更新或断网 -> 直接秒进游戏 ======
+        // ====== 分支 C：无更新或断网 -> 直接秒进已缓存的热更版本或内置版本 ======
         fallbackLocal();
 
         function fallbackLocal() {
@@ -797,7 +849,7 @@
             const savedVer = parseInt(safeGetItem("LOCAL_HOT_PATCH_VER") || "0", 10);
             const savedCode = safeGetItem("LOCAL_HOT_PATCH_CODE");
             setTimeout(() => {
-                if (savedCode && savedVer > BASE_PATCH_VERSION && savedCode.includes("<canvas") && isFreshValidPatchHtml(savedCode)) {
+                if (savedCode && savedVer > BASE_PATCH_VERSION && isValidCachedPatchHtml(savedCode)) {
                     runEngine(savedCode);
                 } else {
                     if (overlay) overlay.style.display = "none";
@@ -811,9 +863,11 @@
         }
 
         function runEngine(htmlSource) {
+            window.__HOT_ENGINE_V2_FIXED__ = true;
             window.__UPDATE_CHECK_PENDING__ = false;
             window.__GAME_ENGINE_BOOTED__ = true;
             window.__pixelGameBooted = false;
+            window.__mountPixelStoryGame = null;
             let safeHtml = htmlSource;
             if (safeHtml.includes("const MAP_SIZE = 2000;") && !safeHtml.includes("__mountPixelStoryGame")) {
                 safeHtml = safeHtml.replace(
@@ -1697,12 +1751,12 @@
             </div>
             <div class="flex flex-row items-stretch gap-2.5 sm:gap-5 max-w-5xl w-full mx-auto flex-1 min-h-0 py-1.5 overflow-hidden">
                 <div class="flex flex-col items-center gap-2 sm:gap-2.5 shrink-0 w-24 sm:w-32 overflow-y-auto overflow-x-hidden py-1.5 px-2">
-                    <button id="btnSelectRinne" onclick="window.selectHeroType && window.selectHeroType('rinne')" class="w-full shrink-0 group relative p-1.5 bg-[#121726] border-2 border-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.35)] flex flex-col items-center gap-1 cursor-pointer transition">
+                    <button id="btnSelectRinne" onclick="window.selectHeroType && window.selectHeroType('rinne')" class="w-full shrink-0 group relative p-1.5 bg-[#101420] border-2 border-slate-700 opacity-75 hover:opacity-100 flex flex-col items-center gap-1 cursor-pointer transition">
                         <div class="w-11 h-11 sm:w-14 sm:h-14 bg-[#090d16] border border-sky-400/70 flex items-center justify-center overflow-hidden">
                             <canvas id="avatarOptionRinne" width="48" height="48" class="w-10 h-10 sm:w-12 sm:h-12 pointer-events-none"></canvas>
                         </div>
                         <span class="text-[11px] sm:text-xs font-bold text-white leading-none">凛音</span>
-                        <div id="avatarCheckRinne" class="absolute top-0.5 right-0.5 bg-sky-400 text-slate-950 font-pixel-en text-[7px] px-1 py-0.5 font-bold leading-none">ON</div>
+                        <div id="avatarCheckRinne" class="hidden absolute top-0.5 right-0.5 bg-sky-400 text-slate-950 font-pixel-en text-[7px] px-1 py-0.5 font-bold leading-none">ON</div>
                     </button>
                     <button id="btnSelectChinatsu" onclick="window.selectHeroType && window.selectHeroType('chinatsu')" class="w-full shrink-0 group relative p-1.5 bg-[#101420] border-2 border-slate-700 opacity-75 hover:opacity-100 flex flex-col items-center gap-1 cursor-pointer transition">
                         <div class="w-11 h-11 sm:w-14 sm:h-14 bg-[#090d16] border border-slate-700 flex items-center justify-center overflow-hidden">
@@ -1735,25 +1789,27 @@
                 </div>
                 <div id="startHeroBox" class="flex-1 bg-[#101420] border-2 border-slate-800 p-3 sm:p-5 flex flex-row items-center justify-around gap-4 sm:gap-8 min-w-0 overflow-hidden">
                     <div class="flex flex-col items-center justify-center shrink-0">
-                        <div id="startHeroAvatarWrap" class="w-28 h-36 sm:w-44 sm:h-52 bg-[#121726] border-2 border-sky-400 flex items-center justify-center relative shadow-[0_0_24px_rgba(56,189,248,0.25)]">
+                        <div id="startHeroAvatarWrap" class="w-28 h-36 sm:w-44 sm:h-52 bg-[#121726] border-2 border-slate-700 flex items-center justify-center relative">
                             <canvas id="previewHeroCanvas" width="96" height="112" class="w-24 h-32 sm:w-40 sm:h-48"></canvas>
-                            <span id="previewHeroTag" class="absolute bottom-1 right-1 bg-rose-600 text-white text-[9px] sm:text-[10px] px-1.5 py-0.5 font-bold">战术枪姬</span>
+                            <span id="previewHeroTag" class="absolute bottom-1 right-1 bg-slate-700 text-slate-300 text-[9px] sm:text-[10px] px-1.5 py-0.5 font-bold">待选择</span>
                         </div>
-                        <span id="previewHeroName" class="text-xs sm:text-base font-bold text-white mt-1.5 tracking-wide">【凛音 · Rinne】</span>
+                        <span id="previewHeroName" class="text-xs sm:text-base font-bold text-slate-300 mt-1.5 tracking-wide">【请选择出战特工】</span>
                     </div>
                     <div id="startHeroRightCol" class="flex-1 max-w-md flex flex-col justify-center gap-3 sm:gap-5 min-w-0">
                         <div class="bg-slate-900/90 border border-slate-800 p-2.5 sm:p-3.5">
                             <div class="text-xs text-sky-300 font-bold mb-2 flex items-center justify-between">
                                 <span>英雄技能</span><span class="text-[10px] text-amber-300 font-normal">单击查看详情</span>
                             </div>
-                            <div id="heroSelectSkillIconsRow" class="flex items-center gap-3 sm:gap-4"></div>
+                            <div id="heroSelectSkillIconsRow" class="flex items-center gap-3 sm:gap-4">
+                                <div class="h-12 sm:h-14 flex items-center text-xs text-slate-500">请先点击左侧头像选择特工</div>
+                            </div>
                         </div>
                         <div class="bg-slate-900/90 border border-slate-800 p-2.5 sm:p-3.5 flex items-center justify-between gap-3">
                             <div>
                                 <div class="text-xs text-amber-300 font-bold">可选升级</div>
                                 <div class="text-[11px] text-slate-400 mt-0.5">查看可抽取的升级项</div>
                             </div>
-                            <button onclick="window.openHeroUpgradesSubModal()" class="pixel-icon-btn px-3 sm:px-4 py-2 text-xs font-bold text-sky-300 border-sky-400/80 flex items-center gap-1.5 shrink-0">
+                            <button id="btnOpenHeroUpgrades" onclick="window.openHeroUpgradesSubModal()" class="pixel-icon-btn px-3 sm:px-4 py-2 text-xs font-bold text-sky-300 border-sky-400/80 flex items-center gap-1.5 shrink-0 opacity-50 pointer-events-none">
                                 <canvas class="ui-px-icon w-4 h-4" data-icon="box" width="16" height="16"></canvas><span>可选升级</span>
                             </button>
                         </div>
@@ -1761,8 +1817,8 @@
                 </div>
             </div>
             <div class="pt-1.5 border-t border-slate-800 shrink-0 max-w-5xl w-full mx-auto">
-                <button id="btnStartGame" class="pixel-btn w-full py-2 sm:py-2.5 text-white font-bold text-sm sm:text-base tracking-widest flex items-center justify-center gap-2 cursor-pointer z-50">
-                    <canvas class="ui-px-icon w-4 h-4" data-icon="play_sm" width="16" height="16"></canvas><span>确认出击 · 进入封锁街区</span>
+                <button id="btnStartGame" class="pixel-btn w-full py-2 sm:py-2.5 text-white font-bold text-sm sm:text-base tracking-widest flex items-center justify-center gap-2 opacity-50 cursor-not-allowed z-50">
+                    <canvas class="ui-px-icon w-4 h-4" data-icon="play_sm" width="16" height="16"></canvas><span>请先选择出战特工</span>
                 </button>
             </div>
         </div>
@@ -2035,7 +2091,7 @@
     const MAP_SIZE = 2000;
     const HALF_MAP = MAP_SIZE / 2;
     const ROMAN_NUMERALS = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
-    let selectedHeroId = 'rinne';
+    let selectedHeroId = null;
     let selectedGameMode = 'endless';
     const BOSS_RUSH_TOTAL_BOSSES = 5;
     const MELEE_HERO_IDS = ['sakura', 'yomi'];
@@ -4806,11 +4862,12 @@
             lastFrameTime = performance.now();
             return;
         }
+        modeWheelState.isDragging = false;
         document.getElementById('mainMenuModal').classList.add('hidden');
         document.getElementById('startModal').classList.add('hidden');
         document.getElementById('modeSelectModal').classList.remove('hidden');
         resetScrollbarsIn('modeSelectModal');
-        window.selectGameMode(selectedGameMode, true);
+        window.selectGameMode('endless', true);
     };
 
     window.cycleGameMode = function (delta = 1) {
@@ -4857,7 +4914,7 @@
         document.getElementById('modeSelectModal').classList.add('hidden');
         document.getElementById('startModal').classList.remove('hidden');
         resetScrollbarsIn('startModal');
-        window.selectHeroType(selectedHeroId);
+        window.selectHeroType(null);
     };
 
     function setupModeSwipeGesture() {
@@ -5003,7 +5060,7 @@
         document.getElementById('modeSelectModal').classList.add('hidden');
         document.getElementById('startModal').classList.remove('hidden');
         resetScrollbarsIn('startModal');
-        window.selectHeroType(selectedHeroId);
+        window.selectHeroType(null);
     };
 
     let pendingInGameConfirmAction = null;
@@ -5360,7 +5417,8 @@
     };
 
     window.selectHeroType = function (heroId) {
-        selectedHeroId = (heroId === 'chinatsu' || heroId === 'sakura' || heroId === 'yomi' || heroId === 'xinglan') ? heroId : 'rinne';
+        const isValidHero = (heroId === 'rinne' || heroId === 'chinatsu' || heroId === 'sakura' || heroId === 'yomi' || heroId === 'xinglan');
+        selectedHeroId = isValidHero ? heroId : null;
         const btnRinne = document.getElementById('btnSelectRinne');
         const btnChinatsu = document.getElementById('btnSelectChinatsu');
         const btnSakura = document.getElementById('btnSelectSakura');
@@ -5375,6 +5433,9 @@
         const tagEl = document.getElementById('previewHeroTag');
         const nameEl = document.getElementById('previewHeroName');
         const iconsRow = document.getElementById('heroSelectSkillIconsRow');
+        const startBtn = document.getElementById('btnStartGame');
+        const startBtnSpan = startBtn ? startBtn.querySelector('span') : null;
+        const upgBtn = document.getElementById('btnOpenHeroUpgrades');
 
         const inactiveCls = 'w-full shrink-0 group relative p-1.5 bg-[#101420] border-2 border-slate-700 opacity-75 hover:opacity-100 flex flex-col items-center gap-1 cursor-pointer transition';
         if (btnRinne) btnRinne.className = inactiveCls;
@@ -5387,6 +5448,33 @@
         if (checkSakura) checkSakura.classList.add('hidden');
         if (checkYomi) checkYomi.classList.add('hidden');
         if (checkXinglan) checkXinglan.classList.add('hidden');
+
+        if (!selectedHeroId) {
+            if (avatarWrap) avatarWrap.className = 'w-28 h-36 sm:w-44 sm:h-52 bg-[#121726] border-2 border-slate-700 flex items-center justify-center relative';
+            if (tagEl) { tagEl.textContent = '待选择'; tagEl.className = 'absolute bottom-1 right-1 bg-slate-700 text-slate-300 text-[9px] sm:text-[10px] px-1.5 py-0.5 font-bold'; }
+            if (nameEl) { nameEl.textContent = '【请选择出战特工】'; nameEl.className = 'text-xs sm:text-base font-bold text-slate-300 mt-1.5 tracking-wide'; }
+            if (iconsRow) {
+                iconsRow.innerHTML = '<div class="h-12 sm:h-14 flex items-center text-xs text-slate-500">请先点击左侧头像选择特工</div>';
+            }
+            if (upgBtn) {
+                upgBtn.classList.add('opacity-50', 'pointer-events-none');
+            }
+            if (startBtn) {
+                startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                startBtn.classList.remove('cursor-pointer');
+                if (startBtnSpan) startBtnSpan.textContent = '请先选择出战特工';
+            }
+            return;
+        }
+
+        if (upgBtn) {
+            upgBtn.classList.remove('opacity-50', 'pointer-events-none');
+        }
+        if (startBtn) {
+            startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            startBtn.classList.add('cursor-pointer');
+            if (startBtnSpan) startBtnSpan.textContent = '确认出击 · 进入封锁街区';
+        }
 
         const hData = HERO_DATABASE[selectedHeroId];
         if (selectedHeroId === 'rinne') {
@@ -5411,7 +5499,7 @@
             if (avatarWrap) avatarWrap.className = 'w-28 h-36 sm:w-44 sm:h-52 bg-[#121726] border-2 border-indigo-400 flex items-center justify-center relative shadow-[0_0_24px_rgba(129,140,248,0.25)]';
         }
         if (tagEl) { tagEl.textContent = hData.tag; tagEl.className = `absolute bottom-1 right-1 ${hData.tagCls} text-[9px] sm:text-[10px] px-1.5 py-0.5 font-bold`; }
-        if (nameEl) nameEl.textContent = `【${hData.name}】`;
+        if (nameEl) { nameEl.textContent = `【${hData.name}】`; nameEl.className = 'text-xs sm:text-base font-bold text-white mt-1.5 tracking-wide'; }
 
         if (iconsRow) {
             iconsRow.innerHTML = '';
@@ -5469,6 +5557,7 @@
 
     window.openHeroUpgradesSubModal = function (heroId) {
         heroId = heroId || selectedHeroId;
+        if (!heroId) return;
         sfx.pickupXp();
         const modal = document.getElementById('heroUpgradesSubModal');
         const titleEl = document.getElementById('heroUpgradesSubTitle');
@@ -5895,6 +5984,17 @@
             pctx.imageSmoothingEnabled = false;
             pctx.clearRect(0, 0, pCanvas.width, pCanvas.height);
             const W = pCanvas.width, H = pCanvas.height;
+            if (!selectedHeroId) {
+                pctx.fillStyle = 'rgba(148, 163, 184, 0.12)';
+                pctx.beginPath(); pctx.ellipse(W * 0.5, H - 16, 26, 7, 0, 0, Math.PI * 2); pctx.fill();
+                pctx.strokeStyle = '#475569';
+                pctx.lineWidth = 1.5; pctx.stroke();
+                pctx.fillStyle = '#64748b';
+                pctx.font = 'bold 28px monospace';
+                pctx.textAlign = 'center';
+                pctx.textBaseline = 'middle';
+                pctx.fillText('?', W * 0.5, H * 0.46 + breathBob);
+            } else {
             pctx.fillStyle = selectedHeroId === 'chinatsu' ? 'rgba(251, 191, 36, 0.22)' : (selectedHeroId === 'sakura' ? 'rgba(244, 114, 182, 0.22)' : (selectedHeroId === 'yomi' ? 'rgba(192, 132, 252, 0.22)' : (selectedHeroId === 'xinglan' ? 'rgba(129, 140, 248, 0.24)' : 'rgba(56, 189, 248, 0.22)')));
             pctx.beginPath(); pctx.ellipse(W * 0.5, H - 16, 30, 8, 0, 0, Math.PI * 2); pctx.fill();
             pctx.strokeStyle = selectedHeroId === 'chinatsu' ? '#fbbf24' : (selectedHeroId === 'sakura' ? '#f472b6' : (selectedHeroId === 'yomi' ? '#c084fc' : (selectedHeroId === 'xinglan' ? '#818cf8' : '#38bdf8')));
@@ -6029,6 +6129,7 @@
             // 星澜专属：再绘制位于角色身前的前半圈 3D 环绕飞剑（与后半圈形成完整立体环绕）
             if (selectedHeroId === 'xinglan') {
                 drawXinglanPreview3DSwords(pctx, W * 0.5 - 2, dy + 42, tSec, 'front', 36, 13, 1.05);
+            }
             }
         }
         const cCanvas = document.getElementById('codexPreviewCanvas');
@@ -8406,7 +8507,7 @@
         // 取消暴击伤害对吸血的翻倍加成：若该发子弹暴击，还原为未暴击基础有效伤害计算吸血
         const nonCritDealt = bullet.isCrit ? round1(dealtDamage / Math.max(1, stats.critDamageMult || 1.5)) : dealtDamage;
         const maxVampCap = round1(1 + player.maxHp * 0.02);
-        if (player.heroId === 'chinatsu' || player.heroId === 'rinne') {
+        if (player.heroId === 'chinatsu' || player.heroId === 'rinne' || player.heroId === 'xinglan') {
             if (player.heroId === 'chinatsu') {
                 if (!bullet.canLifestealPellet || bullet.pelletLifestealUsed) return;
                 bullet.pelletLifestealUsed = true;
@@ -12590,7 +12691,7 @@
         if (player.secondGun) player.secondGun.ammo = stats.maxAmmo;
     }
 
-    // 直接进入原版英雄选择页面更换英雄（若选的与原英雄相同，不做任何更新）
+    // 直接进入原版英雄选择页面更换英雄（默认不选中英雄，若选的与原英雄相同，不做任何更新）
     window.openTrainingHeroSelect = function () {
         if (!player || !waveState || waveState.mode !== 'training') return;
         trainingConfig.gmOpen = false;
@@ -12598,7 +12699,7 @@
         snapshotAutoCruiseBeforeModal();
         window.__trainingHeroSwitchPending = true;
         gameState = 'PAUSED';
-        window.selectHeroType(player.heroId);
+        window.selectHeroType(null);
         const heroModeBadge = document.getElementById('heroSelectModeBadge');
         if (heroModeBadge) {
             heroModeBadge.textContent = '战术训练营';
@@ -19040,6 +19141,11 @@
         const isForceRestart = Boolean(window.__forceFullGameRestart);
         window.__forceFullGameRestart = false;
         const startEl = document.getElementById('startModal');
+        const isStartModalOpen = Boolean(startEl && !startEl.classList.contains('hidden'));
+        // 在英雄选择界面必须先选中一名英雄才能出击
+        if (isStartModalOpen && !selectedHeroId) {
+            return;
+        }
         // 防止 touchend + click 或双事件重复触发导致已进入局内时误重开
         if (!isForceRestart && gameState === 'PLAYING' && startEl && startEl.classList.contains('hidden')) {
             return;
@@ -19056,8 +19162,10 @@
             return;
         }
         window.__trainingHeroSwitchPending = false;
+        const heroToPlay = selectedHeroId || (player && player.heroId) || 'rinne';
+        selectedHeroId = heroToPlay;
         resizeGameCanvas();
-        player = createInitialPlayer(selectedHeroId);
+        player = createInitialPlayer(heroToPlay);
         updateHeroSpecificUIButtons(player.heroId);
         zombies = []; bullets = []; enemyProjectiles = []; thrownOrdance = [];
         hazardZones = []; xpGems = []; goldCoins = []; medkits = []; shellCasings = [];
@@ -19735,7 +19843,7 @@
         applySettingsToDOM();
         applyCustomKeybindsToDOM();
         setupActionButtonsWithKeybindEditor();
-        window.selectHeroType('rinne');
+        window.selectHeroType(null);
         player = createInitialPlayer('rinne');
         renderOrderedSkillsHUD();
         updateHUD(true);
@@ -19756,8 +19864,13 @@
         requestAnimationFrame(mainLoop);
     }
 
-    if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', bootPixelGameApp);
-    else bootPixelGameApp();
+    // 直接启动（避免 document.open/write 动态注入后 readyState 为 loading 且不再触发 DOMContentLoaded 导致卡在旧界面）
+    if (document.getElementById('gameCanvas')) {
+        bootPixelGameApp();
+    } else {
+        setTimeout(bootPixelGameApp, 0);
+        window.addEventListener('DOMContentLoaded', bootPixelGameApp);
+    }
     window.addEventListener('load', bootPixelGameApp);
     function droneCountGuard(cnt) { return Math.max(1, cnt || 1); }
     };
