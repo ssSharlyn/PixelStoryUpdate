@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>像素物语 V0.5.5</title>
+    <title>像素物语 V0.5.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
@@ -301,7 +301,7 @@
             if (mode === 'big') {
                 if (smallBox) smallBox.style.display = 'none';
                 if (bigM) bigM.style.display = 'flex';
-                if (logEl) logEl.innerText = "【V0.5.5 版本更新】\n· 新角色「星澜」：御剑特工参战，周天剑环、万剑归鞘与万剑归宗剑阵\n· 新精英丧尸：新增骸骨筑墙者、腐沼粘液怪与三刃处刑者\n· 体验优化：首领击败直接进下一波；训练营新增丧尸召唤滑动栏";
+                if (logEl) logEl.innerText = "【V0.5.6 版本更新】\n· 角色强化：星澜「万剑归鞘」收剑时，被四把剑命中的敌人定身1秒\n· 触控优化：修复移动端模式选择卡片滑动不跟手问题\n· 往期核心：新特工「星澜」与三大新精英丧尸登场";
                 if (pWrap) pWrap.style.display = 'none';
                 if (cBtn) {
                     cBtn.disabled = false;
@@ -343,11 +343,11 @@
                     pct = Math.min(100, pct + 25);
                     if (hBar) hBar.style.width = pct + '%';
                     if (pct < 100) {
-                        if (hTip) hTip.innerText = `正在同步 V0.5.5 更新内容 (${pct}%)...`;
+                        if (hTip) hTip.innerText = `正在同步 V0.5.6 更新内容 (${pct}%)...`;
                     } else {
                         clearInterval(previewTimerId);
                         previewTimerId = null;
-                        if (hTip) hTip.innerText = '更新完成 (V0.5.5)，即将进入战场！';
+                        if (hTip) hTip.innerText = '更新完成 (V0.5.6)，即将进入战场！';
                     }
                 }, 400);
             }
@@ -653,7 +653,7 @@
 
             const finishUpToDate = (msg) => {
                 if (hBar) hBar.style.width = '100%';
-                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.5.5)，无需更新！`;
+                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.5.6)，无需更新！`;
                 setTimeout(() => {
                     if (ov) ov.style.display = 'none';
                     isManualChecking = false;
@@ -700,10 +700,10 @@
                 }
 
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.5)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.6)，无需更新！`), 260);
             } catch (e) {
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.5)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.5.6)，无需更新！`), 260);
             }
         };
 
@@ -1401,7 +1401,7 @@
             <div id="mainMenuTitleBox" class="pixel-box px-7 sm:px-11 py-3.5 sm:py-4 border-4 border-sky-400 bg-[#121726] flex flex-col items-center shadow-[0_8px_0_#05060a] shrink-0">
                 <div class="flex items-center gap-2 mb-1.5">
                     <span class="bg-rose-600 text-white font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5">PIXEL STORY</span>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.5.5</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.5.6</span>
                 </div>
                 <canvas id="mainMenuLogoCanvas" width="312" height="76" class="w-[218px] h-[53px] sm:w-[288px] sm:h-[70px] block pointer-events-none" aria-label="像素物语"></canvas>
                 <p class="text-[11px] sm:text-xs text-sky-300 mt-1.5 tracking-wider font-bold">二次元点阵像素 · 街区生存激战</p>
@@ -1514,7 +1514,7 @@
                         <div>
                             <div class="font-bold text-sky-300 text-xs sm:text-sm flex items-center gap-2">
                                 <span>版本更新</span>
-                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.5.5</span>
+                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.5.6</span>
                             </div>
                             <div class="text-[11px] text-slate-400 mt-0.5">检查并获取游戏最新版本内容</div>
                         </div>
@@ -1619,7 +1619,7 @@
     </div>
 
     <!-- 作战模式选择界面 -->
-    <div id="modeSelectModal" class="hidden fixed inset-0 z-50 bg-[#0b0e17] flex flex-col justify-between w-full h-full overflow-hidden pointer-events-auto select-none">
+    <div id="modeSelectModal" class="hidden fixed inset-0 z-50 bg-[#0b0e17] flex flex-col justify-between w-full h-full overflow-hidden pointer-events-auto select-none" style="touch-action: none;">
         <div id="modeSelectModalInner" class="w-full h-full flex flex-col justify-between p-3 sm:p-5 overflow-hidden">
             <div class="flex flex-row items-center justify-between gap-2 border-b-2 border-slate-800 pb-2 shrink-0">
                 <div class="flex items-center gap-2.5">
@@ -1631,11 +1631,11 @@
                 </div>
                 <div class="text-[11px] text-slate-400">左右滑动滚轮或点击卡片切换模式</div>
             </div>
-            <div class="flex-1 min-h-0 flex items-center justify-center relative w-full overflow-hidden">
+            <div class="flex-1 min-h-0 flex items-center justify-center relative w-full overflow-hidden" style="touch-action: none;">
                 <button onclick="window.cycleGameMode(-1)" class="pixel-icon-btn w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center z-30 mr-2 sm:mr-5 shrink-0" title="上一个模式">
                     <canvas class="ui-px-icon w-4 h-4" data-icon="back" width="16" height="16"></canvas>
                 </button>
-                <div id="modeWheelStage" class="relative flex items-center justify-center w-[520px] sm:w-[680px] h-full max-h-[280px]">
+                <div id="modeWheelStage" class="relative flex items-center justify-center w-[520px] sm:w-[680px] h-full max-h-[280px]" style="touch-action: none;">
                     <div id="modeCard_endless" onclick="window.onClickModeCard('endless')" class="mode-wheel-card absolute w-[240px] sm:w-[310px] h-[185px] sm:h-[235px] pixel-box bg-[#121726] border-2 border-sky-400 p-2 sm:p-3 flex flex-col justify-between cursor-pointer transition-all duration-300">
                         <div class="w-full flex-1 bg-[#090c14] border-2 border-slate-700 overflow-hidden relative">
                             <canvas id="modeSliceCanvas_endless" width="320" height="160" class="w-full h-full block"></canvas>
@@ -1814,7 +1814,7 @@
                 <div class="flex items-center gap-2">
                     <canvas class="ui-px-icon w-5 h-5" data-icon="notice" width="20" height="20"></canvas>
                     <h3 class="text-base sm:text-lg font-bold text-amber-300 tracking-wider">游戏公告</h3>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.5.5</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.5.6</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="window.manualCheckGameUpdate && window.manualCheckGameUpdate()" class="pixel-btn px-2.5 py-1 text-xs font-bold text-white flex items-center gap-1">
@@ -1827,8 +1827,16 @@
             </div>
             <div id="announcementBodyBox" class="flex-1 min-h-0 bg-[#0b0e17] border border-slate-800 p-3.5 sm:p-4 overflow-y-auto text-xs sm:text-sm text-slate-300 leading-relaxed space-y-3">
                 <div class="bg-[#111624] border border-amber-400/50 p-3 space-y-1.5">
-                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.5.5 更新内容】</div>
+                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.5.6 更新内容】</div>
                     <ul class="text-xs text-slate-200 space-y-1 list-disc list-inside">
+                        <li><b>星澜技能强化</b>：「万剑归鞘」收剑时，被四把飞剑命中的敌人将受到 1 秒定身。</li>
+                        <li><b>移动端触控</b>：修复模式选择界面卡片滑动不跟手的问题。</li>
+                    </ul>
+                </div>
+
+                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
+                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.5 往期更新】</div>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
                         <li><b>新角色「星澜」</b>：御剑特工参战，携带「周天剑环·留影」、「万剑归鞘」回收爆发与「万剑归宗」追踪剑阵。</li>
                         <li><b>新精英丧尸</b>：新增「骸骨筑墙者」（骨墙封路）、「腐沼粘液怪」（减速泥沼）与「三刃处刑者」（激光预警三刃追猎）。</li>
                         <li><b>战斗与训练营</b>：首领击败后直接进入下一波（保留场上剩余丧尸）；训练营新增丧尸召唤滑动栏，优化同英雄切换保留局内状态。</li>
@@ -4310,7 +4318,7 @@
                     name: '万剑归鞘（小技能 · E）',
                     badge: '主动技能 · 冷却18秒',
                     iconSkillId: 'xl_skill_upgrade',
-                    desc: '瞬间收回地上所有飞剑并补充对应弹药数（不超过上限，换弹中则直接打断并补入）；首把回收飞剑对沿途敌人造成50%攻击力伤害，后续每把递减20%，最低保留当级基础伤害的20%。\n【升级效果】：每级首把回收伤害+10%（满级100%），冷却-5%（满级13.5秒）。'
+                    desc: '瞬间收回地上所有飞剑并补充对应弹药数（不超过上限，换弹中则直接打断并补入）；首把回收飞剑对沿途敌人造成50%攻击力伤害，后续每把递减20%，最低保留当级基础伤害的20%；收剑时被4把飞剑命中的敌人受到1秒定身。\n【升级效果】：每级首把回收伤害+10%（满级100%），冷却-5%（满级13.5秒）。'
                 },
                 {
                     name: '万剑归宗（大招 · R）',
@@ -4852,11 +4860,20 @@
         window.selectHeroType(selectedHeroId);
     };
 
-    (function setupModeSwipeGesture() {
+    function setupModeSwipeGesture() {
+        const modalEl = document.getElementById('modeSelectModal');
+        if (!modalEl || modalEl.__modeSwipeBound) return;
+        modalEl.__modeSwipeBound = true;
+
+        let activeTouchId = null;
         let startX = 0, startY = 0, lastX = 0, lastTs = 0, totalMoved = 0, lockedHorizontal = null;
 
         function getDragSpanPx() {
-            return window.innerWidth < 640 ? 175 : 225;
+            const stageEl = document.getElementById('modeWheelStage');
+            if (stageEl && stageEl.clientWidth > 0) {
+                return Math.max(135, Math.min(220, stageEl.clientWidth * 0.34));
+            }
+            return (window.innerWidth < 768 || window.innerHeight < 500) ? 150 : 215;
         }
 
         function onPointerStart(clientX, clientY, targetEl) {
@@ -4879,8 +4896,8 @@
             if (!modeWheelState.isDragging) return;
             const totalDx = clientX - startX;
             const totalDy = clientY - startY;
-            if (lockedHorizontal === null && (Math.abs(totalDx) > 5 || Math.abs(totalDy) > 5)) {
-                lockedHorizontal = Math.abs(totalDx) >= Math.abs(totalDy) * 0.7;
+            if (lockedHorizontal === null && (Math.abs(totalDx) > 2 || Math.abs(totalDy) > 2)) {
+                lockedHorizontal = Math.abs(totalDx) >= Math.abs(totalDy) * 0.55;
             }
             if (lockedHorizontal === false) return;
             if (ev && ev.cancelable) ev.preventDefault();
@@ -4895,7 +4912,7 @@
             const deltaPos = -dx / getDragSpanPx();
             modeWheelState.pos += deltaPos;
             const instVel = deltaPos / dt;
-            modeWheelState.velocity = modeWheelState.velocity * 0.45 + instVel * 0.55;
+            modeWheelState.velocity = modeWheelState.velocity * 0.35 + instVel * 0.65;
 
             renderModeWheelAtPosition(modeWheelState.pos, true);
         }
@@ -4903,10 +4920,11 @@
         function onPointerEnd() {
             if (!modeWheelState.isDragging) return;
             modeWheelState.isDragging = false;
-            if (totalMoved > 8) {
-                modeWheelState.suppressClickUntil = performance.now() + 90;
+            activeTouchId = null;
+            if (totalMoved > 6) {
+                modeWheelState.suppressClickUntil = performance.now() + 110;
             }
-            const stale = (performance.now() - lastTs) > 90;
+            const stale = (performance.now() - lastTs) > 95;
             const vel = stale ? 0 : clampVal(modeWheelState.velocity, -6.5, 6.5);
             modeWheelState.velocity = vel;
             const projected = modeWheelState.pos + clampVal(vel * 0.16, -0.85, 0.85);
@@ -4914,53 +4932,70 @@
             startModeWheelSpring();
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const modalEl = document.getElementById('modeSelectModal');
-            if (!modalEl) return;
+        modalEl.addEventListener('touchstart', (e) => {
+            if (!e.changedTouches || e.changedTouches.length === 0) return;
+            const t = e.changedTouches[0];
+            if (onPointerStart(t.clientX, t.clientY, e.target)) {
+                activeTouchId = t.identifier;
+            }
+        }, { passive: true });
 
-            modalEl.addEventListener('touchstart', (e) => {
-                if (e.touches && e.touches[0]) {
-                    onPointerStart(e.touches[0].clientX, e.touches[0].clientY, e.target);
+        modalEl.addEventListener('touchmove', (e) => {
+            if (!modeWheelState.isDragging || !e.touches) return;
+            let t = null;
+            for (let i = 0; i < e.touches.length; i++) {
+                if (activeTouchId === null || e.touches[i].identifier === activeTouchId) {
+                    t = e.touches[i];
+                    break;
                 }
-            }, { passive: true });
+            }
+            if (!t && e.touches[0]) t = e.touches[0];
+            if (t) {
+                onPointerMove(t.clientX, t.clientY, e);
+            }
+        }, { passive: false });
 
-            modalEl.addEventListener('touchmove', (e) => {
-                if (e.touches && e.touches[0]) {
-                    onPointerMove(e.touches[0].clientX, e.touches[0].clientY, e);
+        modalEl.addEventListener('touchend', (e) => {
+            if (!modeWheelState.isDragging) return;
+            if (activeTouchId !== null && e.changedTouches) {
+                let matched = false;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === activeTouchId) { matched = true; break; }
                 }
-            }, { passive: false });
+                if (!matched && e.touches && e.touches.length > 0) return;
+            }
+            onPointerEnd();
+        }, { passive: true });
+        modalEl.addEventListener('touchcancel', () => { onPointerEnd(); }, { passive: true });
 
-            modalEl.addEventListener('touchend', () => { onPointerEnd(); }, { passive: true });
-            modalEl.addEventListener('touchcancel', () => { onPointerEnd(); }, { passive: true });
-
-            modalEl.addEventListener('mousedown', (e) => {
-                if (e.button !== 0) return;
-                onPointerStart(e.clientX, e.clientY, e.target);
-            });
-
-            window.addEventListener('mousemove', (e) => {
-                if (!modeWheelState.isDragging) return;
-                onPointerMove(e.clientX, e.clientY, e);
-            });
-
-            window.addEventListener('mouseup', () => {
-                if (!modeWheelState.isDragging) return;
-                onPointerEnd();
-            });
-
-            let wheelCooldown = 0;
-            modalEl.addEventListener('wheel', (e) => {
-                if (modalEl.classList.contains('hidden')) return;
-                e.preventDefault();
-                const now = performance.now();
-                if (now - wheelCooldown < 140) return;
-                const dominant = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-                if (Math.abs(dominant) < 6) return;
-                wheelCooldown = now;
-                window.cycleGameMode(dominant > 0 ? 1 : -1);
-            }, { passive: false });
+        modalEl.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return;
+            onPointerStart(e.clientX, e.clientY, e.target);
         });
-    })();
+
+        window.addEventListener('mousemove', (e) => {
+            if (!modeWheelState.isDragging) return;
+            onPointerMove(e.clientX, e.clientY, e);
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (!modeWheelState.isDragging) return;
+            onPointerEnd();
+        });
+
+        let wheelCooldown = 0;
+        modalEl.addEventListener('wheel', (e) => {
+            if (modalEl.classList.contains('hidden')) return;
+            e.preventDefault();
+            const now = performance.now();
+            if (now - wheelCooldown < 140) return;
+            const dominant = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+            if (Math.abs(dominant) < 6) return;
+            wheelCooldown = now;
+            window.cycleGameMode(dominant > 0 ? 1 : -1);
+        }, { passive: false });
+    }
+    setupModeSwipeGesture();
 
     window.openHeroSelectModal = function () {
         sfx.init(); sfx.pickupXp();
@@ -6110,7 +6145,7 @@
         ], getDesc(l) { return `周天剑环接触伤害+6%（${18 + l * 6}%攻击力；同一敌人每0.33秒至多受1次伤害）。`; } },
         { id: 'xl_skill_upgrade', heroOnly: 'xinglan', name: '万剑归鞘强化', category: '专属强化', catColor: 'text-amber-300 border-amber-500/60 bg-amber-950/60', order: 114, maxLv: 5, hasCd: false, iconMatrix: [
             ".b........b.", "bwb..bb..bwb", ".bwb.ww.bwb.", "..bwbwwbwb..", "...bwwwwb...", ".bbwwwwwwbb.", "..bwwwwwwb..", "...byyyyyb..", "....byyyb...", ".....ooo....", "............", "............"
-        ], getDesc(l) { return `首把回收飞剑伤害+10%（${50 + l * 10}%攻击力，后续每把递减20%，保底20%），冷却-5%（${fmt1(18 * (1 - l * 0.05))}秒）。`; } },
+        ], getDesc(l) { return `首把回收飞剑伤害+10%（${50 + l * 10}%攻击力，后续每把递减20%，保底20%；被4把剑命中的敌人定身1秒），冷却-5%（${fmt1(18 * (1 - l * 0.05))}秒）。`; } },
         { id: 'xl_ult_upgrade', heroOnly: 'xinglan', name: '万剑归宗强化', category: '专属强化', catColor: 'text-rose-300 border-rose-500/60 bg-rose-950/60', order: 115, maxLv: 5, hasCd: false, iconMatrix: [
             "..b..bb..b..", ".bwb.ww.bwb.", ".bwb.ww.bwb.", "..b.bwwb.b..", ".bbbwwwwbbb.", "bwwwBBBBwwwb", ".bbbwwwwbbb.", "..b.bwwb.b..", ".bwb.ww.bwb.", "..o..oo..o..", "............", "............"
         ], getDesc(l) { const cnt = [2, 3, 3, 4, 4, 5][l] || 3; return `背后灵阵每0.20秒召唤追踪飞剑数量提升至${cnt}把（每把35%攻击力），冷却-5%（${fmt1(45 * (1 - l * 0.05))}秒）。`; } },
@@ -13992,13 +14027,20 @@
                         if (Math.hypot(z.x - closestX, z.y - closestY) <= z.radius + 18) {
                             rs.hitIds.add(z.uid);
                             const hitIdx = rs.castHitCounts[z.uid] || 0;
-                            rs.castHitCounts[z.uid] = hitIdx + 1;
+                            const newHitCount = hitIdx + 1;
+                            rs.castHitCounts[z.uid] = newHitCount;
                             const decayMult = Math.max(0.20, 1.0 - hitIdx * 0.20);
                             const rawRecallDmg = rs.baseDmg * decayMult;
                             const isCrit = stats.critRate > 0 && Math.random() < stats.critRate;
                             const finalRecallDmg = isCrit ? round1(rawRecallDmg * stats.critDamageMult) : round1(rawRecallDmg);
                             damageZombie(z, finalRecallDmg, 0, 0, '#38bdf8', isCrit);
                             spawnPixelParticles(z.x, z.y, '#7dd3fc', 5, 115, 3, 0.2);
+                            // 收剑时，被 4 把飞剑命中的敌人受到 1 秒定身
+                            if (newHitCount === 4 && z.hp > 0) {
+                                z.rootTimer = Math.max(z.rootTimer || 0, 1.0);
+                                spawnFloatingText(z.x, z.y - z.radius - 16, '四剑定身 1s!', '#c084fc', 12, -38);
+                                spawnPixelParticles(z.x, z.y, '#c084fc', 8, 125, 3.5, 0.26);
+                            }
                         }
                     }
                     if (dist <= step + 14) {
