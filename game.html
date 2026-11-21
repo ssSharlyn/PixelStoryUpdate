@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>像素物语 V0.7.0</title>
+    <title>像素物语 V0.7.1</title>
     <script>window.__mountPixelStoryGame = null; window.__pixelGameBooted = false;</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -229,11 +229,11 @@
             #previewHeroCanvas { width: 80px !important; height: 102px !important; }
             #startHeroRightCol { gap: 8px !important; }
             #startHeroRightCol > div { padding: 7px 10px !important; }
-            #levelUpModalInner { padding: 8px 12px !important; max-height: 96% !important; }
-            #levelUpCardsContainer { margin: 6px 0 !important; gap: 8px !important; }
-            .skill-card { padding: 7px 9px !important; }
-            .skill-card .skill-icon-box { width: 32px !important; height: 32px !important; }
-            .skill-card .skill-icon-box img { width: 22px !important; height: 22px !important; }
+            #levelUpModalInner { padding: 6px 10px !important; max-height: 98% !important; }
+            #levelUpCardsContainer { margin: 4px 0 !important; gap: 6px !important; }
+            .skill-card { padding: 6px 8px !important; }
+            .skill-card .skill-icon-box { width: 30px !important; height: 30px !important; }
+            .skill-card .skill-icon-box img { width: 20px !important; height: 20px !important; }
             .skill-card p { font-size: 11px !important; line-height: 1.25 !important; margin-top: 4px !important; padding-top: 4px !important; }
             #mainMenuModal {
                 padding-top: max(8px, env(safe-area-inset-top)) !important;
@@ -270,6 +270,11 @@
             #tavernStageAvatarWrap { width: 32px !important; height: 32px !important; }
             #tavernStageFooter { padding: 6px 8px !important; gap: 5px !important; }
             #tavernRulesBox { padding: 10px 12px !important; max-height: 94vh !important; }
+            #gameOverModal { padding: 6px !important; }
+            #gameOverModalBox { padding: 10px 12px !important; max-height: 96vh !important; gap: 6px !important; }
+            #gameOverTitle { font-size: 16px !important; margin-top: 2px !important; }
+            #gameOverSummary { padding: 8px 10px !important; font-size: 11px !important; }
+            #gameOverActions button { padding-top: 5px !important; padding-bottom: 5px !important; font-size: 12px !important; }
         }
         /* 神秘酒馆：沉浸式全屏暗巷木屋与纯像素风格边框/按钮 */
         .tavern-cabin-fullscreen {
@@ -501,7 +506,7 @@
             if (mode === 'big') {
                 if (smallBox) smallBox.style.display = 'none';
                 if (bigM) bigM.style.display = 'flex';
-                if (logEl) logEl.innerText = "【V0.7.0 版本更新】\n· 黑市商品重构：重构黑市饰品与遗物体系，构筑搭配更丰富\n· 新增「神秘酒馆」：局内概率触发酒馆奇遇，体验幸运左轮与幸运骰子玩法\n· 特效与显示优化：升级首领造型与战斗技能特效，新增大招读条、底部Buff栏及真实属性显示\n· 修复与体验升级：修复多项已知Bug，游戏内容更丰富更好玩";
+                if (logEl) logEl.innerText = "【V0.7.1 版本更新】\n· 新增黑市饰品：扩充白/蓝/紫品质纯正向与流派饰品，补全多维属性构筑，修复训练营饰品排序\n· 价格与经济调优：大幅下调遗物售价并提高出售返还至40%，下调黑市与升级刷新费，加强预付定金与战地意外险\n· 升级项与界面改版：升级改为四选一（至少2张属性卡），重构结算面板布局并重新校准默认音量\n· 战斗特效升级：重做凛音小技能为全域铺满像素火海，优化脓包丧尸、首领1与首领3技能特效表现";
                 if (pWrap) pWrap.style.display = 'none';
                 if (cBtn) {
                     cBtn.disabled = false;
@@ -543,11 +548,11 @@
                     pct = Math.min(100, pct + 25);
                     if (hBar) hBar.style.width = pct + '%';
                     if (pct < 100) {
-                        if (hTip) hTip.innerText = `正在同步 V0.7.0 更新内容 (${pct}%)...`;
+                        if (hTip) hTip.innerText = `正在同步 V0.7.1 更新内容 (${pct}%)...`;
                     } else {
                         clearInterval(previewTimerId);
                         previewTimerId = null;
-                        if (hTip) hTip.innerText = '更新完成 (V0.7.0)，即将进入战场！';
+                        if (hTip) hTip.innerText = '更新完成 (V0.7.1)，即将进入战场！';
                     }
                 }, 400);
             }
@@ -868,7 +873,7 @@
 
             const finishUpToDate = (msg) => {
                 if (hBar) hBar.style.width = '100%';
-                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.7.0)，无需更新！`;
+                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.7.1)，无需更新！`;
                 setTimeout(() => {
                     if (ov) ov.style.display = 'none';
                     isManualChecking = false;
@@ -915,10 +920,10 @@
                 }
 
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.0)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.1)，无需更新！`), 260);
             } catch (e) {
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.0)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.1)，无需更新！`), 260);
             }
         };
 
@@ -1753,7 +1758,7 @@
                 <div class="bg-[#101420] border border-slate-800 p-1.5 sm:p-2 flex flex-col gap-1.5 shrink-0">
                     <div class="flex items-center justify-between text-[10px] sm:text-[11px] text-purple-300 font-bold border-b border-slate-800/90 pb-1">
                         <span>已装备遗物 (Q / F) · 单击卡片看详情与词条</span>
-                        <span class="text-[9px] sm:text-[10px] text-rose-300 font-normal">出售返25%</span>
+                        <span class="text-[9px] sm:text-[10px] text-rose-300 font-normal">出售返40%</span>
                     </div>
                     <div id="shopEquippedRelicsBox" class="flex flex-row items-stretch gap-1.5 sm:gap-2"></div>
                 </div>
@@ -1774,7 +1779,7 @@
             <div id="mainMenuTitleBox" class="pixel-box px-7 sm:px-11 py-3.5 sm:py-4 border-4 border-sky-400 bg-[#121726] flex flex-col items-center shadow-[0_8px_0_#05060a] shrink-0">
                 <div class="flex items-center gap-2 mb-1.5">
                     <span class="bg-rose-600 text-white font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5">PIXEL STORY</span>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.7.0</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.7.1</span>
                 </div>
                 <canvas id="mainMenuLogoCanvas" width="312" height="76" class="w-[218px] h-[53px] sm:w-[288px] sm:h-[70px] block pointer-events-none" aria-label="像素物语"></canvas>
                 <p class="text-[11px] sm:text-xs text-sky-300 mt-1.5 tracking-wider font-bold">二次元点阵像素 · 街区生存激战</p>
@@ -1887,7 +1892,7 @@
                         <div>
                             <div class="font-bold text-sky-300 text-xs sm:text-sm flex items-center gap-2">
                                 <span>版本更新</span>
-                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.7.0</span>
+                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.7.1</span>
                             </div>
                             <div class="text-[11px] text-slate-400 mt-0.5">检查并获取游戏最新版本内容</div>
                         </div>
@@ -2196,7 +2201,7 @@
                 <div class="flex items-center gap-2">
                     <canvas class="ui-px-icon w-5 h-5" data-icon="notice" width="20" height="20"></canvas>
                     <h3 class="text-base sm:text-lg font-bold text-amber-300 tracking-wider">游戏公告</h3>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.7.0</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.7.1</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="window.manualCheckGameUpdate && window.manualCheckGameUpdate()" class="pixel-btn px-2.5 py-1 text-xs font-bold text-white flex items-center gap-1">
@@ -2209,8 +2214,18 @@
             </div>
             <div id="announcementBodyBox" class="flex-1 min-h-0 bg-[#0b0e17] border border-slate-800 p-3.5 sm:p-4 overflow-y-auto text-xs sm:text-sm text-slate-300 leading-relaxed space-y-3">
                 <div class="bg-[#111624] border border-amber-400/50 p-3 space-y-1.5">
-                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.7.0 更新内容】</div>
+                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.7.1 更新内容】</div>
                     <ul class="text-xs text-slate-200 space-y-1 list-disc list-inside">
+                        <li><b>新增黑市饰品</b>：扩充白/蓝/紫品质纯正向与流派饰品，补全多维属性构筑选择，修复训练营饰品未按稀有度排列问题。</li>
+                        <li><b>价格与经济调优</b>：大幅下调主动遗物售价并提升出售返还至 40%，降低黑市与升级刷新费；加强「预付定金」，「战地意外险」赔付改为随波次通胀。</li>
+                        <li><b>升级与界面调整</b>：升级选择由三选一扩充为四选一（至少 2 张属性卡）；重构结算面板布局并重新校准默认音量。</li>
+                        <li><b>战斗特效优化</b>：重做凛音小技能为通透像素火海并确保友方技能不遮挡敌方预警，优化脓包丧尸脓液残渍、首领 1 地底破土岩刺及首领 3 高空陨火与余烬表现。</li>
+                    </ul>
+                </div>
+
+                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
+                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.7.0 往期更新】</div>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
                         <li><b>黑市商品重构</b>：全面重构黑市饰品与遗物体系，流派构筑与游玩体验更丰富更好玩。</li>
                         <li><b>新增「神秘酒馆」</b>：波次探索概率触发酒馆奇遇，体验幸运左轮与幸运骰子博弈玩法。</li>
                         <li><b>美术与特效升级</b>：重绘部分首领造型，全面升级怪物、首领、英雄技能特效及受击反馈。</li>
@@ -2343,7 +2358,7 @@
         </div>
     </div>
 
-    <!-- 升级三选一面板 -->
+    <!-- 升级四选一面板 -->
     <div id="levelUpModal" class="hidden fixed inset-0 z-50 bg-[#0b0e17] flex flex-col justify-between w-screen h-screen overflow-hidden p-2 sm:p-3.5 pointer-events-auto select-none">
         <div id="levelUpModalInner" class="w-full h-full flex flex-col justify-between overflow-hidden">
             <div class="flex flex-row items-center justify-between gap-2 border-b-2 border-slate-800 pb-1.5 shrink-0">
@@ -2359,7 +2374,7 @@
                     <button id="btnRerollSkills" onclick="window.rerollLevelUpSkills && window.rerollLevelUpSkills()" class="pixel-btn px-2.5 sm:px-3.5 py-1 text-xs font-bold text-white flex items-center gap-1 shrink-0 cursor-pointer">
                         <canvas class="ui-px-icon w-3.5 h-3.5" data-icon="reroll" width="14" height="14"></canvas>
                         <span>刷新</span>
-                        <span id="rerollCountText" class="font-pixel-en text-[10px] text-amber-300">(3G)</span>
+                        <span id="rerollCountText" class="font-pixel-en text-[10px] text-amber-300">(2G)</span>
                     </button>
                 </div>
             </div>
@@ -2371,7 +2386,7 @@
                     <div id="levelUpStatsBox" class="grid grid-cols-2 gap-1.5 text-left"></div>
                 </div>
                 <div class="flex-1 min-w-0 overflow-y-auto pr-1 flex flex-col justify-between gap-2">
-                    <div id="levelUpCardsContainer" class="grid grid-cols-3 gap-1.5 sm:gap-2.5 w-full shrink-0"></div>
+                    <div id="levelUpCardsContainer" class="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2 w-full shrink-0"></div>
                     <div class="bg-[#101420] border border-slate-800 p-1.5 sm:p-2 flex flex-col gap-1.5 shrink-0">
                         <div class="flex items-center justify-between text-[10px] sm:text-[11px] text-amber-300 font-bold border-b border-slate-800/90 pb-1">
                             <span>已选升级项</span>
@@ -2442,25 +2457,25 @@
     </div>
 
     <!-- 战败 / 胜利结算界面 -->
-    <div id="gameOverModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-3 pointer-events-auto">
-        <div id="gameOverModalBox" class="pixel-box w-full max-w-md max-h-[94vh] overflow-y-auto p-5 sm:p-6 border-2 border-rose-500 text-center space-y-4">
-            <div>
+    <div id="gameOverModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 pointer-events-auto">
+        <div id="gameOverModalBox" class="pixel-box w-full max-w-xl sm:max-w-2xl max-h-[92vh] flex flex-col p-3.5 sm:p-5 border-2 border-rose-500 text-center gap-2.5 sm:gap-3.5 overflow-hidden">
+            <div class="shrink-0">
                 <span id="gameOverBadge" class="bg-rose-600 text-white font-pixel-en text-[10px] px-2 py-0.5">MISSION FAILED</span>
-                <h2 id="gameOverTitle" class="text-xl sm:text-3xl font-bold text-rose-400 mt-2">防线失守 · 角色倒下了</h2>
+                <h2 id="gameOverTitle" class="text-lg sm:text-2xl font-bold text-rose-400 mt-1">防线失守 · 角色倒下了</h2>
             </div>
-            <div id="gameOverSummary" class="bg-[#0b0e17] border border-slate-800 p-4 text-left text-xs sm:text-sm space-y-2 text-slate-200"></div>
-            <div class="sticky bottom-0 pt-2 bg-[#121622] flex flex-wrap gap-2.5">
-                <button id="btnReviveCurrentWave" onclick="window.reviveAndRetryCurrentWave && window.reviveAndRetryCurrentWave()" class="hidden pixel-play-btn w-full py-2.5 sm:py-3 text-slate-950 font-bold text-sm sm:text-base tracking-wider cursor-pointer flex items-center justify-center gap-1.5">
-                    <canvas class="ui-px-icon w-4 h-4" data-icon="play" width="16" height="16"></canvas><span>复活重挑本波</span>
+            <div id="gameOverSummary" class="flex-1 min-h-0 overflow-y-auto bg-[#0b0e17] border border-slate-800 p-2.5 sm:p-3.5 text-left text-xs sm:text-sm text-slate-200"></div>
+            <div id="gameOverActions" class="shrink-0 pt-1 flex flex-wrap sm:flex-nowrap items-center justify-center gap-2">
+                <button id="btnReviveCurrentWave" onclick="window.reviveAndRetryCurrentWave && window.reviveAndRetryCurrentWave()" class="hidden pixel-play-btn flex-1 min-w-[116px] py-1.5 sm:py-2 px-3 text-slate-950 font-bold text-xs sm:text-sm tracking-wide cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <canvas class="ui-px-icon w-3.5 h-3.5" data-icon="play" width="16" height="16"></canvas><span>复活重挑本波</span>
                 </button>
-                <button id="btnContinueEndless" onclick="window.continueEndlessAfterVictory && window.continueEndlessAfterVictory()" class="hidden pixel-btn flex-1 min-w-[140px] py-3 text-amber-200 font-bold text-sm sm:text-base tracking-wider cursor-pointer flex items-center justify-center gap-1.5 border-amber-400">
-                    <canvas class="ui-px-icon w-4 h-4" data-icon="play" width="16" height="16"></canvas><span>继续无尽深渊</span>
+                <button id="btnContinueEndless" onclick="window.continueEndlessAfterVictory && window.continueEndlessAfterVictory()" class="hidden pixel-btn flex-1 min-w-[116px] py-1.5 sm:py-2 px-3 text-amber-200 font-bold text-xs sm:text-sm tracking-wide cursor-pointer flex items-center justify-center gap-1.5 border-amber-400 whitespace-nowrap">
+                    <canvas class="ui-px-icon w-3.5 h-3.5" data-icon="play" width="16" height="16"></canvas><span>继续无尽深渊</span>
                 </button>
-                <button onclick="window.startPixelGame && window.startPixelGame()" class="pixel-btn flex-1 py-3 text-white font-bold text-sm sm:text-base tracking-wider cursor-pointer flex items-center justify-center gap-1.5">
-                    <canvas class="ui-px-icon w-4 h-4" data-icon="reset" width="16" height="16"></canvas><span>再次挑战</span>
+                <button onclick="window.startPixelGame && window.startPixelGame()" class="pixel-btn flex-1 min-w-[96px] py-1.5 sm:py-2 px-3 text-white font-bold text-xs sm:text-sm tracking-wide cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <canvas class="ui-px-icon w-3.5 h-3.5" data-icon="reset" width="16" height="16"></canvas><span>再次挑战</span>
                 </button>
-                <button onclick="window.backToMainMenu && window.backToMainMenu()" class="pixel-box px-4 py-3 text-slate-200 font-bold text-sm border-slate-600 cursor-pointer flex items-center justify-center gap-1.5">
-                    <canvas class="ui-px-icon w-4 h-4" data-icon="home" width="16" height="16"></canvas><span>主菜单</span>
+                <button onclick="window.backToMainMenu && window.backToMainMenu()" class="pixel-box px-3.5 py-1.5 sm:py-2 text-slate-200 font-bold text-xs sm:text-sm border-slate-600 cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0">
+                    <canvas class="ui-px-icon w-3.5 h-3.5" data-icon="home" width="16" height="16"></canvas><span>主菜单</span>
                 </button>
             </div>
         </div>
@@ -2482,7 +2497,7 @@
     function round2(val) { return Math.round((Number(val) || 0) * 100) / 100; }
     function fmt1(val) { const r = round1(val); return Number.isInteger(r) ? String(r) : r.toFixed(1); }
 
-    const APP_VERSION_NAME = 'V0.7.0';
+    const APP_VERSION_NAME = 'V0.7.1';
     const STORAGE_KEY_NOTICE_READ = `pixel_story_notice_read_${APP_VERSION_NAME}`;
     const STORAGE_KEY_SETTINGS = 'pixel_story_v037_settings';
     const STORAGE_KEY_KEYBINDS = 'pixel_story_v037_keybinds';
@@ -2684,8 +2699,8 @@
             this.bgmEnabled = true;
             this.sfxVolume = 1.0;
             this.bgmVolume = 1.0;
-            this.baseSfxGain = 1.45; // 默认100%档位较原版提升45%响度
-            this.baseBgmGain = 0.52; // 默认100%档位较原版提升45%响度
+            this.baseSfxGain = 2.40; // 参照主流动作游戏响度校准默认100%档位
+            this.baseBgmGain = 0.92; // BGM衬底与SFX主体的平衡响度基准
             this.lastHitSfxTime = 0;
             this.lastCritSfxTime = 0;
             this.lastXpSfxTime = 0;
@@ -2700,11 +2715,11 @@
                 if (AudioCtx) {
                     this.ctx = new AudioCtx();
                     this.masterComp = this.ctx.createDynamicsCompressor();
-                    this.masterComp.threshold.setValueAtTime(-10, this.ctx.currentTime);
-                    this.masterComp.knee.setValueAtTime(10, this.ctx.currentTime);
-                    this.masterComp.ratio.setValueAtTime(5, this.ctx.currentTime);
+                    this.masterComp.threshold.setValueAtTime(-6, this.ctx.currentTime);
+                    this.masterComp.knee.setValueAtTime(8, this.ctx.currentTime);
+                    this.masterComp.ratio.setValueAtTime(3.5, this.ctx.currentTime);
                     this.masterComp.attack.setValueAtTime(0.003, this.ctx.currentTime);
-                    this.masterComp.release.setValueAtTime(0.15, this.ctx.currentTime);
+                    this.masterComp.release.setValueAtTime(0.12, this.ctx.currentTime);
                     this.masterComp.connect(this.ctx.destination);
 
                     this.sfxBus = this.ctx.createGain();
@@ -2714,7 +2729,7 @@
 
                     this.bgmFilter = this.ctx.createBiquadFilter();
                     this.bgmFilter.type = 'lowpass';
-                    this.bgmFilter.frequency.setValueAtTime(3600, this.ctx.currentTime);
+                    this.bgmFilter.frequency.setValueAtTime(5600, this.ctx.currentTime);
                     this.bgmFilter.Q.setValueAtTime(0.7, this.ctx.currentTime);
                     this.bgmFilter.connect(this.masterComp);
 
@@ -3188,7 +3203,7 @@
             const shouldMuffle = (currentGameState === 'PAUSED' || currentGameState === 'LEVEL_UP' || currentGameState === 'WAVE_SHOP' || currentGameState === 'SHOP' || currentGameState === 'KEYBIND_EDIT' || currentGameState === 'TAVERN_INTRO' || currentGameState === 'TAVERN');
             if (shouldMuffle !== this.bgmMuffled && this.bgmFilter) {
                 this.bgmMuffled = shouldMuffle;
-                this.bgmFilter.frequency.setTargetAtTime(shouldMuffle ? 520 : 3600, this.ctx.currentTime, 0.12);
+                this.bgmFilter.frequency.setTargetAtTime(shouldMuffle ? 620 : 5600, this.ctx.currentTime, 0.12);
             }
 
             const bpm = nextMode === 'menu' ? 102 : (nextMode === 'boss' ? (bossEnraged ? 148 : 138) : 124);
@@ -5874,6 +5889,16 @@
         return Math.min(capGold, 22 + (completedWave - 1) * 2);
     }
 
+    function getFieldInsuranceRewardRange(p = null) {
+        if (p && (p.pendingFieldInsurance || p.fieldInsuranceActive) && p.fieldInsuranceRewardMin > 0 && p.fieldInsuranceRewardMax >= p.fieldInsuranceRewardMin) {
+            return { min: Math.floor(p.fieldInsuranceRewardMin), max: Math.floor(p.fieldInsuranceRewardMax) };
+        }
+        const inflationMult = typeof getShopWaveInflationMult === 'function' ? getShopWaveInflationMult() : 1.0;
+        const min = Math.max(55, Math.round(55 * inflationMult));
+        const max = Math.max(min + 5, Math.round(60 * inflationMult));
+        return { min, max };
+    }
+
     function getTrinketDynamicBonusNote(t, p, isOwnedView = false, excludeTempBuffs = (typeof gameState !== 'undefined' && gameState !== 'PLAYING' && gameState !== 'PAUSED')) {
         if (!t || !p || typeof getPlayerStats !== 'function') return '';
         const id = t.id;
@@ -5959,6 +5984,10 @@
         if (t.id === 'trinket_usury_note') {
             const gain = getUsuryNoteGoldGain();
             return `收获-3；购买时立即获得${gain}金币。`;
+        }
+        if (t.id === 'trinket_field_insurance') {
+            const range = getFieldInsuranceRewardRange(isOwnedView ? p : null);
+            return `【同波限1份】下波血量上限固定为50点（取原上限与50的较小值，波后恢复且不影响加成）；存活过本波获得${range.min}~${range.max}G（随波次通胀，不可被镜像打印卡复制）。`;
         }
         const note = getTrinketDynamicBonusNote(t, p, isOwnedView);
         return note ? `${t.desc}${note}` : t.desc;
@@ -9174,7 +9203,7 @@
             "..oooooooooo..",
             "..............",
             ".............."
-        ], desc: '收获-3；在黑市【锁定】的商品，下一波价格-5%。', onBuy(p) { p.statBonuses.harvest = round1((p.statBonuses.harvest || 0) - 3); } },
+        ], desc: '收获-2；在黑市【锁定】的商品，下一波价格-15%。', onBuy(p) { p.statBonuses.harvest = round1((p.statBonuses.harvest || 0) - 2); } },
         { id: 'trinket_cold_trigger', name: '冷血扳机', rarity: 0, baseCost: 14, maxStacks: 3, iconMatrix: [
             "..oooooooooo..",
             ".oAAAAAAAAAAo.",
@@ -9351,8 +9380,185 @@
             "...oooooooo...",
             ".............."
         ], desc: '攻击力+1.5，最大生命+2，换弹速度-8（近战禁用）。', onBuy(p) { p.statBonuses.flatDamage = round1((p.statBonuses.flatDamage || 0) + 1.5); addPlayerMaxHpBonus(p, 2); p.statBonuses.reloadSpeed = round1((p.statBonuses.reloadSpeed || 0) - 8); } },
+        // 普通 (Tier 0) —— 11件纯正向补缺饰品（数值严格低于同阶双刃剑）
+        { id: 'trinket_cloth_bracer', name: '粗布护腕', rarity: 0, baseCost: 14, maxStacks: 3, iconMatrix: [
+            "..............",
+            "....oooooo....",
+            "...oddddddo...",
+            "..odDwwwwDdo..",
+            "..odDddddDdo..",
+            "..odDyyyyDdo..",
+            "..odDddddDdo..",
+            "..odDwwwwDdo..",
+            "..odDddddDdo..",
+            "..odDyyyyDdo..",
+            "..odDDDDDDdo..",
+            "...oooooooo...",
+            "..............",
+            ".............."
+        ], desc: '防御+2，最大生命+2.5。', onBuy(p) { p.statBonuses.defense = round1((p.statBonuses.defense || 0) + 2); addPlayerMaxHpBonus(p, 2.5); } },
+        { id: 'trinket_herbal_sachet', name: '草本香囊', rarity: 0, baseCost: 14, maxStacks: 3, iconMatrix: [
+            ".....oooo.....",
+            "....oGggGo....",
+            "....oGwwGo....",
+            "...ooYYYYoo...",
+            "..oDDddddDDo..",
+            ".oDddGggGddDo.",
+            ".oDdgGwwGgdDo.",
+            ".oDdgGggGgdDo.",
+            ".oDddGGGGddDo.",
+            "..oDDddddDDo..",
+            "...oDDDDDDo...",
+            "....oooooo....",
+            "..............",
+            ".............."
+        ], desc: '免伤率+1.5%，每5秒恢复+0.6。', onBuy(p) { p.statBonuses.specialDrPct = round1((p.statBonuses.specialDrPct || 0) + 1.5); p.statBonuses.regenFlat = round1((p.statBonuses.regenFlat || 0) + 0.6); } },
+        { id: 'trinket_rough_whetstone', name: '糙面磨石', rarity: 0, baseCost: 14, maxStacks: 3, iconMatrix: [
+            "..............",
+            ".........oo...",
+            ".......ooAao..",
+            ".....ooAaswao.",
+            "....oAassssao.",
+            "...oAasAAssao.",
+            "..oAasAeeAsao.",
+            ".oAassAeeAsao.",
+            ".oAssssAAaao..",
+            ".oAaaaaaaao...",
+            "..oAAAAAAo....",
+            "...oooooo.....",
+            "..............",
+            ".............."
+        ], desc: '攻击力+0.8，暴击效果+4%。', onBuy(p) { p.statBonuses.flatDamage = round1((p.statBonuses.flatDamage || 0) + 0.8); p.statBonuses.critDmgPct = round1((p.statBonuses.critDmgPct || 0) + 4); } },
+        { id: 'trinket_brass_sight', name: '黄铜准星', rarity: 0, baseCost: 14, maxStacks: 3, iconMatrix: [
+            "......oo......",
+            "....ooYYoo....",
+            "...oYyyyyYo...",
+            "..oYykooyyYo..",
+            ".oYyk.oo.kyYo.",
+            ".oYo..ro..oYo.",
+            "oYyooorrooyyYo",
+            "oYyooorrooyyYo",
+            ".oYo..ro..oYo.",
+            ".oYyk.oo.kyYo.",
+            "..oYykooyyYo..",
+            "...oYyyyyYo...",
+            "....ooYYoo....",
+            "......oo......"
+        ], desc: '暴击率+2%，伤害加成+1%。', onBuy(p) { p.statBonuses.critRatePct = round1((p.statBonuses.critRatePct || 0) + 2); p.statBonuses.dmgBonusPct = round1((p.statBonuses.dmgBonusPct || 0) + 1); } },
+        { id: 'trinket_light_suppressor', name: '轻质消音管', rarity: 0, baseCost: 14, maxStacks: 3, excludeMelee: true, iconMatrix: [
+            "..............",
+            "..........oo..",
+            "........ooAao.",
+            ".......oAsswao",
+            "......oAssAao.",
+            ".....oAssAao..",
+            "....oAssAao...",
+            "...oAssAao....",
+            "..oAksAao.....",
+            ".oAksAao......",
+            ".oAkAao.......",
+            "..oooo........",
+            "..............",
+            ".............."
+        ], desc: '攻击范围+5，换弹速度+5（近战禁用）。', onBuy(p) { p.statBonuses.flatRange = round1((p.statBonuses.flatRange || 0) + 5); p.statBonuses.reloadSpeed = round1((p.statBonuses.reloadSpeed || 0) + 5); } },
+        { id: 'trinket_copper_strip', name: '导热铜片', rarity: 0, baseCost: 14, maxStacks: 3, iconMatrix: [
+            "..............",
+            "..oooooooooo..",
+            ".oFffffffffFo.",
+            ".oFfwFfwFfwFo.",
+            ".oFfdFfdFfdFo.",
+            ".oFffffffffFo.",
+            ".oFfwFfwFfwFo.",
+            ".oFfdFfdFfdFo.",
+            ".oFffffffffFo.",
+            ".oFFddddddFFo.",
+            "..oooooooooo..",
+            "..............",
+            "..............",
+            ".............."
+        ], desc: '技能急速+1.5，移动速度+1.5%。', onBuy(p) { p.statBonuses.abilityHaste = round1((p.statBonuses.abilityHaste || 0) + 1.5); p.statBonuses.moveSpeedPct = round1((p.statBonuses.moveSpeedPct || 0) + 1.5); } },
+        { id: 'trinket_scavenger_magnet', name: '拾荒磁铁', rarity: 0, baseCost: 13, maxStacks: 3, iconMatrix: [
+            "..............",
+            "..oooo..oooo..",
+            ".oAssAo.oAssAo",
+            ".oAwwAo.oAwwAo",
+            ".oRRRRo.oRRRRo",
+            ".oRrrRo.oRrrRo",
+            ".oRrrRo.oRrrRo",
+            ".oRrrRooRrrrRo",
+            ".oRrrrrrrrrrRo",
+            "..oRRrrrrrrRo.",
+            "...ooRRRRRRo..",
+            ".....oooooo...",
+            "..............",
+            ".............."
+        ], desc: '拾取范围+4，经验获取+3%。', onBuy(p) { p.statBonuses.pickupFlat = round1((p.statBonuses.pickupFlat || 0) + 4); p.statBonuses.xpGainPct = round1((p.statBonuses.xpGainPct || 0) + 3); } },
+        { id: 'trinket_clover_badge', name: '四叶铜章', rarity: 0, baseCost: 14, maxStacks: 3, iconMatrix: [
+            "....oooooo....",
+            "..ooYyyyyYoo..",
+            ".oYyddGGddyyo.",
+            ".oYdGggggGdyo.",
+            "oYddGglwgGddYo",
+            "oYdGGgGGgGGdYo",
+            "oYdGglwwlgGdYo",
+            "oYdGGgGGgGGdYo",
+            "oYddGglggGddYo",
+            ".oYdGggggGdyo.",
+            ".oYyddGGddyyo.",
+            "..ooYYYYYYoo..",
+            "....oooooo....",
+            ".............."
+        ], desc: '幸运+2，收获+2.5。', onBuy(p) { p.statBonuses.luck = round1((p.statBonuses.luck || 0) + 2); p.statBonuses.harvest = round1((p.statBonuses.harvest || 0) + 2.5); } },
+        { id: 'trinket_bat_cufflink', name: '蝙蝠袖扣', rarity: 0, baseCost: 14, maxStacks: 3, iconMatrix: [
+            "..............",
+            "..............",
+            ".oo........oo.",
+            "oRRo..oo..oRRo",
+            "oRrRoorrooRrRo",
+            "oRrrRryyrRrrRo",
+            ".oRrrRrrRrrRo.",
+            "..oRrRrrRrRo..",
+            "...ooRrrRoo...",
+            "....oRrrRo....",
+            ".....oRRo.....",
+            "......oo......",
+            "..............",
+            ".............."
+        ], desc: '吸血+0.3%。', onBuy(p) { p.statBonuses.lifestealPct = round2((p.statBonuses.lifestealPct || 0) + 0.3); } },
+        { id: 'trinket_cat_anklet', name: '灵猫脚环', rarity: 0, baseCost: 13, maxStacks: 3, iconMatrix: [
+            "..............",
+            "....oo..oo....",
+            "...oBboobBo...",
+            "..oBbbwwbbBo..",
+            ".oBbccBBccbBo.",
+            ".oBcoooooocBo.",
+            ".oBo......oBo.",
+            ".oBo......oBo.",
+            ".oBcoooooocBo.",
+            ".oBbccYYccbBo.",
+            "..oBbbYYbbBo..",
+            "...ooYyyYoo...",
+            ".....oooo.....",
+            ".............."
+        ], desc: '闪避率+1.2%。', onBuy(p) { p.statBonuses.dodgePct = round1((p.statBonuses.dodgePct || 0) + 1.2); } },
+        { id: 'trinket_trigger_spring', name: '轻量化弹簧', rarity: 0, baseCost: 14, maxStacks: 3, iconMatrix: [
+            "....oooooo....",
+            "...oAssssAo...",
+            "....ooYYoo....",
+            "...oAssswAo...",
+            "..oAssAAAaAo..",
+            "...ooAaaAoo...",
+            "..oAssswAaaAo.",
+            "...ooAssAoo...",
+            "..oAssswAaaAo.",
+            "...ooAssAoo...",
+            "...oAssssAo...",
+            "....oooooo....",
+            "..............",
+            ".............."
+        ], desc: '攻击速度+3.5%。', onBuy(p) { p.statBonuses.aspdPct = round1((p.statBonuses.aspdPct || 0) + 3.5); } },
 
-        // 稀有 (Tier 1 · 共 30 件)
+        // 稀有 (Tier 1 · 共 45 件)
         { id: 'trinket_smuggler_card', name: '走私客会员卡', rarity: 1, baseCost: 28, maxStacks: 3, iconMatrix: [
             "..............",
             ".oooooooooooo.",
@@ -9789,9 +9995,12 @@
             ".osssssssssso.",
             "..oooooooooo..",
             ".............."
-        ], desc: '【同波限1份】下波血量上限固定为50点（取原上限与50的较小值，波后恢复且不影响加成）；存活过本波获得55~60G（不可被镜像打印卡复制）。', onBuy(p, isRebuild) {
+        ], desc: '【同波限1份】下波血量上限固定为50点（取原上限与50的较小值，波后恢复且不影响加成）；存活过本波获得55~60G（随波次通胀，不可被镜像打印卡复制）。', onBuy(p, isRebuild) {
             if (!isRebuild) {
                 p.pendingFieldInsurance = true;
+                const range = getFieldInsuranceRewardRange(null);
+                p.fieldInsuranceRewardMin = range.min;
+                p.fieldInsuranceRewardMax = range.max;
             }
         } },
         { id: 'trinket_bio_infusion_pump', name: '活体输液泵', rarity: 1, baseCost: 28, maxStacks: 3, iconMatrix: [
@@ -9842,8 +10051,153 @@
             "..oooooooooo..",
             ".............."
         ], desc: '暴击率+5%，伤害加成+3%，经验获取-10%，幸运-2。', onBuy(p) { p.statBonuses.critRatePct = round1((p.statBonuses.critRatePct || 0) + 5); p.statBonuses.dmgBonusPct = round1((p.statBonuses.dmgBonusPct || 0) + 3); p.statBonuses.xpGainPct = round1((p.statBonuses.xpGainPct || 0) - 10); p.statBonuses.luck = round1((p.statBonuses.luck || 0) - 2); } },
+        // 稀有 (Tier 1) —— 9件纯正向补缺饰品（数值严格低于同阶双刃剑）
+        { id: 'trinket_steel_pauldron', name: '精钢护肩', rarity: 1, baseCost: 28, maxStacks: 3, iconMatrix: [
+            "....oooooo....",
+            "..ooAssssAoo..",
+            ".oAswwwwwwsAo.",
+            "oAsBbbbbbbBsAo",
+            "oAsBssssssBsAo",
+            "oAAssssssssAAo",
+            "oAAsBBBBBBsAAo",
+            "oAAsBssssBsAAo",
+            ".oAAssssssAAo.",
+            ".oAAAssssAAAo.",
+            "..oAAAAAAAAo..",
+            "...oooooooo...",
+            "..............",
+            ".............."
+        ], desc: '防御+4，最大生命+3.5。', onBuy(p) { p.statBonuses.defense = round1((p.statBonuses.defense || 0) + 4); addPlayerMaxHpBonus(p, 3.5); } },
+        { id: 'trinket_active_dressing', name: '活性敷料', rarity: 1, baseCost: 28, maxStacks: 3, iconMatrix: [
+            "..............",
+            "..oooooooooo..",
+            ".oBbbbbbbbbBo.",
+            ".oBwwwwwwwwBo.",
+            ".oBwwGggGwwBo.",
+            ".oBwgGwwGgwBo.",
+            ".oBwgwwwwgwBo.",
+            ".oBwgGwwGgwBo.",
+            ".oBwwGggGwwBo.",
+            ".oBwwwwwwwwBo.",
+            ".oBBBBBBBBBBo.",
+            "..oooooooooo..",
+            "..............",
+            ".............."
+        ], desc: '每5秒恢复+1.2，免伤率+2.5%。', onBuy(p) { p.statBonuses.regenFlat = round1((p.statBonuses.regenFlat || 0) + 1.2); p.statBonuses.specialDrPct = round1((p.statBonuses.specialDrPct || 0) + 2.5); } },
+        { id: 'trinket_gale_plume', name: '狂风羽饰', rarity: 1, baseCost: 28, maxStacks: 3, iconMatrix: [
+            ".........ooo..",
+            ".......ooiico.",
+            "......oicwwco.",
+            ".....oicwccCo.",
+            "....oicwccCo..",
+            "...oicwccCo...",
+            "..oicwccCo....",
+            ".oicwccCo.....",
+            ".ocwccCo......",
+            "..ocCCo.......",
+            "..oYYo........",
+            ".oYo..........",
+            ".oo...........",
+            ".............."
+        ], desc: '攻击速度+5%，闪避率+1.5%。', onBuy(p) { p.statBonuses.aspdPct = round1((p.statBonuses.aspdPct || 0) + 5); p.statBonuses.dodgePct = round1((p.statBonuses.dodgePct || 0) + 1.5); } },
+        { id: 'trinket_ap_warhead', name: '破甲弹头', rarity: 1, baseCost: 28, maxStacks: 3, iconMatrix: [
+            "......oo......",
+            ".....oBBoo....",
+            "....oBwwBo....",
+            "...oBwswwBo...",
+            "...oBssssBo...",
+            "..oAAssssAAo..",
+            "..oAffffffAo..",
+            "..oAffwwffAo..",
+            "..oAffffffAo..",
+            "..oYyyyyyyYo..",
+            "..oYYYYYYYYo..",
+            "...oooooooo...",
+            "..............",
+            ".............."
+        ], desc: '伤害加成+2.5%，暴击效果+8%。', onBuy(p) { p.statBonuses.dmgBonusPct = round1((p.statBonuses.dmgBonusPct || 0) + 2.5); p.statBonuses.critDmgPct = round1((p.statBonuses.critDmgPct || 0) + 8); } },
+        { id: 'trinket_long_smoothbore', name: '长距滑膛', rarity: 1, baseCost: 28, maxStacks: 3, excludeMelee: true, iconMatrix: [
+            "...........oo.",
+            ".........ooBbo",
+            "........oBbwbo",
+            ".......oBbsBo.",
+            "......oBbsBo..",
+            ".....oAasBo...",
+            "....oAasAo....",
+            "...oAasAo.....",
+            "..oAasAo......",
+            ".oYysAo.......",
+            "oYysAo........",
+            "oYYoo.........",
+            ".oo...........",
+            ".............."
+        ], desc: '攻击范围+10，换弹速度+10（近战禁用）。', onBuy(p) { p.statBonuses.flatRange = round1((p.statBonuses.flatRange || 0) + 10); p.statBonuses.reloadSpeed = round1((p.statBonuses.reloadSpeed || 0) + 10); } },
+        { id: 'trinket_explorer_compass', name: '探索罗盘', rarity: 1, baseCost: 26, maxStacks: 3, iconMatrix: [
+            "....oooooo....",
+            "..ooYyyyyYoo..",
+            ".oYykBBBBkyYo.",
+            ".oYkBBrrBBkYo.",
+            "oYykBBrwBBkyYo",
+            "oYkBBrwwBBBkYo",
+            "oYkBBBwwbBBkYo",
+            "oYykBBbwBBkyYo",
+            ".oYkBBbbBBkYo.",
+            ".oYykBBBBkyYo.",
+            "..ooYYYYYYoo..",
+            "....oooooo....",
+            "..............",
+            ".............."
+        ], desc: '拾取范围+7，经验获取+6%。', onBuy(p) { p.statBonuses.pickupFlat = round1((p.statBonuses.pickupFlat || 0) + 7); p.statBonuses.xpGainPct = round1((p.statBonuses.xpGainPct || 0) + 6); } },
+        { id: 'trinket_lucky_bell', name: '好运铃铛', rarity: 1, baseCost: 27, maxStacks: 3, iconMatrix: [
+            ".....oooo.....",
+            "....oYyyYo....",
+            "...ooYwwYoo...",
+            "..oYyyyyyyYo..",
+            "..oYywyywyYo..",
+            ".oYyyyyyyyyYo.",
+            ".oYywwyyyyyYo.",
+            ".oYyyyyyyyyYo.",
+            "oYYYYyyyyYYYYo",
+            "oYYYYYYYYYYYYo",
+            ".ooooYwwYoooo.",
+            ".....oYYo.....",
+            "......oo......",
+            ".............."
+        ], desc: '幸运+3.5，收获+4.5。', onBuy(p) { p.statBonuses.luck = round1((p.statBonuses.luck || 0) + 3.5); p.statBonuses.harvest = round1((p.statBonuses.harvest || 0) + 4.5); } },
+        { id: 'trinket_coagulant_badge', name: '凝血徽章', rarity: 1, baseCost: 28, maxStacks: 3, iconMatrix: [
+            "......oo......",
+            ".....oRRo.....",
+            "....oRrrRo....",
+            "...oRrwrrRo...",
+            "..oRrwwrrrRo..",
+            ".oRrrwrrrrrRo.",
+            ".oRrrrrrrrrRo.",
+            ".oRRrrrrrrRRo.",
+            "..oRRrrrrRRo..",
+            "...oYRRRRyo...",
+            "....oYYYYo....",
+            ".....oooo.....",
+            "..............",
+            ".............."
+        ], desc: '吸血+0.6%。', onBuy(p) { p.statBonuses.lifestealPct = round2((p.statBonuses.lifestealPct || 0) + 0.6); } },
+        { id: 'trinket_flux_capacitor', name: '稳压谐振环', rarity: 1, baseCost: 28, maxStacks: 3, iconMatrix: [
+            "....oooooo....",
+            "..ooCccccCoo..",
+            ".oCcwwccwwcCo.",
+            ".oCckkkkkkcCo.",
+            "oCckkCccCkkcCo",
+            "oCckCwwwwCkcCo",
+            "oCckCwbbwCkcCo",
+            "oCckCwwwwCkcCo",
+            "oCckkCccCkkcCo",
+            ".oCckkkkkkcCo.",
+            ".oCcwwccwwcCo.",
+            "..ooCCCCCCoo..",
+            "....oooooo....",
+            ".............."
+        ], desc: '技能急速+3.5，移动速度+3%。', onBuy(p) { p.statBonuses.abilityHaste = round1((p.statBonuses.abilityHaste || 0) + 3.5); p.statBonuses.moveSpeedPct = round1((p.statBonuses.moveSpeedPct || 0) + 3); } },
 
-        // 史诗 (Tier 2 · 共 28 件)
+        // 史诗 (Tier 2 · 共 40 件)
         { id: 'trinket_mirror_printer', name: '镜像打印卡', rarity: 2, baseCost: 50, maxStacks: 2, iconMatrix: [
             ".ooooooooo....",
             "oPPPPPPPPPo...",
@@ -10404,6 +10758,183 @@
             ".oooooooooooo.",
             ".............."
         ], desc: '【唯一】每次进入神秘酒馆可同时游玩「幸运左轮」和「幸运骰子」各1次。', onBuy(p) {} },
+        // 史诗 (Tier 2) —— 10件纯正向补缺饰品 + 1件紫双刃剑幸运补缺（所有纯正向严格低于同阶双刃剑）
+        { id: 'trinket_astral_compass', name: '星界指南针', rarity: 2, baseCost: 54, maxStacks: 2, iconMatrix: [
+            "......oo......",
+            "....ooPPoo....",
+            "..ooPppppPoo..",
+            ".oPpkccwcckPo.",
+            ".oPkcPwwwPckPo",
+            "oPpcPwwyywwPpo",
+            "oPpwPwyyyywPpo",
+            "oPpcPwwyywwPpo",
+            ".oPkcPwwwPckPo",
+            ".oPpkccwcckPo.",
+            "..ooPPpppPoo..",
+            "....ooPPoo....",
+            "......oo......",
+            ".............."
+        ], desc: '拾取范围+12，经验获取+11%。', onBuy(p) { p.statBonuses.pickupFlat = round1((p.statBonuses.pickupFlat || 0) + 12); p.statBonuses.xpGainPct = round1((p.statBonuses.xpGainPct || 0) + 11); } },
+        { id: 'trinket_golden_scale', name: '黄金天平', rarity: 2, baseCost: 54, maxStacks: 2, iconMatrix: [
+            "......oo......",
+            ".....oYyo.....",
+            "..oooooooooo..",
+            ".oYyyyyyyyyYo.",
+            ".oYo..oYo..oYo",
+            "oYyo..oo..oyYo",
+            "oPpo..oo..opPo",
+            ".oo...oYo...oo",
+            ".....oYyyo....",
+            "....oYyyyyo...",
+            "...oYYYYYYYo..",
+            "..ooooooooooo.",
+            "..............",
+            ".............."
+        ], desc: '幸运+7，收获+8。', onBuy(p) { p.statBonuses.luck = round1((p.statBonuses.luck || 0) + 7); p.statBonuses.harvest = round1((p.statBonuses.harvest || 0) + 8); } },
+        { id: 'trinket_sky_scope', name: '苍穹长镜', rarity: 2, baseCost: 56, maxStacks: 2, excludeMelee: true, iconMatrix: [
+            "..............",
+            ".........oooo.",
+            ".......ooPppPo",
+            ".....ooPpcwwPo",
+            "...ooPpPccwPPo",
+            "..oPppPPccPPo.",
+            ".oPpccPPPPoo..",
+            ".oPcwwPPoo....",
+            ".oPccPoo......",
+            "..oooo..oAo...",
+            ".......oAAo...",
+            "......oAooAo..",
+            "......oo..oo..",
+            ".............."
+        ], desc: '攻击范围+18，暴击率+5.5%（近战禁用）。', onBuy(p) { p.statBonuses.flatRange = round1((p.statBonuses.flatRange || 0) + 18); p.statBonuses.critRatePct = round1((p.statBonuses.critRatePct || 0) + 5.5); } },
+        { id: 'trinket_focus_barrel', name: '聚能枪管', rarity: 2, baseCost: 56, maxStacks: 2, excludeMelee: true, iconMatrix: [
+            "..........ooo.",
+            "........ooCcco",
+            ".......oCcwwco",
+            "......oPpcCCo.",
+            ".....oPpcCco..",
+            "....oPpcCco...",
+            "...oPpcCco....",
+            "..oPpcCco.....",
+            ".oPppPco......",
+            "oPppPpo.......",
+            "oPPppo........",
+            ".oooo.........",
+            "..............",
+            ".............."
+        ], desc: '攻击范围+18，换弹速度+18（近战禁用）。', onBuy(p) { p.statBonuses.flatRange = round1((p.statBonuses.flatRange || 0) + 18); p.statBonuses.reloadSpeed = round1((p.statBonuses.reloadSpeed || 0) + 18); } },
+        { id: 'trinket_crimson_chalice', name: '鲜血圣杯', rarity: 2, baseCost: 56, maxStacks: 2, iconMatrix: [
+            "..oooooooooo..",
+            ".oYyyyyyyyyYo.",
+            ".oYrrrrrrrrYo.",
+            ".oYrrwwrrrrYo.",
+            "..oYRrrrrRYo..",
+            "...oYRRRRYo...",
+            "....oYyyYo....",
+            ".....oYYo.....",
+            ".....oYYo.....",
+            "....oYyyYo....",
+            "...oYyyyyYo...",
+            "..oYYYYYYYYo..",
+            "..oooooooooo..",
+            ".............."
+        ], desc: '吸血+0.8%，每5秒恢复+2.4。', onBuy(p) { p.statBonuses.lifestealPct = round2((p.statBonuses.lifestealPct || 0) + 0.8); p.statBonuses.regenFlat = round1((p.statBonuses.regenFlat || 0) + 2.4); } },
+        { id: 'trinket_fury_bloodstone', name: '狂怒血石', rarity: 2, baseCost: 56, maxStacks: 2, iconMatrix: [
+            "......oo......",
+            ".....oRRo.....",
+            "....oRrwRo....",
+            "...oRrwwrRo...",
+            "..oRrrwwrrRo..",
+            ".oPRrrrrrrRPo.",
+            ".oPPRrrrrRPPo.",
+            "..oPRrrrrRPo..",
+            "...oPRrrRPo...",
+            "....oPRRPo....",
+            ".....oPPo.....",
+            "......oo......",
+            "..............",
+            ".............."
+        ], desc: '吸血+0.8%，攻击力+3。', onBuy(p) { p.statBonuses.lifestealPct = round2((p.statBonuses.lifestealPct || 0) + 0.8); p.statBonuses.flatDamage = round1((p.statBonuses.flatDamage || 0) + 3); } },
+        { id: 'trinket_bastion_core', name: '堡垒核心', rarity: 2, baseCost: 56, maxStacks: 2, iconMatrix: [
+            "..oooooooooo..",
+            ".oPPPPPPPPPPo.",
+            "oPpAssssssApPo",
+            "oPAsCccccCsAPo",
+            "oPAsCwwwwCsAPo",
+            "oPAsCwPPwCsAPo",
+            "oPAsCwwwwCsAPo",
+            "oPAsCccccCsAPo",
+            ".oPAssssssAPo.",
+            "..oPPAssAPPo..",
+            "...oPPppPPo...",
+            "....ooPPoo....",
+            "......oo......",
+            ".............."
+        ], desc: '防御+6.5，免伤率+5%。', onBuy(p) { p.statBonuses.defense = round1((p.statBonuses.defense || 0) + 6.5); p.statBonuses.specialDrPct = round1((p.statBonuses.specialDrPct || 0) + 5); } },
+        { id: 'trinket_wind_turbine', name: '裂风涡轮', rarity: 2, baseCost: 56, maxStacks: 2, iconMatrix: [
+            "....oooooo....",
+            "...ocwwwwco...",
+            "..occPppPcco..",
+            ".oCcPwwwwPcCo.",
+            "oCcPwPccPwPcCo",
+            "oCcPwcwwcwPcCo",
+            "oCcPwcwwcwPcCo",
+            "oCcPwPccPwPcCo",
+            ".oCcPwwwwPcCo.",
+            "..occPppPcco..",
+            "...ocwwwwco...",
+            "....oooooo....",
+            "..............",
+            ".............."
+        ], desc: '攻击速度+10%，移动速度+5.5%。', onBuy(p) { p.statBonuses.aspdPct = round1((p.statBonuses.aspdPct || 0) + 10); p.statBonuses.moveSpeedPct = round1((p.statBonuses.moveSpeedPct || 0) + 5.5); } },
+        { id: 'trinket_verdict_emblem', name: '裁决徽记', rarity: 2, baseCost: 56, maxStacks: 2, iconMatrix: [
+            "......oo......",
+            ".....oYyo.....",
+            "....oYwwYo....",
+            "..ooYyyyyYoo..",
+            ".oPPYrrrrYPPo.",
+            ".oPpYrwwrYpPo.",
+            "oPppYrwwrYppPo",
+            ".oPpYrrrrYpPo.",
+            ".oPPYyyyyYPPo.",
+            "..ooYyyyyYoo..",
+            "....oYyyYo....",
+            ".....oYYo.....",
+            "......oo......",
+            ".............."
+        ], desc: '伤害加成+5%，暴击效果+12%。', onBuy(p) { p.statBonuses.dmgBonusPct = round1((p.statBonuses.dmgBonusPct || 0) + 5); p.statBonuses.critDmgPct = round1((p.statBonuses.critDmgPct || 0) + 12); } },
+        { id: 'trinket_chrono_matrix', name: '时序矩阵', rarity: 2, baseCost: 56, maxStacks: 2, iconMatrix: [
+            "..oooooooooo..",
+            ".oPPccccccPPo.",
+            ".oPcwwPPwwcPo.",
+            ".oPcwPwwPwcPo.",
+            ".oPcPwwwwPcPo.",
+            ".oPcPwywwPcPo.",
+            ".oPcPwyywPcPo.",
+            ".oPcPwwwwPcPo.",
+            ".oPcwPwwPwcPo.",
+            ".oPcwwPPwwcPo.",
+            ".oPPccccccPPo.",
+            "..oooooooooo..",
+            "..............",
+            ".............."
+        ], desc: '技能急速+7，闪避率+3.5%。', onBuy(p) { p.statBonuses.abilityHaste = round1((p.statBonuses.abilityHaste || 0) + 7); p.statBonuses.dodgePct = round1((p.statBonuses.dodgePct || 0) + 3.5); } },
+        { id: 'trinket_gambler_dice', name: '千王之骰', rarity: 2, baseCost: 56, maxStacks: 2, iconMatrix: [
+            "..............",
+            "..oooooooooo..",
+            ".oYyyyyyyyyYo.",
+            ".oYwwrrrrwwYo.",
+            ".oYwrwwwwrwYo.",
+            ".oYwwwwwwwwYo.",
+            ".oYwwPwwPwwYo.",
+            ".oYwwwwwwwwYo.",
+            ".oYwrwwwwrwYo.",
+            ".oYwwrrrrwwYo.",
+            ".oYYYYYYYYYYo.",
+            "..oooooooooo..",
+            "..............",
+            ".............."
+        ], desc: '幸运+10，收获+11，最大生命-8。', onBuy(p) { p.statBonuses.luck = round1((p.statBonuses.luck || 0) + 10); p.statBonuses.harvest = round1((p.statBonuses.harvest || 0) + 11); addPlayerMaxHpBonus(p, -8); } },
 
 
         // 传说 (Tier 3 · 共 13 件，统一 14×14 像素图标)
@@ -12854,7 +13385,7 @@
             harvestKillProgress: 0, nightCatCritReady: false, nightCatBuffTimer: 0, nightCatCdTimer: 0, relicGreedTimer: 0, relicGreedGoldThisWave: 0,
             galeRotorTimer: 0, phantomHuskCdTimer: 0, myceliumTickTimer: 0,
             pendingHighStakesBet: false, pendingBetTicketCost: 0, activeBetInProgress: false, activeBetFailed: false, activeBetStake: 0, activeBetTicketCost: 0,
-            pendingFieldInsurance: false, fieldInsuranceActive: false, fieldInsurancePrevHp: 100, fieldInsurancePrevMaxHp: 100,
+            pendingFieldInsurance: false, fieldInsuranceActive: false, fieldInsurancePrevHp: 100, fieldInsurancePrevMaxHp: 100, fieldInsuranceRewardMin: 0, fieldInsuranceRewardMax: 0,
             tavernRevolverCurseNextWave: false, tavernNoHealTimer: 0, tavernPotionLockedThisWave: false, tavernLastRevolverShot: false,
             aftershockTimer: 0, spikedArmorCdTimer: 0, detectorHealThisWave: 0, blastFilmShieldRemaining: 0,
             pacemakerUsedThisWave: false, pacemakerHotTicksLeft: 0, pacemakerHotTickTimer: 0, pacemakerVisualTimer: 0,
@@ -13435,6 +13966,99 @@
             }
             return { shards, cracks };
         }
+        if (kind === 'pus_splatter') {
+            // 恶心生物脓液残渍：不规则黏稠黄绿脓液主滩 + 飞溅液滴 + 腐肉碎块 + 缓破气泡（无弹坑/无火星/无圆环）
+            const mainPts = [];
+            const innerPts = [];
+            const segs = 14;
+            for (let i = 0; i < segs; i++) {
+                const a = (Math.PI * 2 * i) / segs + (rnd() - 0.5) * 0.22;
+                const lobe = 0.62 + rnd() * 0.44 + Math.sin(i * 2.3 + seed) * 0.14;
+                const rx = radius * 0.72 * lobe;
+                const ry = radius * 0.52 * lobe;
+                mainPts.push({ x: q(Math.cos(a) * rx), y: q(Math.sin(a) * ry) });
+                const inScale = 0.52 + rnd() * 0.20;
+                innerPts.push({ x: q(Math.cos(a) * rx * inScale - 2), y: q(Math.sin(a) * ry * inScale - 1) });
+            }
+            const splats = [];
+            const splatCnt = radius >= 60 ? 14 : 10;
+            for (let i = 0; i < splatCnt; i++) {
+                const a = (Math.PI * 2 * i) / splatCnt + (rnd() - 0.5) * 0.55;
+                const dist = radius * (0.58 + rnd() * 0.56);
+                const w = 3 + Math.floor(rnd() * 6);
+                const h = 2 + Math.floor(rnd() * 4);
+                const tones = ['#84cc16', '#a3e635', '#65a30d', '#bef264', '#a16207'];
+                splats.push({
+                    x: q(Math.cos(a) * dist),
+                    y: q(Math.sin(a) * dist * 0.74),
+                    w, h,
+                    col: tones[Math.floor(rnd() * tones.length)]
+                });
+            }
+            const chunks = [];
+            const chunkCnt = 5;
+            for (let i = 0; i < chunkCnt; i++) {
+                const a = rnd() * Math.PI * 2;
+                const dist = radius * (0.12 + rnd() * 0.44);
+                chunks.push({
+                    x: q(Math.cos(a) * dist),
+                    y: q(Math.sin(a) * dist * 0.68),
+                    w: 4 + Math.floor(rnd() * 4),
+                    h: 3 + Math.floor(rnd() * 3),
+                    col: i % 2 === 0 ? '#4d5d1e' : '#574118'
+                });
+            }
+            const bubbles = [];
+            const bubCnt = 6;
+            for (let i = 0; i < bubCnt; i++) {
+                const a = rnd() * Math.PI * 2;
+                const dist = radius * (0.08 + rnd() * 0.45);
+                bubbles.push({
+                    x: q(Math.cos(a) * dist),
+                    y: q(Math.sin(a) * dist * 0.68),
+                    r: 2.2 + rnd() * 2.2,
+                    phase: rnd() * 6.28,
+                    speed: 2.0 + rnd() * 2.0
+                });
+            }
+            return { mainPts, innerPts, splats, chunks, bubbles };
+        }
+        if (kind === 'ember_scorch') {
+            // 陨火淡焦痕与微弱余烬：极浅不规则烟灰印 + 少量缓缓明灭的暗橙余烬点（无厚重弹坑）
+            const ashPts = [];
+            const segs = 12;
+            for (let i = 0; i < segs; i++) {
+                const a = (Math.PI * 2 * i) / segs + (rnd() - 0.5) * 0.25;
+                const jag = 0.72 + rnd() * 0.36;
+                ashPts.push({ x: q(Math.cos(a) * radius * 0.76 * jag), y: q(Math.sin(a) * radius * 0.54 * jag) });
+            }
+            const wisps = [];
+            for (let i = 0; i < 6; i++) {
+                const a = rnd() * Math.PI * 2;
+                const d = radius * (0.20 + rnd() * 0.55);
+                wisps.push({
+                    x: q(Math.cos(a) * d),
+                    y: q(Math.sin(a) * d * 0.72),
+                    w: 5 + Math.floor(rnd() * 7),
+                    h: 3 + Math.floor(rnd() * 4)
+                });
+            }
+            const embers = [];
+            const eCnt = 10;
+            for (let i = 0; i < eCnt; i++) {
+                const a = rnd() * Math.PI * 2;
+                const d = radius * (0.08 + rnd() * 0.62);
+                embers.push({
+                    x: q(Math.cos(a) * d),
+                    y: q(Math.sin(a) * d * 0.70),
+                    sz: rnd() < 0.35 ? 3 : 2,
+                    phase: rnd() * 6.28,
+                    speed: 3.5 + rnd() * 3.5,
+                    hot: i < 4
+                });
+            }
+            return { ashPts, wisps, embers };
+        }
         // crater: 真实 2.5D 俯视像素地面破损窟窿
         const segs = radius >= 75 ? 14 : (radius >= 48 ? 12 : 10);
         const rimPts = [];
@@ -13511,7 +14135,9 @@
     }
 
     function spawnGroundDecal(kind, x, y, opts = {}) {
-        const mappedKind = (kind === 'frost' || kind === 'ice_shards') ? 'ice_shards' : 'crater';
+        const mappedKind = (kind === 'frost' || kind === 'ice_shards')
+            ? 'ice_shards'
+            : (kind === 'pus_splatter' ? 'pus_splatter' : (kind === 'ember_scorch' ? 'ember_scorch' : 'crater'));
         const maxDecals = 28;
         const prio = opts.priority || 1;
         if (groundDecals.length >= maxDecals) {
@@ -13534,7 +14160,7 @@
             x: Math.round(x),
             y: Math.round(y),
             radius,
-            alpha: clampVal(opts.alpha || (mappedKind === 'ice_shards' ? 0.72 : 0.78), 0.35, 0.86),
+            alpha: clampVal(opts.alpha || (mappedKind === 'ice_shards' ? 0.72 : (mappedKind === 'ember_scorch' ? 0.68 : 0.78)), 0.35, 0.88),
             seed,
             priority: prio,
             emberTimer: opts.embers ? 0.45 : 0,
@@ -13663,6 +14289,75 @@
                     ctx.fillStyle = '#ffffff';
                     ctx.fillRect(-Math.max(1, Math.round(lx * 0.2)), -Math.max(1, Math.round(wy * 0.25)), Math.max(2, Math.round(lx * 0.35)), Math.max(1, Math.round(wy * 0.3)));
                     ctx.restore();
+                }
+            } else if (d.kind === 'pus_splatter') {
+                // 脓包丧尸自爆残渍：黏稠暗绿/黄绿脓液滩 + 飞溅液滴 + 缓破气泡
+                // 湿润暗影厚边（向下偏移2px）
+                ctx.fillStyle = '#2b3510';
+                tracePixelPoly(ctx, d.x, d.y + 2, g.mainPts);
+                ctx.fill();
+                // 主体浑浊黄绿脓液
+                ctx.fillStyle = '#5c7318';
+                tracePixelPoly(ctx, d.x, d.y, g.mainPts);
+                ctx.fill();
+                // 内层粘稠亮黄绿脓芯
+                ctx.fillStyle = '#84a91c';
+                tracePixelPoly(ctx, d.x, d.y, g.innerPts);
+                ctx.fill();
+                // 腐烂组织碎块
+                for (let c = 0; c < g.chunks.length; c++) {
+                    const ch = g.chunks[c];
+                    ctx.fillStyle = '#1f290b';
+                    ctx.fillRect(d.x + ch.x - 1, d.y + ch.y + 1, ch.w + 2, ch.h);
+                    ctx.fillStyle = ch.col;
+                    ctx.fillRect(d.x + ch.x, d.y + ch.y, ch.w, ch.h);
+                }
+                // 外围飞溅脓液滴
+                for (let sIdx = 0; sIdx < g.splats.length; sIdx++) {
+                    const sp = g.splats[sIdx];
+                    ctx.fillStyle = '#2b3510';
+                    ctx.fillRect(d.x + sp.x, d.y + sp.y + 1, sp.w, sp.h);
+                    ctx.fillStyle = sp.col;
+                    ctx.fillRect(d.x + sp.x, d.y + sp.y, sp.w, sp.h);
+                }
+                // 黏液表面缓慢鼓起破灭的脓泡
+                if (prog < 0.82) {
+                    for (let b = 0; b < g.bubbles.length; b++) {
+                        const bub = g.bubbles[b];
+                        const cyc = (globalTime * bub.speed * 0.35 + bub.phase) % 1;
+                        if (cyc > 0.85) continue;
+                        const br = Math.max(1.5, bub.r * (0.45 + 0.65 * Math.sin(cyc * Math.PI)));
+                        const bx = d.x + bub.x, by = d.y + bub.y;
+                        ctx.fillStyle = '#3f5210';
+                        ctx.fillRect(Math.round(bx - br), Math.round(by - br), Math.round(br * 2), Math.round(br * 2));
+                        ctx.fillStyle = '#bef264';
+                        ctx.fillRect(Math.round(bx - br + 1), Math.round(by - br + 1), Math.max(1, Math.round(br * 2 - 2)), Math.max(1, Math.round(br * 2 - 2)));
+                        ctx.fillStyle = '#f7fee7';
+                        ctx.fillRect(Math.round(bx - br + 1), Math.round(by - br + 1), 2, 1);
+                    }
+                }
+            } else if (d.kind === 'ember_scorch') {
+                // 陨火天降残留：淡淡浅灰焦印 + 缓缓明灭冷却的火星余烬（轻透不糊屏）
+                ctx.globalAlpha = alpha * 0.42;
+                ctx.fillStyle = '#1c1917';
+                tracePixelPoly(ctx, d.x, d.y, g.ashPts);
+                ctx.fill();
+                ctx.globalAlpha = alpha * 0.34;
+                ctx.fillStyle = '#292524';
+                for (let w = 0; w < g.wisps.length; w++) {
+                    const wp = g.wisps[w];
+                    ctx.fillRect(d.x + wp.x - wp.w * 0.5, d.y + wp.y - wp.h * 0.5, wp.w, wp.h);
+                }
+                // 缓慢明灭冷却的余烬像素点
+                const coolFactor = Math.max(0, 1 - prog * 1.12);
+                if (coolFactor > 0.04) {
+                    for (let e = 0; e < g.embers.length; e++) {
+                        const em = g.embers[e];
+                        const breathe = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(globalTime * em.speed + em.phase));
+                        ctx.globalAlpha = alpha * coolFactor * breathe;
+                        ctx.fillStyle = em.hot ? (breathe > 0.72 ? '#fde047' : '#f97316') : '#c2410c';
+                        ctx.fillRect(d.x + em.x, d.y + em.y, em.sz, em.sz);
+                    }
                 }
             } else {
                 // crater: 真实 2.5D 俯视像素地面破损窟窿
@@ -17825,7 +18520,7 @@
             p.activeBetTicketCost = 0;
             if (p.trinkets && p.trinkets.trinket_high_stakes_bet) delete p.trinkets.trinket_high_stakes_bet;
         }
-        // 2. 战地意外险结算（波后恢复上限与血量且不影响加成，存活获得 55~60G）
+        // 2. 战地意外险结算（波后恢复上限与血量且不影响加成，存活按波次通胀赔付金币）
         if (p.fieldInsuranceActive) {
             const cappedMax = p.maxHp || 50;
             const lostDuringWave = Math.max(0, round1(cappedMax - (p.hp || 0)));
@@ -17833,7 +18528,12 @@
             getPlayerStats(p);
             const targetRestoreHp = round1((p.fieldInsurancePrevHp || p.maxHp) - lostDuringWave);
             p.hp = Math.min(p.maxHp, Math.max(p.hp || 1, targetRestoreHp));
-            const rewardG = 55 + Math.floor(Math.random() * 6);
+            const fallbackRange = getFieldInsuranceRewardRange(null);
+            const rMin = p.fieldInsuranceRewardMin > 0 ? Math.floor(p.fieldInsuranceRewardMin) : fallbackRange.min;
+            const rMax = p.fieldInsuranceRewardMax >= rMin ? Math.floor(p.fieldInsuranceRewardMax) : Math.max(rMin + 5, fallbackRange.max);
+            const rewardG = rMin + Math.floor(Math.random() * (rMax - rMin + 1));
+            p.fieldInsuranceRewardMin = 0;
+            p.fieldInsuranceRewardMax = 0;
             p.gold = Math.floor((p.gold || 0) + rewardG);
             sfx.levelUp();
             spawnPixelParticles(p.x, p.y, '#34d399', 20, 165, 4, 0.40);
@@ -17917,7 +18617,7 @@
         const baseRaw = typeof offer.rawCost === 'number' ? offer.rawCost : (offer.cost || 1);
         const smugglerStacks = (player && player.trinkets && player.trinkets.trinket_smuggler_card) || 0;
         const depositStacks = (offer.lockedFromPrevWave && player && player.trinkets) ? (player.trinkets.trinket_prepaid_deposit || 0) : 0;
-        const discountPct = smugglerStacks * 0.05 + depositStacks * 0.05;
+        const discountPct = smugglerStacks * 0.05 + depositStacks * 0.15;
         return Math.max(1, Math.round(baseRaw * Math.max(0.1, 1 - discountPct)));
     }
 
@@ -17934,10 +18634,11 @@
         const pool = RELIC_AFFIX_POOL.filter(a => !a.legendaryOnly || rarity === 3).slice().sort(() => Math.random() - 0.5);
         const affixes = pool.slice(0, rarity);
         const maxCharges = computeRelicMaxCharges(affixes);
-        const cdMult = player ? getPlayerStats(player).cdMult : 1.0;
+        const cdMult = player ? getPlayerStats(player, true).cdMult : 1.0;
         const finalCd = computeRelicEffectiveMaxCd(base, rarity, affixes, cdMult);
         const inflationMult = getShopWaveInflationMult();
-        const rawCost = Math.round(base.baseCost * (1 + rarity * 0.45) * inflationMult);
+        const relicRarityMult = [0.65, 1.00, 1.45, 2.15][rarity] || 1.0;
+        const rawCost = Math.round(base.baseCost * relicRarityMult * inflationMult);
         const offerObj = { isRelic: true, bought: false, locked: false, lockedFromPrevWave: false, id: base.id, name: base.name, rarity, rarityMeta: rMeta, rawCost, cost: rawCost, iconUrl: base.iconUrl || (SKILL_MAP[base.iconSkillId] ? SKILL_MAP[base.iconSkillId].iconUrl : ''), maxCd: finalCd, maxCharges, affixes, desc: base.getDesc(rarity) };
         offerObj.cost = getEffectiveShopOfferCost(offerObj);
         return offerObj;
@@ -17996,7 +18697,7 @@
         const smugglerStacks = (player && player.trinkets && player.trinkets.trinket_smuggler_card) || 0;
         if (smugglerStacks > 0 && (waveState.shopRerollCount || 0) === 0) return 0;
         const inflationMult = getShopWaveInflationMult();
-        const rawCost = Math.round((4 + (waveState.shopRerollCount || 0) * 3) * inflationMult);
+        const rawCost = Math.round((3 + (waveState.shopRerollCount || 0) * 2) * inflationMult);
         const chipStacks = (player && player.trinkets && player.trinkets.trinket_gilded_chip) || 0;
         return Math.max(1, Math.round(rawCost * Math.max(0.1, 1 - chipStacks * 0.10)));
     }
@@ -18018,7 +18719,7 @@
         if (gameState !== 'SHOP' || !player || !player.activeRelics) return;
         const rel = player.activeRelics[slotIdx];
         if (!rel) return;
-        const refund = Math.max(1, Math.floor((rel.cost || 40) * 0.25));
+        const refund = Math.max(1, Math.floor((rel.cost || 40) * 0.40));
         player.gold = Math.floor((player.gold || 0) + refund);
         player.activeRelics[slotIdx] = null;
         player.activeRelic = player.activeRelics[0] || player.activeRelics[1] || null;
@@ -18148,7 +18849,7 @@
                         : (canAfford ? `购买 (${offer.cost}G)` : `不足 (${offer.cost}G)`)));
 
             const depositDiscountStacks = (offer.lockedFromPrevWave && player && player.trinkets) ? (player.trinkets.trinket_prepaid_deposit || 0) : 0;
-            const depositBadgeHtml = depositDiscountStacks > 0 ? `<span class="text-[9px] text-emerald-300 ml-1">定金-${depositDiscountStacks * 5}%</span>` : '';
+            const depositBadgeHtml = depositDiscountStacks > 0 ? `<span class="text-[9px] text-emerald-300 ml-1">定金-${depositDiscountStacks * 15}%</span>` : '';
 
             card.innerHTML = `
                 <div>
@@ -18195,7 +18896,7 @@
                 const slotEl = document.createElement('div');
                 if (rel) {
                     const rMeta = rel.rarityMeta || STAT_RARITY_META[0];
-                    const sellPrice = Math.max(1, Math.floor((rel.cost || 40) * 0.25));
+                    const sellPrice = Math.max(1, Math.floor((rel.cost || 40) * 0.40));
                     const affixCount = (rel.affixes && rel.affixes.length) || 0;
                     slotEl.className = `flex-1 min-w-0 bg-[#121726] border-2 ${rMeta.borderCls} hover:border-amber-400 px-2 py-1.5 flex items-center justify-between gap-1.5 cursor-pointer transition`;
                     slotEl.innerHTML = `
@@ -18955,7 +19656,7 @@
     function rollThreeSkillChoices() {
         const curHero = player ? player.heroId : selectedHeroId;
         const isMelee = MELEE_HERO_IDS.includes(curHero);
-        const stats = player ? getPlayerStats(player) : { luck: 0 };
+        const stats = player ? getPlayerStats(player, true) : { luck: 0 };
 
         const availableMechanics = SKILL_POOL.filter(s => {
             if (INFINITE_STAT_IDS.has(s.id)) return false;
@@ -18977,19 +19678,20 @@
         };
 
         const choices = [];
-        const mechQuota = availableStats.length > 0 ? Math.min(2, availableMechanics.length) : Math.min(3, availableMechanics.length);
+        const statReserve = Math.min(2, availableStats.length);
+        const mechQuota = Math.min(4 - statReserve, availableMechanics.length);
         for (let i = 0; i < mechQuota; i++) choices.push({ isStatCard: false, skill: availableMechanics[i] });
         let statIdx = 0;
-        while (choices.length < 3 && statIdx < availableStats.length) choices.push(buildStatCardChoice(availableStats[statIdx++]));
+        while (choices.length < 4 && statIdx < availableStats.length) choices.push(buildStatCardChoice(availableStats[statIdx++]));
         let extraMechIdx = mechQuota;
-        while (choices.length < 3 && extraMechIdx < availableMechanics.length) choices.push({ isStatCard: false, skill: availableMechanics[extraMechIdx++] });
+        while (choices.length < 4 && extraMechIdx < availableMechanics.length) choices.push({ isStatCard: false, skill: availableMechanics[extraMechIdx++] });
         levelUpState.choices = choices;
     }
 
     function getLevelUpRerollCost() {
         const inflationMult = getShopWaveInflationMult();
         const rerollIdx = (levelUpState && levelUpState.levelRerollCount) || 0;
-        const rawCost = Math.round((3 + rerollIdx * 2) * inflationMult);
+        const rawCost = Math.round((2 + rerollIdx * 1) * inflationMult);
         const holoStacks = (player && player.trinkets && player.trinkets.trinket_holo_simulator) || 0;
         return Math.max(1, Math.round(rawCost * Math.max(0.1, 1 - holoStacks * 0.10)));
     }
@@ -20367,7 +21069,7 @@
         if (trinketsGrid) {
             trinketsGrid.innerHTML = '';
             const isMelee = MELEE_HERO_IDS.includes(player.heroId);
-            SHOP_TRINKET_POOL.forEach(t => {
+            SHOP_TRINKET_POOL.slice().sort((a, b) => a.rarity - b.rarity || a.baseCost - b.baseCost).forEach(t => {
                 if (isMelee && t.excludeMelee) return;
                 const count = (player.trinkets && player.trinkets[t.id]) || 0;
                 const maxSt = t.perWaveContract ? 1 : (t.maxStacks || 1);
@@ -23683,26 +24385,29 @@
                     });
                 } else if (hz.type === 'exploder_death_ring') {
                     sfx.explosion();
-                    spawnPixelParticles(hz.x, hz.y, '#fef08a', 10, 225, 3.5, 0.30);
-                    spawnPixelParticles(hz.x, hz.y, '#f97316', 14, 185, 4.5, 0.36);
-                    spawnPixelParticles(hz.x, hz.y, '#1e293b', 10, 120, 5.5, 0.42);
-                    hazardZones.push({ type: 'exploder_blast_fx', x: hz.x, y: hz.y, radius: hz.radius, seed: Math.random() * 100, timer: 0, duration: 0.42 });
-                    spawnGroundDecal('crater', hz.x, hz.y + 4, { radius: Math.max(46, hz.radius * 0.64), variant: 'charred', alpha: 0.78, duration: 3.4, embers: true });
-                    triggerObstaclesInRadius(hz.x, hz.y, hz.radius, '#f97316', 1.2);
-                    if (!isSakuraVanished && Math.hypot(player.x - hz.x, player.y - hz.y) <= hz.radius + player.radius) damagePlayer(hz.playerDamage, 'flame', hz.x, hz.y);
+                    spawnPixelParticles(hz.x, hz.y, '#d9f99d', 10, 215, 3.5, 0.30);
+                    spawnPixelParticles(hz.x, hz.y, '#84cc16', 16, 185, 4.5, 0.38);
+                    spawnPixelParticles(hz.x, hz.y, '#4d7c0f', 12, 130, 5.0, 0.44);
+                    spawnPixelParticles(hz.x, hz.y, '#713f12', 7, 110, 4.0, 0.38);
+                    hazardZones.push({ type: 'exploder_blast_fx', x: hz.x, y: hz.y, radius: hz.radius, seed: Math.random() * 100, timer: 0, duration: 0.44 });
+                    spawnGroundDecal('pus_splatter', hz.x, hz.y + 4, { radius: Math.max(48, hz.radius * 0.74), alpha: 0.84, duration: 4.5 });
+                    triggerObstaclesInRadius(hz.x, hz.y, hz.radius, '#84cc16', 1.1);
+                    if (!isSakuraVanished && Math.hypot(player.x - hz.x, player.y - hz.y) <= hz.radius + player.radius) damagePlayer(hz.playerDamage, 'toxic', hz.x, hz.y);
                     const snap = zombies.slice();
                     for (let j = 0; j < snap.length; j++) {
                         const z = snap[j];
-                        if (z.hp > 0 && Math.hypot(z.x - hz.x, z.y - hz.y) <= hz.radius + z.radius) damageZombie(z, hz.zombieDamage, 0, 0, '#fb923c', false, true);
+                        if (z.hp > 0 && Math.hypot(z.x - hz.x, z.y - hz.y) <= hz.radius + z.radius) damageZombie(z, hz.zombieDamage, 0, 0, '#a3e635', false, true);
                     }
                 } else if (hz.type === 'boss_bombard') {
-                    sfx.explosion(); screenShake = Math.max(screenShake, 5);
-                    spawnPixelParticles(hz.x, hz.y, '#f43f5e', 16, 180, 4, 0.35);
-                    for (let sm = 0; sm < 3; sm++) {
-                        if (particles.length < 255) particles.push({ x: hz.x + (Math.random() - 0.5) * 26, y: hz.y + (Math.random() - 0.5) * 16, vx: (Math.random() - 0.5) * 18, vy: -32 - Math.random() * 24, color: '#64748b', size: 5, life: 0.65, maxLife: 0.65 });
+                    sfx.explosion(); screenShake = Math.max(screenShake, 6);
+                    spawnPixelParticles(hz.x, hz.y, '#94a3b8', 12, 200, 4.5, 0.40);
+                    spawnPixelParticles(hz.x, hz.y, '#475569', 10, 165, 5.0, 0.42);
+                    spawnPixelParticles(hz.x, hz.y, '#f43f5e', 12, 180, 3.8, 0.34);
+                    for (let sm = 0; sm < 4; sm++) {
+                        if (particles.length < 255) particles.push({ x: hz.x + (Math.random() - 0.5) * 30, y: hz.y + (Math.random() - 0.5) * 14, vx: (Math.random() - 0.5) * 24, vy: -38 - Math.random() * 28, color: sm % 2 === 0 ? '#64748b' : '#334155', size: 5, life: 0.65, maxLife: 0.65 });
                     }
-                    hazardZones.push({ type: 'explosion_ring_fx', x: hz.x, y: hz.y, radius: hz.radius, timer: 0, duration: 0.25, color: '#f43f5e' });
-                    spawnGroundDecal('crater', hz.x, hz.y + 4, { radius: Math.max(48, hz.radius * 0.64), variant: 'charred', alpha: 0.80, duration: 3.5, priority: 2 });
+                    hazardZones.push({ type: 'boss_bombard_erupt_fx', x: hz.x, y: hz.y, radius: hz.radius, seed: Math.random() * 100, timer: 0, duration: 0.52 });
+                    spawnGroundDecal('crater', hz.x, hz.y + 4, { radius: Math.max(50, hz.radius * 0.68), variant: 'stone', alpha: 0.84, duration: 3.8, priority: 2 });
                     triggerObstaclesInRadius(hz.x, hz.y, hz.radius, '#f43f5e', 1.25);
                     if (!isSakuraVanished && Math.hypot(player.x - hz.x, player.y - hz.y) <= hz.radius + player.radius) damagePlayer(hz.playerDamage, 'heavy', hz.x, hz.y);
                 } else if (hz.type === 'frost_vanish_slam') {
@@ -23748,7 +24453,7 @@
                     spawnPixelParticles(hz.x, hz.y, '#dc2626', 10, 145, 4, 0.34);
                     spawnPixelParticles(hz.x, hz.y, '#1c1917', 10, 110, 5.5, 0.44);
                     hazardZones.push({ type: 'flame_meteor_impact_fx', x: hz.x, y: hz.y, radius: hz.radius, seed: Math.random() * 100, timer: 0, duration: 0.48 });
-                    spawnGroundDecal('crater', hz.x, hz.y + 4, { radius: Math.max(52, hz.radius * 0.74), variant: 'magma', alpha: 0.82, duration: 3.6, embers: true, priority: 2 });
+                    spawnGroundDecal('ember_scorch', hz.x, hz.y + 3, { radius: Math.max(36, hz.radius * 0.96), alpha: 0.74, duration: 4.2, embers: true, priority: 2 });
                     triggerObstaclesInRadius(hz.x, hz.y, hz.radius, '#f97316', 1.25);
                     if (!isSakuraVanished && Math.hypot(player.x - hz.x, player.y - hz.y) <= hz.radius + player.radius) {
                         const prevHp = player.hp, prevShield = player.shield || 0;
@@ -24541,8 +25246,17 @@
             ctx.setLineDash([]); ctx.restore();
         }
 
+        // 双层渲染分离：Pass 0 仅绘制友方持续地面领域，Pass 1 绘制所有敌方预警与爆发特效，彻底杜绝友方技能遮挡敌方红/橙提示
+        for (let hzPass = 0; hzPass < 2; hzPass++) {
         for (let i = 0; i < hazardZones.length; i++) {
             const hz = hazardZones[i], progress = Math.min(1, hz.timer / hz.duration);
+            const isFriendlyGroundZone = (
+                hz.type === 'rinne_grenade_fire' ||
+                hz.type === 'medical_beacon_field' ||
+                hz.type === 'nano_overclock_field' ||
+                hz.type === 'relic_black_hole'
+            );
+            if (hzPass === 0 ? !isFriendlyGroundZone : isFriendlyGroundZone) continue;
             if (hz.type === 'flame_boss_death_nova') {
                 ctx.save();
                 const flashFast = Math.floor(globalTime * 18) % 2 === 0;
@@ -24606,12 +25320,108 @@
             } else if (hz.type === 'exploder_death_ring' || hz.type === 'boss_bombard' || hz.type === 'boss_slam_warn' || hz.type === 'flame_meteor_warn') {
                 ctx.save();
                 const isFlame = hz.type === 'flame_meteor_warn';
-                ctx.fillStyle = (hz.type === 'exploder_death_ring' || isFlame) ? 'rgba(249, 115, 22, 0.22)' : 'rgba(244, 63, 94, 0.22)';
+                const isExploder = hz.type === 'exploder_death_ring';
+                const isBombard = hz.type === 'boss_bombard';
+                ctx.fillStyle = isExploder ? 'rgba(132, 204, 22, 0.22)' : (isFlame ? 'rgba(249, 115, 22, 0.22)' : 'rgba(244, 63, 94, 0.22)');
                 ctx.beginPath(); ctx.arc(hz.x, hz.y, hz.radius, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = (hz.type === 'exploder_death_ring' || isFlame) ? 'rgba(251, 146, 60, 0.42)' : 'rgba(244, 63, 94, 0.38)';
+                ctx.fillStyle = isExploder ? 'rgba(163, 230, 53, 0.40)' : (isFlame ? 'rgba(251, 146, 60, 0.40)' : 'rgba(244, 63, 94, 0.36)');
                 ctx.beginPath(); ctx.arc(hz.x, hz.y, hz.radius * progress, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = (hz.type === 'exploder_death_ring' || isFlame) ? '#f97316' : '#f43f5e';
+                ctx.strokeStyle = isExploder ? '#84cc16' : (isFlame ? '#f97316' : '#f43f5e');
                 ctx.lineWidth = 2; ctx.stroke();
+
+                if (isBombard) {
+                    // Boss 1 集束轰炸预警：地面震颤预裂纹 + 跳动碎石（预告地底岩刺破土）
+                    const seedB = hz.x * 0.13 + hz.y * 0.19;
+                    const crackLen = hz.radius * (0.28 + 0.52 * progress);
+                    const jitter = Math.sin(globalTime * 52 + seedB) * 1.4 * progress;
+                    ctx.strokeStyle = '#090d16';
+                    ctx.lineWidth = 2.4;
+                    for (let k = 0; k < 5; k++) {
+                        const ca = seedB + k * 1.256;
+                        const mx = hz.x + Math.cos(ca + 0.16) * crackLen * 0.55 + jitter;
+                        const my = hz.y + Math.sin(ca + 0.16) * crackLen * 0.42;
+                        const ex = hz.x + Math.cos(ca - 0.12) * crackLen + jitter;
+                        const ey = hz.y + Math.sin(ca - 0.12) * crackLen * 0.72;
+                        ctx.beginPath(); ctx.moveTo(hz.x + jitter, hz.y); ctx.lineTo(mx, my); ctx.lineTo(ex, ey); ctx.stroke();
+                    }
+                    // 裂口内涌出的暗红地底压迫微光
+                    ctx.strokeStyle = `rgba(244, 63, 94, ${0.35 + 0.55 * progress})`;
+                    ctx.lineWidth = 1.2;
+                    for (let k = 0; k < 5; k++) {
+                        const ca = seedB + k * 1.256;
+                        const mx = hz.x + Math.cos(ca + 0.16) * crackLen * 0.52 + jitter;
+                        const my = hz.y + Math.sin(ca + 0.16) * crackLen * 0.40;
+                        ctx.beginPath(); ctx.moveTo(hz.x + jitter, hz.y); ctx.lineTo(mx, my); ctx.stroke();
+                    }
+                    // 震起跳动的像素碎石
+                    if (progress > 0.25) {
+                        for (let gIdx = 0; gIdx < 6; gIdx++) {
+                            const ga = seedB * 1.7 + gIdx * 1.05;
+                            const gd = hz.radius * (0.14 + (gIdx % 3) * 0.18);
+                            const hop = Math.abs(Math.sin(globalTime * (14 + gIdx * 2) + seedB)) * (4 + 8 * progress);
+                            const gx = Math.round(hz.x + Math.cos(ga) * gd);
+                            const gy = Math.round(hz.y + Math.sin(ga) * gd * 0.7 - hop);
+                            ctx.fillStyle = gIdx % 2 === 0 ? '#94a3b8' : '#64748b';
+                            ctx.fillRect(gx - 2, gy - 2, 4, 3);
+                        }
+                    }
+                } else if (isFlame) {
+                    // Boss 3 陨火天降：落点阴影渐浓 + 高空拖尾烈焰火球斜向俯冲砸入预警圈
+                    const shadowScale = 0.25 + 0.65 * progress;
+                    ctx.fillStyle = `rgba(15, 10, 8, ${0.14 + 0.36 * progress})`;
+                    ctx.beginPath();
+                    ctx.ellipse(hz.x, hz.y + 2, hz.radius * 0.52 * shadowScale, hz.radius * 0.32 * shadowScale, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    if (progress >= 0.20) {
+                        const fallT = Math.min(1, (progress - 0.20) / 0.80);
+                        const ease = Math.pow(fallT, 1.42);
+                        const startDx = 148;
+                        const startDy = -286;
+                        const fx = hz.x + startDx * (1 - ease);
+                        const fy = hz.y + startDy * (1 - ease);
+                        const dirLen = Math.hypot(startDx, startDy);
+                        const ux = startDx / dirLen; // 指向高空来向
+                        const uy = startDy / dirLen;
+
+                        // 1) 拖曳像素浓烟与烈焰尾迹（8段由远及近递增亮度）
+                        for (let seg = 8; seg >= 1; seg--) {
+                            const frac = seg / 8;
+                            const distBack = seg * (8.5 + 3.5 * fallT);
+                            const sway = Math.sin(globalTime * 26 + seg * 1.3) * (1.8 * frac);
+                            const tx = fx + ux * distBack + (-uy) * sway;
+                            const ty = fy + uy * distBack + ux * sway;
+                            const sz = Math.max(4, Math.round((15 - seg * 1.15) * (0.75 + 0.35 * fallT)));
+                            if (seg >= 6) {
+                                ctx.fillStyle = seg === 8 ? 'rgba(28, 25, 23, 0.65)' : 'rgba(68, 64, 60, 0.78)';
+                            } else if (seg >= 4) {
+                                ctx.fillStyle = '#dc2626';
+                            } else if (seg >= 2) {
+                                ctx.fillStyle = '#f97316';
+                            } else {
+                                ctx.fillStyle = '#fde047';
+                            }
+                            ctx.fillRect(Math.round(tx - sz * 0.5), Math.round(ty - sz * 0.5), sz, sz);
+                        }
+                        // 2) 陨火火球主体（外焰→中焰→暗岩核→白热前端）
+                        const ballR = Math.round(11 + 4 * fallT);
+                        ctx.fillStyle = '#dc2626';
+                        ctx.fillRect(Math.round(fx - ballR), Math.round(fy - ballR), ballR * 2, ballR * 2);
+                        ctx.fillStyle = '#f97316';
+                        ctx.fillRect(Math.round(fx - ballR * 0.8), Math.round(fy - ballR * 0.8), Math.round(ballR * 1.6), Math.round(ballR * 1.6));
+                        // 熔岩黑石核心（带龟裂橙缝）
+                        ctx.fillStyle = '#292524';
+                        ctx.fillRect(Math.round(fx - ballR * 0.52), Math.round(fy - ballR * 0.52), Math.round(ballR * 1.04), Math.round(ballR * 1.04));
+                        ctx.fillStyle = '#fb923c';
+                        ctx.fillRect(Math.round(fx - ballR * 0.35), Math.round(fy - 1), Math.round(ballR * 0.7), 2);
+                        ctx.fillRect(Math.round(fx - 1), Math.round(fy - ballR * 0.35), 2, Math.round(ballR * 0.7));
+                        // 迎风俯冲白热亮边（朝向落点方向 -ux, -uy）
+                        ctx.fillStyle = '#fef08a';
+                        ctx.fillRect(Math.round(fx - ux * ballR * 0.55 - 4), Math.round(fy - uy * ballR * 0.55 - 4), 8, 8);
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(Math.round(fx - ux * ballR * 0.65 - 2), Math.round(fy - uy * ballR * 0.65 - 2), 4, 4);
+                    }
+                }
                 ctx.restore();
             } else if (hz.type === 'boss_charge_rect') {
                 ctx.save();
@@ -24659,129 +25469,99 @@
                 ctx.fillRect(spX - 1.5, spY - 1.5, 3, 3);
                 ctx.restore();
             } else if (hz.type === 'rinne_grenade_fire') {
-                // 凛音手雷残留烈焰火海：熔焰焦热火床 + 沸腾热浪像素斑 + 34簇按Y深度排序的连片阶梯像素火舌 + 外沿火墙 + 升腾火星
+                // 凛音小技能「通透像素火海」：统一街机像素画风（半透火底 + 铺满大颗粒像素呼吸焰格 + 经典3色阶像素火舌点缀 + 跃动火星），底层绘制绝不遮挡敌方预警
                 ctx.save();
                 const remSec = Math.max(0, hz.duration - hz.timer);
-                const fadeOut = remSec < 0.8 ? remSec / 0.8 : 1.0;
-                const igniteT = Math.min(1, hz.timer / 0.18);
-                const igniteScale = igniteT < 1 ? (0.45 + 0.65 * Math.sin(igniteT * Math.PI * 0.65)) : 1.0;
+                const fadeOut = remSec < 0.75 ? remSec / 0.75 : 1.0;
+                const igniteT = Math.min(1, hz.timer / 0.16);
+                const igniteScale = igniteT < 1 ? (0.45 + 0.58 * Math.sin(igniteT * Math.PI * 0.65)) : 1.0;
                 const baseAlpha = Math.max(0, fadeOut);
-                const r = hz.radius || 82;
+                const r = (hz.radius || 82) * igniteScale;
                 const seed = hz.x * 0.11 + hz.y * 0.19;
-                const seaPulse = 0.95 + Math.sin(globalTime * 8.5 + seed) * 0.05;
+                const qTime = Math.floor(globalTime * 12) / 12; // 12fps 复古街机像素动画节奏
                 ctx.globalAlpha = baseAlpha;
 
-                // 1) 全域熔焰火海地床（中心白红炙热 → 中层烈红火海 → 边缘深猩红焦土）
-                const seaGrad = ctx.createRadialGradient(hz.x, hz.y, r * 0.08, hz.x, hz.y, r);
-                seaGrad.addColorStop(0, 'rgba(255, 110, 75, 0.56)');
-                seaGrad.addColorStop(0.42, 'rgba(220, 38, 38, 0.46)');
-                seaGrad.addColorStop(0.78, 'rgba(153, 27, 27, 0.38)');
-                seaGrad.addColorStop(1, 'rgba(127, 29, 29, 0.22)');
+                // 1) 通透暖红熔火底垫（约 30%~36% 透明度，铺满全圆但保持地图与上方敌方预警清晰可读）
+                const seaGrad = ctx.createRadialGradient(hz.x, hz.y, r * 0.10, hz.x, hz.y, r);
+                seaGrad.addColorStop(0, 'rgba(234, 88, 12, 0.34)');
+                seaGrad.addColorStop(0.62, 'rgba(185, 28, 28, 0.28)');
+                seaGrad.addColorStop(1, 'rgba(127, 29, 29, 0.14)');
                 ctx.fillStyle = seaGrad;
                 ctx.beginPath(); ctx.arc(hz.x, hz.y, r, 0, Math.PI * 2); ctx.fill();
 
-                // 2) 地面翻涌像素热浪斑块（让底床呈现流动火海而非死板圆盘）
-                for (let pIdx = 0; pIdx < 9; pIdx++) {
-                    const pAng = seed * 0.6 + pIdx * 0.72 + Math.sin(globalTime * 2.2 + pIdx) * 0.08;
-                    const pDist = r * (0.22 + ((pIdx * 17) % 10) * 0.058);
-                    const px = hz.x + Math.cos(pAng) * pDist;
-                    const py = hz.y + Math.sin(pAng) * pDist;
-                    const wave = 0.5 + 0.5 * Math.sin(globalTime * 9.5 + seed + pIdx * 1.9);
-                    const pw = (16 + (pIdx % 3) * 6) * seaPulse;
-                    const ph = (7 + (pIdx % 2) * 3) * seaPulse;
-                    ctx.fillStyle = wave > 0.55 ? 'rgba(248, 113, 113, 0.30)' : 'rgba(220, 38, 38, 0.28)';
-                    ctx.fillRect(px - pw * 0.5, py - ph * 0.5, pw, ph);
+                // 2) 铺满圆域的大颗粒像素火浪格（10px 复古方格，严格 3 色阶半透，无横条纹、无写实噪点）
+                const cell = 10;
+                const maxDist2 = (r - 3) * (r - 3);
+                const innerDist2 = (r * 0.74) * (r * 0.74);
+                const startX = Math.floor((hz.x - r) / cell) * cell;
+                const endX = hz.x + r;
+                const startY = Math.floor((hz.y - r) / cell) * cell;
+                const endY = hz.y + r;
+                for (let gy = startY; gy <= endY; gy += cell) {
+                    const dy = (gy + cell * 0.5) - hz.y;
+                    const dy2 = dy * dy;
+                    if (dy2 > maxDist2) continue;
+                    for (let gx = startX; gx <= endX; gx += cell) {
+                        const dx = (gx + cell * 0.5) - hz.x;
+                        const d2 = dx * dx + dy2;
+                        if (d2 > maxDist2) continue;
+                        const wave = Math.sin(gx * 0.085 + gy * 0.065 + qTime * 5.0 + seed) * 0.58
+                            + Math.cos(gx * 0.06 - gy * 0.105 - qTime * 4.2 + seed * 0.7) * 0.42;
+                        if (wave > 0.44 && d2 < innerDist2) {
+                            ctx.fillStyle = 'rgba(251, 146, 60, 0.32)';
+                            ctx.fillRect(gx + 1, gy + 1, cell - 2, cell - 2);
+                        } else if (wave > 0.02) {
+                            ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
+                            ctx.fillRect(gx + 1, gy + 1, cell - 2, cell - 2);
+                        } else {
+                            ctx.fillStyle = 'rgba(153, 27, 27, 0.20)';
+                            ctx.fillRect(gx + 1, gy + 1, cell - 2, cell - 2);
+                        }
+                    }
                 }
 
-                // 3) 清晰锐利的火海判定边界环（双层极细边，不抢敌方红圈预警）
-                ctx.strokeStyle = 'rgba(127, 29, 29, 0.78)';
-                ctx.lineWidth = 2.6;
+                // 3) 清晰克制的贴地灼烧边界环
+                ctx.strokeStyle = 'rgba(153, 27, 27, 0.68)';
+                ctx.lineWidth = 2.2;
                 ctx.beginPath(); ctx.arc(hz.x, hz.y, r, 0, Math.PI * 2); ctx.stroke();
-                ctx.strokeStyle = 'rgba(252, 165, 165, 0.72)';
-                ctx.lineWidth = 1.4;
-                ctx.beginPath(); ctx.arc(hz.x, hz.y, r - 0.8, 0, Math.PI * 2); ctx.stroke();
+                ctx.strokeStyle = 'rgba(251, 146, 60, 0.62)';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath(); ctx.arc(hz.x, hz.y, r - 1, 0, Math.PI * 2); ctx.stroke();
 
-                // 懒初始化 34 簇按 Y 从后到前排序的单位圆火海点阵（零每帧分配）
-                if (!window.__rinneFireSeaPoints) {
-                    const pts = [];
-                    const golden = 2.39996323;
-                    // 内部 20 簇铺满整个圆形区域
-                    for (let i = 0; i < 20; i++) {
-                        const rad = Math.sqrt((i + 0.35) / 20) * 0.76;
-                        const ang = i * golden;
-                        const sizeBias = 1.18 - rad * 0.42;
-                        pts.push({ nx: Math.cos(ang) * rad, ny: Math.sin(ang) * rad, s: sizeBias, ph: i * 1.37, hot: i < 7 });
-                    }
-                    // 外沿 14 簇连片火墙贴边燃烧
-                    for (let i = 0; i < 14; i++) {
-                        const ang = (Math.PI * 2 * i) / 14 + 0.12;
-                        const rad = 0.83 + (i % 2) * 0.07;
-                        pts.push({ nx: Math.cos(ang) * rad, ny: Math.sin(ang) * rad, s: 0.86 + (i % 3) * 0.08, ph: 9.1 + i * 1.13, hot: i % 3 === 0 });
-                    }
-                    pts.sort((a, b) => a.ny - b.ny);
-                    window.__rinneFireSeaPoints = pts;
-                }
-
-                const flameScale = igniteScale * (0.45 + 0.55 * baseAlpha);
-                const pts = window.__rinneFireSeaPoints;
-                const rotCos = Math.cos(seed * 0.5), rotSin = Math.sin(seed * 0.5);
-
-                // 4) 绘制 34 簇连片阶梯像素火舌（底部宽厚衔接 + 中段摇曳分叉 + 炽亮焰心 + 飘断火苗尖）
-                for (let i = 0; i < pts.length; i++) {
-                    const pt = pts[i];
-                    const rx = pt.nx * rotCos - pt.ny * rotSin;
-                    const ry = pt.nx * rotSin + pt.ny * rotCos;
-                    const fx = hz.x + rx * r;
-                    const fy = hz.y + ry * r + 3;
-                    const tWave = globalTime * (12.5 + (i % 4) * 1.4) + seed + pt.ph;
-                    const flick = Math.sin(tWave);
-                    const sway = Math.cos(tWave * 0.65) * 2.2;
-                    const fw = Math.round((13.5 * pt.s) * (0.92 + 0.10 * Math.cos(tWave * 0.8)));
-                    const fh = Math.max(6, Math.round((18.5 * pt.s + flick * 5.2 * pt.s) * flameScale));
-
-                    // 基座：宽厚深猩红连片火根
-                    ctx.fillStyle = '#991b1b';
-                    ctx.fillRect(fx - fw * 0.58, fy - fh * 0.36, fw * 1.16, fh * 0.36 + 3);
-                    // 下焰体：饱和暗红
-                    ctx.fillStyle = '#b91c1c';
-                    ctx.fillRect(fx - fw * 0.48 + sway * 0.2, fy - fh * 0.66, fw * 0.96, fh * 0.66 + 1);
-                    // 中焰体：明亮猩红阶梯收窄
+                // 4) 经典 3 色阶像素火舌点缀（外圈 9 簇 + 内部 3 簇，和游戏整体像素画风完全一致且中心通透）
+                ctx.globalAlpha = baseAlpha * 0.78;
+                for (let tIdx = 0; tIdx < 12; tIdx++) {
+                    const isRim = tIdx < 9;
+                    const ang = isRim
+                        ? (seed * 0.4 + (Math.PI * 2 * tIdx) / 9)
+                        : (seed * 1.1 + (Math.PI * 2 * (tIdx - 9)) / 3 + 0.5);
+                    const dist = isRim
+                        ? r * (0.76 + (tIdx % 2) * 0.10)
+                        : r * (0.28 + (tIdx % 2) * 0.14);
+                    const tx = Math.round(hz.x + Math.cos(ang) * dist);
+                    const ty = Math.round(hz.y + Math.sin(ang) * dist);
+                    const flick = Math.sin(qTime * 11 + seed + tIdx * 2.1);
+                    const fh = Math.max(6, Math.round((isRim ? 10 : 12) + flick * 3.5));
+                    // 外焰红 → 中焰橙 → 焰芯黄（与烈焰暴君火径同源像素风）
                     ctx.fillStyle = '#dc2626';
-                    ctx.fillRect(fx - fw * 0.38 + sway * 0.45, fy - fh * 0.88, fw * 0.76, fh * 0.72);
-                    // 上焰舌：炽烈亮红尖舌（随摆动偏移，打破呆板矩形感）
-                    ctx.fillStyle = '#ef4444';
-                    ctx.fillRect(fx - fw * 0.24 + sway * 0.75, fy - fh, fw * 0.48, fh * 0.62);
-                    // 焰心：亮红橙 / 绯粉过渡
-                    ctx.fillStyle = pt.hot ? '#fb923c' : '#f87171';
-                    ctx.fillRect(fx - fw * 0.22 + sway * 0.4, fy - fh * 0.56, fw * 0.44, fh * 0.46);
-                    // 炽核：最热点亮黄白/粉白芯
-                    if (pt.hot || flick > 0.25) {
-                        const coreW = Math.max(2, Math.round(fw * 0.20));
-                        ctx.fillStyle = pt.hot ? '#fef08a' : '#ffe4e6';
-                        ctx.fillRect(fx - coreW * 0.5 + sway * 0.35, fy - fh * 0.36, coreW, Math.max(3, fh * 0.26));
-                    }
-                    // 断离跃动小火苗（部分火簇顶部飞出2×3像素火星舌）
-                    if ((i & 1) === 0) {
-                        const lickP = (globalTime * 2.1 + pt.ph * 0.43) % 1;
-                        const ly = fy - fh - 1 - lickP * 9;
-                        const lx = fx + sway * 0.9 + Math.sin(lickP * 6 + pt.ph) * 2.2;
-                        ctx.fillStyle = lickP < 0.45 ? '#ef4444' : '#fca5a5';
-                        const ls = lickP < 0.5 ? 3 : 2;
-                        ctx.fillRect(lx - ls * 0.5, ly - ls * 0.5, ls, ls);
-                    }
+                    ctx.fillRect(tx - 4, ty - fh, 8, fh + 2);
+                    ctx.fillStyle = '#f97316';
+                    ctx.fillRect(tx - 3, ty - Math.round(fh * 0.76), 6, Math.round(fh * 0.76) + 1);
+                    ctx.fillStyle = '#fde047';
+                    ctx.fillRect(tx - 1, ty - Math.round(fh * 0.44), 2, Math.max(2, Math.round(fh * 0.44)));
                 }
 
-                // 5) 密集升腾红色与金白火星粒子（14 颗零分配）
-                for (let sp = 0; sp < 14; sp++) {
-                    const spPhase = (globalTime * (1.25 + (sp % 4) * 0.26) + seed * 0.4 + sp * 0.13) % 1;
-                    const spAng = seed * 1.1 + sp * 0.89 + spPhase * 0.55;
-                    const spDist = r * (0.12 + ((sp * 23) % 10) * 0.082);
-                    const spX = hz.x + Math.cos(spAng) * spDist + Math.sin(globalTime * 7.5 + sp * 2.1) * 4.5;
-                    const spY = hz.y + Math.sin(spAng) * spDist - 6 - spPhase * 30;
-                    ctx.globalAlpha = baseAlpha * Math.max(0, 1 - spPhase);
-                    ctx.fillStyle = sp % 4 === 0 ? '#fef08a' : (sp % 3 === 0 ? '#fda4af' : '#ef4444');
-                    const spSize = sp % 4 === 0 ? 2.5 : 3;
-                    ctx.fillRect(spX - spSize * 0.5, spY - spSize * 0.5, spSize, spSize);
+                // 5) 轻量上升像素火星（10 颗零分配）
+                for (let sp = 0; sp < 10; sp++) {
+                    const spPhase = (globalTime * (1.25 + (sp % 4) * 0.25) + seed * 0.4 + sp * 0.17) % 1;
+                    const spAng = seed * 1.1 + sp * 1.05 + spPhase * 0.45;
+                    const spDist = r * (0.14 + ((sp * 23) % 10) * 0.08);
+                    const spX = Math.round(hz.x + Math.cos(spAng) * spDist + Math.sin(globalTime * 7 + sp * 2.1) * 4);
+                    const spY = Math.round(hz.y + Math.sin(spAng) * spDist - 6 - spPhase * 28);
+                    ctx.globalAlpha = baseAlpha * Math.max(0, 1 - spPhase) * 0.85;
+                    ctx.fillStyle = sp % 3 === 0 ? '#fef08a' : (sp % 2 === 0 ? '#fb923c' : '#ef4444');
+                    const spSize = sp % 3 === 0 ? 2 : 3;
+                    ctx.fillRect(spX - 1, spY - 1, spSize, spSize);
                 }
                 ctx.restore();
             } else if (hz.type === 'flame_hollow_ring_warn') {
@@ -24831,50 +25611,150 @@
                 ctx.beginPath(); ctx.arc(hz.x, hz.y, hz.radius * (0.4 + 0.6 * progress), 0, Math.PI * 2); ctx.stroke();
                 ctx.restore();
             } else if (hz.type === 'exploder_blast_fx') {
-                // 自爆脓包怪：1帧纯白高光闪爆 → 橙红像素火团 + 飞溅火星 + 迅速透明消散的薄冲击波与黑烟
+                // 自爆脓包怪：脓囊爆裂高光 → 飞溅黄绿黏液团 + 毒雾扩散（生物爆浆质感，无炸弹火球）
                 ctx.save();
                 const r = hz.radius || 72;
                 const seed = hz.seed || 1;
-                if (progress < 0.11) {
-                    ctx.globalAlpha = 0.92;
-                    ctx.fillStyle = '#ffffff';
-                    ctx.beginPath(); ctx.arc(hz.x, hz.y, r * 0.78, 0, Math.PI * 2); ctx.fill();
-                    ctx.strokeStyle = '#fef08a';
+                if (progress < 0.12) {
+                    ctx.globalAlpha = 0.88;
+                    ctx.fillStyle = '#ecfccb';
+                    ctx.beginPath(); ctx.arc(hz.x, hz.y, r * 0.72, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#a3e635';
                     ctx.lineWidth = 4;
-                    ctx.beginPath(); ctx.arc(hz.x, hz.y, r * 0.96, 0, Math.PI * 2); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(hz.x, hz.y, r * 0.94, 0, Math.PI * 2); ctx.stroke();
                 } else {
-                    const fade = Math.max(0, 1 - (progress - 0.11) / 0.89);
-                    // 迅速消散的薄冲击波
-                    if (progress < 0.58) {
-                        const waveP = (progress - 0.11) / 0.47;
-                        ctx.globalAlpha = (1 - waveP) * 0.78;
-                        ctx.strokeStyle = '#fdba74';
-                        ctx.lineWidth = 2.6 * (1 - waveP * 0.6);
-                        ctx.beginPath(); ctx.arc(hz.x, hz.y, r * (0.45 + 0.62 * waveP), 0, Math.PI * 2); ctx.stroke();
+                    const fade = Math.max(0, 1 - (progress - 0.12) / 0.88);
+                    // 迅速消散的粘液爆裂环
+                    if (progress < 0.55) {
+                        const waveP = (progress - 0.12) / 0.43;
+                        ctx.globalAlpha = (1 - waveP) * 0.76;
+                        ctx.strokeStyle = '#a3e635';
+                        ctx.lineWidth = 3 * (1 - waveP * 0.6);
+                        ctx.beginPath(); ctx.arc(hz.x, hz.y, r * (0.42 + 0.62 * waveP), 0, Math.PI * 2); ctx.stroke();
                     }
-                    // 暗色像素黑烟团（向外扩散）
-                    ctx.globalAlpha = fade * 0.58;
+                    // 腐浊绿雾团（向外弥散）
+                    ctx.globalAlpha = fade * 0.52;
                     for (let k = 0; k < 7; k++) {
                         const ang = seed + k * 0.91;
-                        const d = r * (0.28 + 0.65 * progress);
-                        const sz = (10 + (k % 3) * 4) * (0.7 + 0.4 * progress);
-                        ctx.fillStyle = k % 2 === 0 ? '#1e293b' : '#334155';
-                        ctx.fillRect(hz.x + Math.cos(ang) * d - sz * 0.5, hz.y + Math.sin(ang) * d - sz * 0.5 - progress * 8, sz, sz);
+                        const d = r * (0.24 + 0.62 * progress);
+                        const sz = (10 + (k % 3) * 4) * (0.75 + 0.35 * progress);
+                        ctx.fillStyle = k % 2 === 0 ? '#3f6212' : '#4d7c0f';
+                        ctx.fillRect(hz.x + Math.cos(ang) * d - sz * 0.5, hz.y + Math.sin(ang) * d - sz * 0.5 - progress * 6, sz, sz);
                     }
-                    // 橙红火焰像素团（中心与外圈）
-                    if (progress < 0.72) {
-                        const fireFade = 1 - (progress - 0.11) / 0.61;
-                        ctx.globalAlpha = fireFade * 0.92;
-                        for (let k = 0; k < 8; k++) {
-                            const ang = seed * 1.7 + k * 0.785;
-                            const d = r * (0.14 + 0.52 * progress);
-                            const sz = (13 - progress * 6) + (k % 2) * 3;
-                            const fx = hz.x + Math.cos(ang) * d, fy = hz.y + Math.sin(ang) * d;
-                            ctx.fillStyle = k % 2 === 0 ? '#dc2626' : '#f97316';
+                    // 飞溅的黏稠黄绿脓团与液滴
+                    if (progress < 0.78) {
+                        const splatFade = 1 - (progress - 0.12) / 0.66;
+                        ctx.globalAlpha = splatFade * 0.92;
+                        for (let k = 0; k < 10; k++) {
+                            const ang = seed * 1.7 + k * 0.628;
+                            const d = r * (0.16 + 0.68 * progress);
+                            const arcY = -Math.sin(progress * Math.PI) * (14 + (k % 3) * 5);
+                            const sz = Math.max(3, (11 - progress * 5) + (k % 2) * 3);
+                            const fx = hz.x + Math.cos(ang) * d, fy = hz.y + Math.sin(ang) * d * 0.8 + arcY;
+                            ctx.fillStyle = k % 3 === 0 ? '#65a30d' : (k % 3 === 1 ? '#a3e635' : '#ca8a04');
                             ctx.fillRect(fx - sz * 0.5, fy - sz * 0.5, sz, sz);
-                            ctx.fillStyle = '#fef08a';
-                            ctx.fillRect(fx - sz * 0.22, fy - sz * 0.22, sz * 0.44, sz * 0.44);
+                            ctx.fillStyle = '#ecfccb';
+                            ctx.fillRect(fx - sz * 0.25, fy - sz * 0.25, Math.max(2, sz * 0.38), Math.max(1.5, sz * 0.28));
                         }
+                    }
+                }
+                ctx.restore();
+            } else if (hz.type === 'boss_bombard_erupt_fx') {
+                // Boss 1 集束轰炸：钢筋混凝土巨刺从地底猛然破土穿出，随后崩碎成漫天碎石，衔接地面窟窿
+                ctx.save();
+                const r = hz.radius || 68;
+                const seed = hz.seed || 1;
+                const thrustT = Math.min(1, progress / 0.26);
+                const thrustEase = 1 - Math.pow(1 - thrustT, 3);
+                const shatterT = progress > 0.52 ? Math.min(1, (progress - 0.52) / 0.48) : 0;
+                const pillarAlpha = shatterT > 0 ? Math.max(0, 1 - shatterT * 1.15) : 1;
+
+                // 破土红光冲击环（前 45%）
+                if (progress < 0.45) {
+                    const rp = progress / 0.45;
+                    ctx.globalAlpha = (1 - rp) * 0.85;
+                    ctx.strokeStyle = '#f43f5e';
+                    ctx.lineWidth = 3.5 * (1 - rp * 0.6);
+                    ctx.beginPath(); ctx.arc(hz.x, hz.y, r * (0.35 + 0.68 * rp), 0, Math.PI * 2); ctx.stroke();
+                }
+
+                // 3 根破土冲出的尖锐混凝土岩刺（中柱最高 + 左右斜刺）
+                if (pillarAlpha > 0.03) {
+                    ctx.globalAlpha = pillarAlpha;
+                    const spikes = [
+                        { ox: -16, oy: 4, w: 14, h: r * 0.68, tilt: -0.26 },
+                        { ox: 15, oy: 5, w: 13, h: r * 0.62, tilt: 0.24 },
+                        { ox: 0, oy: 2, w: 22, h: r * 1.06, tilt: ((seed % 1) - 0.5) * 0.14 }
+                    ];
+                    for (let s = 0; s < spikes.length; s++) {
+                        const sp = spikes[s];
+                        const curH = sp.h * thrustEase * (1 - shatterT * 0.35);
+                        if (curH < 4) continue;
+                        ctx.save();
+                        ctx.translate(hz.x + sp.ox, hz.y + sp.oy);
+                        ctx.rotate(sp.tilt);
+                        const hw = sp.w * 0.5;
+                        // 暗面岩体
+                        ctx.fillStyle = '#1e293b';
+                        ctx.beginPath();
+                        ctx.moveTo(-hw - 2, 4);
+                        ctx.lineTo(-hw * 0.72, -curH * 0.68);
+                        ctx.lineTo(0, -curH);
+                        ctx.lineTo(hw * 0.78, -curH * 0.62);
+                        ctx.lineTo(hw + 2, 4);
+                        ctx.closePath();
+                        ctx.fill();
+                        // 受光左侧断面
+                        ctx.fillStyle = '#64748b';
+                        ctx.beginPath();
+                        ctx.moveTo(-hw, 3);
+                        ctx.lineTo(-hw * 0.66, -curH * 0.66);
+                        ctx.lineTo(0, -curH);
+                        ctx.lineTo(2, 3);
+                        ctx.closePath();
+                        ctx.fill();
+                        // 顶部锋利高光脊
+                        ctx.fillStyle = '#cbd5e1';
+                        ctx.beginPath();
+                        ctx.moveTo(-hw * 0.45, -curH * 0.56);
+                        ctx.lineTo(0, -curH);
+                        ctx.lineTo(hw * 0.18, -curH * 0.64);
+                        ctx.closePath();
+                        ctx.fill();
+                        // 露出的炽红钢筋与能量裂纹
+                        ctx.strokeStyle = progress < 0.35 ? '#fb7185' : '#f43f5e';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(-hw * 0.3, -curH * 0.22);
+                        ctx.lineTo(hw * 0.25, -curH * 0.55);
+                        ctx.moveTo(hw * 0.45, -curH * 0.45);
+                        ctx.lineTo(hw * 0.85, -curH * 0.74);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                    // 破土瞬间基底翻涌的土块领圈
+                    ctx.fillStyle = '#334155';
+                    for (let d = -3; d <= 3; d++) {
+                        const dx = hz.x + d * 8;
+                        const dy = hz.y + 4 + ((d * d) % 3) * 2;
+                        ctx.fillRect(dx - 4, dy - 3, 8, 5);
+                    }
+                }
+
+                // 崩碎散飞的像素岩块（中后段散开坠落）
+                if (shatterT > 0) {
+                    ctx.globalAlpha = Math.max(0, 1 - shatterT);
+                    for (let k = 0; k < 10; k++) {
+                        const ang = seed * 1.3 + k * 0.628;
+                        const spread = (14 + (k % 4) * 10) + shatterT * (r * 0.82);
+                        const rise = Math.sin(shatterT * Math.PI) * (24 + (k % 3) * 12) - shatterT * 10;
+                        const rx = Math.round(hz.x + Math.cos(ang) * spread);
+                        const ry = Math.round(hz.y + Math.sin(ang) * spread * 0.65 - rise);
+                        const sz = 4 + (k % 3) * 2;
+                        ctx.fillStyle = '#0f172a';
+                        ctx.fillRect(rx - 1, ry + 1, sz + 2, sz);
+                        ctx.fillStyle = k % 2 === 0 ? '#94a3b8' : '#64748b';
+                        ctx.fillRect(rx, ry, sz, sz);
                     }
                 }
                 ctx.restore();
@@ -27024,6 +27904,7 @@
                 }
                 ctx.restore();
             }
+        }
         }
 
         for (let i = 0; i < xpGems.length; i++) {
@@ -30377,6 +31258,53 @@
         }
     };
 
+    function buildGameOverSummaryHtml(stageLabel, timeLabel, timeStr, killsLabel, killsValue, revives, isVictory) {
+        const trCount = player && player.trinkets
+            ? Object.values(player.trinkets).reduce((acc, n) => acc + Math.max(0, Number(n) || 0), 0)
+            : 0;
+        const relicCount = player && Array.isArray(player.activeRelics)
+            ? player.activeRelics.filter(Boolean).length
+            : (player && player.activeRelic ? 1 : 0);
+        const curGold = Math.floor((player && player.gold) || 0);
+        const revCls = revives > 0 ? 'text-amber-300' : (isVictory ? 'text-emerald-300' : 'text-slate-300');
+        const cellCls = 'bg-[#121726] border border-slate-800/90 px-2.5 py-1.5 sm:py-2 flex items-center justify-between gap-2';
+        return `
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
+                <div class="${cellCls} col-span-2 sm:col-span-2">
+                    <span class="text-slate-400 text-[11px] sm:text-xs shrink-0">作战阶段</span>
+                    <span class="text-amber-400 font-bold text-xs sm:text-sm truncate">${stageLabel}</span>
+                </div>
+                <div class="${cellCls}">
+                    <span class="text-slate-400 text-[11px] sm:text-xs shrink-0">${timeLabel}</span>
+                    <span class="text-sky-300 font-mono font-bold text-xs sm:text-sm">${timeStr}</span>
+                </div>
+                <div class="${cellCls}">
+                    <span class="text-slate-400 text-[11px] sm:text-xs shrink-0">最终等级</span>
+                    <span class="text-white font-bold text-xs sm:text-sm">LV.${player ? player.level : 1}</span>
+                </div>
+                <div class="${cellCls}">
+                    <span class="text-slate-400 text-[11px] sm:text-xs shrink-0">${killsLabel}</span>
+                    <span class="text-emerald-400 font-bold text-xs sm:text-sm">${killsValue}</span>
+                </div>
+                <div class="${cellCls}">
+                    <span class="text-slate-400 text-[11px] sm:text-xs shrink-0">已复活次数</span>
+                    <span class="${revCls} font-bold text-xs sm:text-sm">${revives} 次</span>
+                </div>
+                <div class="${cellCls}">
+                    <span class="text-slate-400 text-[11px] sm:text-xs shrink-0">持有饰品</span>
+                    <span class="text-cyan-300 font-bold text-xs sm:text-sm">${trCount} 件</span>
+                </div>
+                <div class="${cellCls}">
+                    <span class="text-slate-400 text-[11px] sm:text-xs shrink-0">主动遗物</span>
+                    <span class="text-purple-300 font-bold text-xs sm:text-sm">${relicCount} / 2</span>
+                </div>
+                <div class="${cellCls}">
+                    <span class="text-slate-400 text-[11px] sm:text-xs shrink-0">剩余金币</span>
+                    <span class="text-yellow-300 font-mono font-bold text-xs sm:text-sm">${curGold}G</span>
+                </div>
+            </div>`;
+    }
+
     function triggerCampaignVictory() {
         gameState = 'GAME_OVER'; sfx.levelUp();
         const modalBox = document.getElementById('gameOverModalBox');
@@ -30387,18 +31315,18 @@
         const btnRevive = document.getElementById('btnReviveCurrentWave');
         if (btnCont) btnCont.classList.remove('hidden');
         if (btnRevive) btnRevive.classList.add('hidden');
-        if (modalBox) modalBox.className = 'pixel-box w-full max-w-md max-h-[94vh] overflow-y-auto p-5 sm:p-6 border-2 border-amber-400 text-center space-y-4';
+        if (modalBox) modalBox.className = 'pixel-box w-full max-w-xl sm:max-w-2xl max-h-[92vh] flex flex-col p-3.5 sm:p-5 border-2 border-amber-400 text-center gap-2.5 sm:gap-3.5 overflow-hidden';
         if (badgeEl) { badgeEl.textContent = '20 WAVES CLEARED!'; badgeEl.className = 'bg-amber-400 text-slate-950 font-pixel-en text-[10px] px-2 py-0.5 font-bold'; }
         if (goTitle) {
             const heroName = player && player.heroId === 'lingxi' ? '凌汐' : (player && player.heroId === 'xinglan' ? '星澜' : (player && player.heroId === 'yomi' ? '夜瞳' : (player && player.heroId === 'chinatsu' ? '千夏' : (player && player.heroId === 'sakura' ? '樱' : '凛音'))));
             goTitle.textContent = `街区突围通关 · ${heroName}全歼终焉！`;
-            goTitle.className = 'text-xl sm:text-2xl font-bold text-amber-300 mt-2';
+            goTitle.className = 'text-lg sm:text-2xl font-bold text-amber-300 mt-1';
         }
         const totalSec = Math.floor(waveState.totalTime);
         const mm = String(Math.floor(totalSec / 60)).padStart(2, '0'), ss = String(totalSec % 60).padStart(2, '0');
         const revives = Math.max(0, Math.floor(waveState.reviveCount || 0));
         if (summary) {
-            summary.innerHTML = `<div class="flex justify-between border-b border-slate-800 pb-1.5"><span>作战阶段:</span><span class="text-amber-400 font-bold">20波街区全歼通关</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>通关用时:</span><span class="text-sky-300 font-mono">${mm}:${ss}</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>最终等级:</span><span class="text-white font-bold">LV.${player.level}</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>累计击败:</span><span class="text-emerald-400 font-bold">${waveState.totalKills} 个</span></div><div class="flex justify-between"><span>已复活次数:</span><span class="${revives > 0 ? 'text-amber-300' : 'text-emerald-300'} font-bold">${revives} 次</span></div>`;
+            summary.innerHTML = buildGameOverSummaryHtml('20波街区全歼通关', '通关用时', `${mm}:${ss}`, '累计击败', `${waveState.totalKills} 个`, revives, true);
         }
         document.getElementById('gameOverModal').classList.remove('hidden');
         resetScrollbarsIn('gameOverModal');
@@ -30434,18 +31362,18 @@
         const btnRevive = document.getElementById('btnReviveCurrentWave');
         if (btnCont) btnCont.classList.add('hidden');
         if (btnRevive) btnRevive.classList.add('hidden');
-        if (modalBox) modalBox.className = 'pixel-box w-full max-w-md max-h-[94vh] overflow-y-auto p-5 sm:p-6 border-2 border-amber-400 text-center space-y-4';
+        if (modalBox) modalBox.className = 'pixel-box w-full max-w-xl sm:max-w-2xl max-h-[92vh] flex flex-col p-3.5 sm:p-5 border-2 border-amber-400 text-center gap-2.5 sm:gap-3.5 overflow-hidden';
         if (badgeEl) { badgeEl.textContent = 'BOSS RUSH CLEARED!'; badgeEl.className = 'bg-amber-400 text-slate-950 font-pixel-en text-[10px] px-2 py-0.5 font-bold'; }
         if (goTitle) {
             const heroName = player && player.heroId === 'lingxi' ? '凌汐' : (player && player.heroId === 'xinglan' ? '星澜' : (player && player.heroId === 'yomi' ? '夜瞳' : (player && player.heroId === 'chinatsu' ? '千夏' : (player && player.heroId === 'sakura' ? '樱' : '凛音'))));
             goTitle.textContent = `首领挑战通关 · ${heroName}制霸全场！`;
-            goTitle.className = 'text-xl sm:text-2xl font-bold text-amber-300 mt-2';
+            goTitle.className = 'text-lg sm:text-2xl font-bold text-amber-300 mt-1';
         }
         const totalSec = Math.floor(waveState.totalTime);
         const mm = String(Math.floor(totalSec / 60)).padStart(2, '0'), ss = String(totalSec % 60).padStart(2, '0');
         const revives = Math.max(0, Math.floor(waveState.reviveCount || 0));
         if (summary) {
-            summary.innerHTML = `<div class="flex justify-between border-b border-slate-800 pb-1.5"><span>挑战模式:</span><span class="text-amber-400 font-bold">首领挑战</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>通关用时:</span><span class="text-sky-300 font-mono">${mm}:${ss}</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>最终等级:</span><span class="text-white font-bold">LV.${player.level}</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>击败首领:</span><span class="text-emerald-400 font-bold">${BOSS_RUSH_TOTAL_BOSSES} / ${BOSS_RUSH_TOTAL_BOSSES}</span></div><div class="flex justify-between"><span>已复活次数:</span><span class="${revives > 0 ? 'text-amber-300' : 'text-emerald-300'} font-bold">${revives} 次</span></div>`;
+            summary.innerHTML = buildGameOverSummaryHtml('首领挑战全通关', '通关用时', `${mm}:${ss}`, '击败首领', `${BOSS_RUSH_TOTAL_BOSSES} / ${BOSS_RUSH_TOTAL_BOSSES}`, revives, true);
         }
         document.getElementById('gameOverModal').classList.remove('hidden');
         resetScrollbarsIn('gameOverModal');
@@ -30467,19 +31395,19 @@
                 btnRevive.classList.add('hidden');
             }
         }
-        if (modalBox) modalBox.className = 'pixel-box w-full max-w-md max-h-[94vh] overflow-y-auto p-5 sm:p-6 border-2 border-rose-500 text-center space-y-4';
+        if (modalBox) modalBox.className = 'pixel-box w-full max-w-xl sm:max-w-2xl max-h-[92vh] flex flex-col p-3.5 sm:p-5 border-2 border-rose-500 text-center gap-2.5 sm:gap-3.5 overflow-hidden';
         if (badgeEl) { badgeEl.textContent = 'MISSION FAILED'; badgeEl.className = 'bg-rose-600 text-white font-pixel-en text-[10px] px-2 py-0.5'; }
         if (goTitle) {
             const heroName = player && player.heroId === 'lingxi' ? '凌汐' : (player && player.heroId === 'xinglan' ? '星澜' : (player && player.heroId === 'yomi' ? '夜瞳' : (player && player.heroId === 'chinatsu' ? '千夏' : (player && player.heroId === 'sakura' ? '樱' : '凛音'))));
             goTitle.textContent = `防线失守 · ${heroName}倒下了`;
-            goTitle.className = 'text-xl sm:text-3xl font-bold text-rose-400 mt-2';
+            goTitle.className = 'text-lg sm:text-2xl font-bold text-rose-400 mt-1';
         }
         const totalSec = Math.floor(waveState.totalTime);
         const mm = String(Math.floor(totalSec / 60)).padStart(2, '0'), ss = String(totalSec % 60).padStart(2, '0');
         const revives = Math.max(0, Math.floor(waveState.reviveCount || 0));
         if (summary) {
             const modeLabel = waveState.mode === 'boss_rush' ? `首领挑战 (BOSS ${waveState.wave}/${BOSS_RUSH_TOTAL_BOSSES})` : `街区生存 (WAVE ${waveState.wave})`;
-            summary.innerHTML = `<div class="flex justify-between border-b border-slate-800 pb-1.5"><span>作战阶段:</span><span class="text-amber-400 font-bold">${modeLabel}</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>存活时长:</span><span class="text-sky-300 font-mono">${mm}:${ss}</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>最终等级:</span><span class="text-white font-bold">LV.${player.level}</span></div><div class="flex justify-between border-b border-slate-800 pb-1.5"><span>累计击败:</span><span class="text-emerald-400 font-bold">${waveState.totalKills} 个</span></div><div class="flex justify-between"><span>已复活次数:</span><span class="${revives > 0 ? 'text-amber-300' : 'text-slate-300'} font-bold">${revives} 次</span></div>`;
+            summary.innerHTML = buildGameOverSummaryHtml(modeLabel, '存活时长', `${mm}:${ss}`, '累计击败', `${waveState.totalKills} 个`, revives, false);
         }
         document.getElementById('gameOverModal').classList.remove('hidden');
         resetScrollbarsIn('gameOverModal');
@@ -30587,6 +31515,7 @@
             if (e.code === 'Digit1' || e.code === 'Numpad1') selectSkillUpgrade(0);
             if (e.code === 'Digit2' || e.code === 'Numpad2') selectSkillUpgrade(1);
             if (e.code === 'Digit3' || e.code === 'Numpad3') selectSkillUpgrade(2);
+            if (e.code === 'Digit4' || e.code === 'Numpad4') selectSkillUpgrade(3);
         } else if (gameState === 'PAUSED') {
             const confirmModalEl = document.getElementById('inGameConfirmModal');
             const skillsModalEl = document.getElementById('trainingSkillsModal');
