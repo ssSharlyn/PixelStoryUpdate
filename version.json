@@ -1,7 +1,7 @@
 {
   "minApkVersion": 4,
-  "hotPatchVersion": 1,
+  "hotPatchVersion": 2,
   "apkDownloadUrl": "https://github.com/ssSharlyn/PixelStoryUpdate/raw/main/PixelStory.apk",
   "bigUpdateLog": "【V0.7.0 版本更新】\n· 黑市商品重构：全面重构黑市饰品与遗物体系，流派构筑与游玩体验更丰富更好玩。\n· 新增「神秘酒馆」：波次探索概率触发酒馆奇遇，体验幸运左轮与幸运骰子博弈玩法。\n· 美术与特效升级：重绘部分首领造型，全面升级怪物、首领、英雄技能特效及受击反馈。\n· 信息显示优化：新增大招读条与底部动态 Buff 状态栏，优化黑市/升级面板真实属性与卡片展示。\n· 问题修复与调优：修复多项已知 Bug，优化部分怪物与技能机制，战斗手感全面提升。",
-  "smallUpdateLog": "正在同步 V0.7.0 最新内容..."
+  "smallUpdateLog": "正在同步 V0.7.1 最新内容..."
 }
