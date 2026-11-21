@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>像素物语 V0.6.1</title>
+    <title>像素物语 V0.7.0</title>
     <script>window.__mountPixelStoryGame = null; window.__pixelGameBooted = false;</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -501,7 +501,7 @@
             if (mode === 'big') {
                 if (smallBox) smallBox.style.display = 'none';
                 if (bigM) bigM.style.display = 'flex';
-                if (logEl) logEl.innerText = "【V0.6.1 版本更新】\n· 凌汐机制优化：小技能可直接收枪退出大招，大招智能优先锁定Boss/高血量精英，炸弹固定0.7s引爆\n· 怪物与手感：腐沼粘液怪改为三连喷吐且延长泥沼持续时间；修复凌汐大招特效音效与移动端冷却遮罩对齐\n· 夜瞳吸血窗口：夜瞳去程与回程两段普攻在0.75s内共享同一吸血额度窗口";
+                if (logEl) logEl.innerText = "【V0.7.0 版本更新】\n· 黑市商品重构：重构黑市饰品与遗物体系，构筑搭配更丰富\n· 新增「神秘酒馆」：局内概率触发酒馆奇遇，体验幸运左轮与幸运骰子玩法\n· 特效与显示优化：升级首领造型与战斗技能特效，新增大招读条、底部Buff栏及真实属性显示\n· 修复与体验升级：修复多项已知Bug，游戏内容更丰富更好玩";
                 if (pWrap) pWrap.style.display = 'none';
                 if (cBtn) {
                     cBtn.disabled = false;
@@ -543,11 +543,11 @@
                     pct = Math.min(100, pct + 25);
                     if (hBar) hBar.style.width = pct + '%';
                     if (pct < 100) {
-                        if (hTip) hTip.innerText = `正在同步 V0.6.1 更新内容 (${pct}%)...`;
+                        if (hTip) hTip.innerText = `正在同步 V0.7.0 更新内容 (${pct}%)...`;
                     } else {
                         clearInterval(previewTimerId);
                         previewTimerId = null;
-                        if (hTip) hTip.innerText = '更新完成 (V0.6.1)，即将进入战场！';
+                        if (hTip) hTip.innerText = '更新完成 (V0.7.0)，即将进入战场！';
                     }
                 }, 400);
             }
@@ -572,7 +572,7 @@
         const GITHUB_USER = "ssSharlyn";             // GitHub 用户名
         const GITHUB_REPO = "PixelStoryUpdate";      // 仓库名
         const GITHUB_BRANCH = "main";                // 默认分支名
-        const LOCAL_APK_VERSION = 3;                 // 当前 APK 底座大版本号（发新APK时才改）
+        const LOCAL_APK_VERSION = 4;                 // 当前 APK 底座大版本号（发新APK时才改）
         const BASE_PATCH_VERSION = 1;                // 当前 APK 内置初始热更号（随新APK重置为 1）
         // ======================================================
 
@@ -868,7 +868,7 @@
 
             const finishUpToDate = (msg) => {
                 if (hBar) hBar.style.width = '100%';
-                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.6.1)，无需更新！`;
+                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.7.0)，无需更新！`;
                 setTimeout(() => {
                     if (ov) ov.style.display = 'none';
                     isManualChecking = false;
@@ -915,10 +915,10 @@
                 }
 
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.6.1)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.0)，无需更新！`), 260);
             } catch (e) {
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.6.1)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.0)，无需更新！`), 260);
             }
         };
 
@@ -1774,7 +1774,7 @@
             <div id="mainMenuTitleBox" class="pixel-box px-7 sm:px-11 py-3.5 sm:py-4 border-4 border-sky-400 bg-[#121726] flex flex-col items-center shadow-[0_8px_0_#05060a] shrink-0">
                 <div class="flex items-center gap-2 mb-1.5">
                     <span class="bg-rose-600 text-white font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5">PIXEL STORY</span>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.6.1</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.7.0</span>
                 </div>
                 <canvas id="mainMenuLogoCanvas" width="312" height="76" class="w-[218px] h-[53px] sm:w-[288px] sm:h-[70px] block pointer-events-none" aria-label="像素物语"></canvas>
                 <p class="text-[11px] sm:text-xs text-sky-300 mt-1.5 tracking-wider font-bold">二次元点阵像素 · 街区生存激战</p>
@@ -1887,7 +1887,7 @@
                         <div>
                             <div class="font-bold text-sky-300 text-xs sm:text-sm flex items-center gap-2">
                                 <span>版本更新</span>
-                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.6.1</span>
+                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.7.0</span>
                             </div>
                             <div class="text-[11px] text-slate-400 mt-0.5">检查并获取游戏最新版本内容</div>
                         </div>
@@ -2196,7 +2196,7 @@
                 <div class="flex items-center gap-2">
                     <canvas class="ui-px-icon w-5 h-5" data-icon="notice" width="20" height="20"></canvas>
                     <h3 class="text-base sm:text-lg font-bold text-amber-300 tracking-wider">游戏公告</h3>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.6.1</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.7.0</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="window.manualCheckGameUpdate && window.manualCheckGameUpdate()" class="pixel-btn px-2.5 py-1 text-xs font-bold text-white flex items-center gap-1">
@@ -2209,8 +2209,19 @@
             </div>
             <div id="announcementBodyBox" class="flex-1 min-h-0 bg-[#0b0e17] border border-slate-800 p-3.5 sm:p-4 overflow-y-auto text-xs sm:text-sm text-slate-300 leading-relaxed space-y-3">
                 <div class="bg-[#111624] border border-amber-400/50 p-3 space-y-1.5">
-                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.6.1 更新内容】</div>
+                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.7.0 更新内容】</div>
                     <ul class="text-xs text-slate-200 space-y-1 list-disc list-inside">
+                        <li><b>黑市商品重构</b>：全面重构黑市饰品与遗物体系，流派构筑与游玩体验更丰富更好玩。</li>
+                        <li><b>新增「神秘酒馆」</b>：波次探索概率触发酒馆奇遇，体验幸运左轮与幸运骰子博弈玩法。</li>
+                        <li><b>美术与特效升级</b>：重绘部分首领造型，全面升级怪物、首领、英雄技能特效及受击反馈。</li>
+                        <li><b>信息显示优化</b>：新增大招读条与底部动态 Buff 状态栏，优化黑市/升级面板真实属性与卡片展示。</li>
+                        <li><b>问题修复与调优</b>：修复多项已知 Bug，优化部分怪物与技能机制，战斗手感全面提升。</li>
+                    </ul>
+                </div>
+
+                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
+                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.6.1 往期更新】</div>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
                         <li><b>凌汐机制优化</b>：小技能可直接收枪退出大招，小技能与闪避新增0.5s互锁冷却，炸弹固定0.7s延迟引爆；大招优先锁定Boss与高血量精英。</li>
                         <li><b>夜瞳与精英调整</b>：夜瞳两段普攻在0.75s内共享同一吸血窗口；腐沼粘液怪改为三连吐泥沼并延长所有泥沼持续时间。</li>
                         <li><b>体验与显示修复</b>：修复凌汐大招特效音效偶发丢失及手机端扫描冷却遮罩对齐问题。</li>
@@ -2471,7 +2482,7 @@
     function round2(val) { return Math.round((Number(val) || 0) * 100) / 100; }
     function fmt1(val) { const r = round1(val); return Number.isInteger(r) ? String(r) : r.toFixed(1); }
 
-    const APP_VERSION_NAME = 'V0.6.1';
+    const APP_VERSION_NAME = 'V0.7.0';
     const STORAGE_KEY_NOTICE_READ = `pixel_story_notice_read_${APP_VERSION_NAME}`;
     const STORAGE_KEY_SETTINGS = 'pixel_story_v037_settings';
     const STORAGE_KEY_KEYBINDS = 'pixel_story_v037_keybinds';
@@ -5863,14 +5874,11 @@
         return Math.min(capGold, 22 + (completedWave - 1) * 2);
     }
 
-    function getTrinketDynamicBonusNote(t, p, isOwnedView = false) {
+    function getTrinketDynamicBonusNote(t, p, isOwnedView = false, excludeTempBuffs = (typeof gameState !== 'undefined' && gameState !== 'PLAYING' && gameState !== 'PAUSED')) {
         if (!t || !p || typeof getPlayerStats !== 'function') return '';
         const id = t.id;
-        if (id === 'trinket_usury_note') {
-            const gain = getUsuryNoteGoldGain();
-            return isOwnedView ? `（当前波次购买可获：+${gain}G）` : `（当前可立即获得：+${gain}G）`;
-        }
-        const stats = getPlayerStats(p);
+        if (id === 'trinket_usury_note') return '';
+        const stats = getPlayerStats(p, excludeTempBuffs);
         const tr = p.trinkets || {};
         const ownedStacks = tr[id] || 0;
         const prefix = (isOwnedView || ownedStacks > 0) ? '当前已提供：' : '按当前面板预计提供：';
@@ -5924,7 +5932,7 @@
             return `（${prefix}暴击率+${crit}%，暴击效果+${cdmg}%）`;
         }
         if (id === 'trinket_titan_heart') {
-            const steps = Math.floor(Math.max(0, p.maxHp || 0) / 20);
+            const steps = Math.floor(Math.max(0, stats.maxHp || p.maxHp || 0) / 20);
             const def = round1(steps * 0.8);
             const reg = round1(steps * 0.3);
             return `（${prefix}防御+${fmt1(def)}，生命恢复+${fmt1(reg)}/5秒）`;
@@ -5948,6 +5956,10 @@
 
     function getTrinketDisplayDesc(t, p, isOwnedView = false) {
         if (!t) return '';
+        if (t.id === 'trinket_usury_note') {
+            const gain = getUsuryNoteGoldGain();
+            return `收获-3；购买时立即获得${gain}金币。`;
+        }
         const note = getTrinketDynamicBonusNote(t, p, isOwnedView);
         return note ? `${t.desc}${note}` : t.desc;
     }
@@ -6036,7 +6048,8 @@
         const iconUrl = trinket.iconUrl || (trinket.iconSkillId && SKILL_MAP[trinket.iconSkillId] ? SKILL_MAP[trinket.iconSkillId].iconUrl : '');
         const stacks = (player && player.trinkets && player.trinkets[trinket.id]) || 1;
         const stackBadge = stacks > 1 ? `<span class="text-[10px] font-mono px-1 py-0.5 bg-slate-900/90 border border-amber-400/70 text-amber-200 font-bold leading-none">×${stacks}</span>` : '';
-        const descHtml = typeof formatStatColoredHtml === 'function' ? formatStatColoredHtml(trinket.desc || '') : escapeHtmlStr(trinket.desc || '');
+        const rawDesc = typeof getTrinketDisplayDesc === 'function' ? getTrinketDisplayDesc(trinket, player, true) : (trinket.desc || '');
+        const descHtml = typeof formatStatColoredHtml === 'function' ? formatStatColoredHtml(rawDesc) : escapeHtmlStr(rawDesc);
         el.innerHTML = `
             <div onclick="window.dismissGeneAwakenBanner && window.dismissGeneAwakenBanner()" class="tavern-trinket-toast-card pointer-events-auto cursor-pointer flex items-start gap-3 px-3.5 sm:px-4 py-2.5 sm:py-3 ${st.bg} border-2 ${st.border} ${st.glow} w-[90vw] sm:w-[440px] max-w-full text-left select-none">
                 <div class="tavern-trinket-toast-icon w-11 h-11 sm:w-12 sm:h-12 bg-[#070b14] border-2 ${st.iconBorder} flex items-center justify-center shrink-0 mt-0.5">
@@ -9113,7 +9126,7 @@
             ".oYYYYYYYYYYo.",
             "..oooooooooo..",
             ".............."
-        ], desc: '收获-3；购买时立即获得22金币，且从第2波起每波额外+2金币（上限40G，无尽期保底不低于售价+12G）。', onBuy(p, isRebuild) { p.statBonuses.harvest = round1((p.statBonuses.harvest || 0) - 3); if (!isRebuild) { const gain = getUsuryNoteGoldGain(); p.gold = Math.floor((p.gold || 0) + gain); spawnFloatingText(p.x, p.y - 54, `高利贷借据 +${gain}G`, '#fde047', 13, -42); } } },
+        ], desc: '收获-3；购买时立即获得22金币。', onBuy(p, isRebuild) { p.statBonuses.harvest = round1((p.statBonuses.harvest || 0) - 3); if (!isRebuild) { const gain = getUsuryNoteGoldGain(); p.gold = Math.floor((p.gold || 0) + gain); spawnFloatingText(p.x, p.y - 54, `高利贷借据 +${gain}G`, '#fde047', 13, -42); } } },
         { id: 'trinket_negentropy_chip', name: '逆熵芯片', rarity: 0, baseCost: 15, maxStacks: 3, iconMatrix: [
             "...y..y..y....",
             "..oooooooooo..",
@@ -13136,6 +13149,7 @@
             damage: finalDamage,
             bookDamage,
             flatDamageTotal: flatAtkTotal,
+            maxHp: effTargetMaxHp,
             bookMaxHp,
             dmgBonusPct,
             dmgBonusMult,
@@ -17931,7 +17945,7 @@
 
     function rollWaveShopOffers() {
         if (!player) return;
-        const stats = getPlayerStats(player);
+        const stats = getPlayerStats(player, true);
         const curLuck = Math.max(0, stats.luck || 0);
         const maxAllowedRarity = curLuck >= 45 ? 3 : (curLuck >= 20 ? 2 : 1);
         const prevOffers = Array.isArray(waveState.shopOffers) ? waveState.shopOffers : [];
@@ -18279,24 +18293,25 @@
             player.activeRelic = player.activeRelics[0] || player.activeRelics[1] || null;
             spawnFloatingText(player.x, player.y - 42, `装备遗物[${targetSlot === 0 ? 'Q' : 'F'}]: ${offer.name}!`, '#c084fc', 13, -42);
         } else {
-            const wasMirrorPending = Boolean(player.mirrorPrinterPending && offer.id !== 'trinket_mirror_printer' && !(offer.trinket && offer.trinket.noMirrorClone));
+            const trinketDef = offer.trinket || SHOP_TRINKET_POOL.find(t => t.id === offer.id);
+            const wasMirrorPending = Boolean(player.mirrorPrinterPending && offer.id !== 'trinket_mirror_printer' && !(trinketDef && trinketDef.noMirrorClone));
             const paidGold = offer.cost;
             player.gold = Math.max(0, Math.floor(player.gold - paidGold));
             offer.bought = true; offer.locked = false; offer.lockedFromPrevWave = false;
             if (!player.trinkets) player.trinkets = {};
-            if (offer.trinket && offer.trinket.perWaveContract) {
+            if (trinketDef && trinketDef.perWaveContract) {
                 player.trinkets[offer.id] = 1;
             } else {
                 player.trinkets[offer.id] = (player.trinkets[offer.id] || 0) + 1;
             }
-            if (offer.trinket && offer.trinket.onBuy) offer.trinket.onBuy(player, false, paidGold);
+            if (trinketDef && trinketDef.onBuy) trinketDef.onBuy(player, false, paidGold);
 
             if (wasMirrorPending) {
                 player.mirrorPrinterPending = false;
-                const maxSt = (offer.trinket && offer.trinket.maxStacks) || 1;
+                const maxSt = (trinketDef && trinketDef.maxStacks) || 1;
                 if (player.trinkets[offer.id] < maxSt) {
                     player.trinkets[offer.id] += 1;
-                    if (offer.trinket && offer.trinket.onBuy) offer.trinket.onBuy(player, false, paidGold, true);
+                    if (trinketDef && trinketDef.onBuy) trinketDef.onBuy(player, false, paidGold, true);
                     hazardZones.push({ type: 'mirror_printer_clone_fx', x: player.x, y: player.y, timer: 0, duration: 0.65 });
                     spawnFloatingText(player.x, player.y - 62, `镜像打印! 额外获得 ${offer.name}×1`, '#38bdf8', 13, -46);
                 } else {
@@ -18307,15 +18322,17 @@
                 }
             }
 
+            // 同步永久最大生命/当前生命并按常驻属性刷新商店遗物冷却与价格
+            getPlayerStats(player, false);
             if (Array.isArray(waveState.shopOffers)) {
-                const newStats = getPlayerStats(player);
+                const newPermStats = getPlayerStats(player, true);
                 waveState.shopOffers.forEach(o => {
                     if (o && !o.bought) {
                         o.cost = getEffectiveShopOfferCost(o);
                         if (o.isRelic) {
                             const baseDef = SHOP_RELIC_BASES.find(b => b.id === o.id);
                             if (baseDef) {
-                                o.maxCd = computeRelicEffectiveMaxCd(baseDef, o.rarity || 0, o.affixes, newStats.cdMult);
+                                o.maxCd = computeRelicEffectiveMaxCd(baseDef, o.rarity || 0, o.affixes, newPermStats.cdMult);
                             }
                         }
                     }
@@ -19150,6 +19167,7 @@
             spawnFloatingText(player.x, player.y - 38, `强化 ${skill.name} ${toRoman(newLv)}`, '#fbbf24', 13, -45);
         }
 
+        getPlayerStats(player, false);
         levelUpState.pendingLevels = Math.max(0, levelUpState.pendingLevels - 1);
         if (levelUpState.pendingLevels > 0) {
             openLevelUpModal();
@@ -20279,7 +20297,7 @@
         const rMeta = STAT_RARITY_META[r] || STAT_RARITY_META[0];
         const chosenAffixes = getAllowedTrainingCustomAffixes(r);
         const maxCharges = computeRelicMaxCharges(chosenAffixes);
-        const cdMult = getPlayerStats(player).cdMult;
+        const cdMult = getPlayerStats(player, true).cdMult;
         const effCd = fmt1(computeRelicEffectiveMaxCd(base, r, chosenAffixes, cdMult));
         const iconUrl = base.iconUrl || (SKILL_MAP[base.iconSkillId] ? SKILL_MAP[base.iconSkillId].iconUrl : '');
         const affixLines = chosenAffixes.length > 0
@@ -21216,7 +21234,8 @@
         const skillMap = {
             charge_strike: 'melee_charge_strike',
             sword_wave: 'phantom_afterglow',
-            battle_spirit: 'melee_battle_spirit'
+            battle_spirit: 'melee_battle_spirit',
+            sg_passive_ready: 'sg_passive_upgrade'
         };
         const trinketMap = {
             night_cat: 'trinket_lucky_cat',
@@ -21415,11 +21434,11 @@
                 desc: `下一次近战普攻斩出穿透剑气，造成 ${wavePct}% 攻击力伤害`
             });
         }
-        if (player.heroId === 'chinatsu' && player.sgNextShotBuff) {
-            const dmgPct = Math.round((stats.sgSkillNextDmgBonus || 0.35) * 100);
+        if (player.heroId === 'chinatsu' && (player.sgPassiveCdTimer || 0) <= 0) {
+            const pelletPct = Math.round((stats.sgPassiveDmgMult || 0.50) * 100);
             list.push({
-                id: 'sg_next_shot', kind: 'ready', name: '强化霰弹', stacks: 0, rem: 0, max: 0,
-                desc: `下一发霰弹伤害 +${dmgPct}%（射击后消耗）`
+                id: 'sg_passive_ready', kind: 'ready', name: '闪避轰击就绪', stacks: 0, rem: 0, max: 0,
+                desc: `下次闪避额外轰出 6 发霰弹（每颗 ${pelletPct}% 攻击力），命中额外回复 3% 最大生命`
             });
         }
 
@@ -24640,74 +24659,128 @@
                 ctx.fillRect(spX - 1.5, spY - 1.5, 3, 3);
                 ctx.restore();
             } else if (hz.type === 'rinne_grenade_fire') {
-                // 凛音手雷残留燃烧区：分层跳动猩红像素火舌 + 暗红炽热火床 + 清晰细边判定轮廓 + 上升火星
+                // 凛音手雷残留烈焰火海：熔焰焦热火床 + 沸腾热浪像素斑 + 34簇按Y深度排序的连片阶梯像素火舌 + 外沿火墙 + 升腾火星
                 ctx.save();
-                const remAlpha = hz.duration - hz.timer < 0.8 ? (hz.duration - hz.timer) / 0.8 : 1.0;
-                const baseAlpha = Math.max(0, remAlpha);
+                const remSec = Math.max(0, hz.duration - hz.timer);
+                const fadeOut = remSec < 0.8 ? remSec / 0.8 : 1.0;
+                const igniteT = Math.min(1, hz.timer / 0.18);
+                const igniteScale = igniteT < 1 ? (0.45 + 0.65 * Math.sin(igniteT * Math.PI * 0.65)) : 1.0;
+                const baseAlpha = Math.max(0, fadeOut);
                 const r = hz.radius || 82;
                 const seed = hz.x * 0.11 + hz.y * 0.19;
-                const pulse = 0.94 + Math.sin(globalTime * 9 + seed) * 0.06;
+                const seaPulse = 0.95 + Math.sin(globalTime * 8.5 + seed) * 0.05;
                 ctx.globalAlpha = baseAlpha;
 
-                // 1) 暗红焦热底床与炽红内芯（清晰不糊地，不遮挡敌方预警）
-                ctx.fillStyle = 'rgba(127, 29, 29, 0.34)';
+                // 1) 全域熔焰火海地床（中心白红炙热 → 中层烈红火海 → 边缘深猩红焦土）
+                const seaGrad = ctx.createRadialGradient(hz.x, hz.y, r * 0.08, hz.x, hz.y, r);
+                seaGrad.addColorStop(0, 'rgba(255, 110, 75, 0.56)');
+                seaGrad.addColorStop(0.42, 'rgba(220, 38, 38, 0.46)');
+                seaGrad.addColorStop(0.78, 'rgba(153, 27, 27, 0.38)');
+                seaGrad.addColorStop(1, 'rgba(127, 29, 29, 0.22)');
+                ctx.fillStyle = seaGrad;
                 ctx.beginPath(); ctx.arc(hz.x, hz.y, r, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = 'rgba(220, 38, 38, 0.24)';
-                ctx.beginPath(); ctx.arc(hz.x, hz.y, r * 0.72 * pulse, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = 'rgba(244, 63, 94, 0.16)';
-                ctx.beginPath(); ctx.arc(hz.x, hz.y, r * 0.42 * pulse, 0, Math.PI * 2); ctx.fill();
 
-                // 2) 细锐猩红判定外环 + 贴边跳动像素余烬点
-                ctx.strokeStyle = 'rgba(248, 113, 113, 0.78)';
-                ctx.lineWidth = 1.8;
+                // 2) 地面翻涌像素热浪斑块（让底床呈现流动火海而非死板圆盘）
+                for (let pIdx = 0; pIdx < 9; pIdx++) {
+                    const pAng = seed * 0.6 + pIdx * 0.72 + Math.sin(globalTime * 2.2 + pIdx) * 0.08;
+                    const pDist = r * (0.22 + ((pIdx * 17) % 10) * 0.058);
+                    const px = hz.x + Math.cos(pAng) * pDist;
+                    const py = hz.y + Math.sin(pAng) * pDist;
+                    const wave = 0.5 + 0.5 * Math.sin(globalTime * 9.5 + seed + pIdx * 1.9);
+                    const pw = (16 + (pIdx % 3) * 6) * seaPulse;
+                    const ph = (7 + (pIdx % 2) * 3) * seaPulse;
+                    ctx.fillStyle = wave > 0.55 ? 'rgba(248, 113, 113, 0.30)' : 'rgba(220, 38, 38, 0.28)';
+                    ctx.fillRect(px - pw * 0.5, py - ph * 0.5, pw, ph);
+                }
+
+                // 3) 清晰锐利的火海判定边界环（双层极细边，不抢敌方红圈预警）
+                ctx.strokeStyle = 'rgba(127, 29, 29, 0.78)';
+                ctx.lineWidth = 2.6;
                 ctx.beginPath(); ctx.arc(hz.x, hz.y, r, 0, Math.PI * 2); ctx.stroke();
+                ctx.strokeStyle = 'rgba(252, 165, 165, 0.72)';
+                ctx.lineWidth = 1.4;
+                ctx.beginPath(); ctx.arc(hz.x, hz.y, r - 0.8, 0, Math.PI * 2); ctx.stroke();
 
-                // 3) 分层像素红色火舌（中心1簇 + 内环4簇 + 外环7簇，零对象分配）
-                const drawRedFlameTongue = (fx, fy, wBase, hBase, phaseOffset) => {
-                    const flick = Math.sin(globalTime * 13.5 + seed + phaseOffset);
-                    const sway = Math.cos(globalTime * 8.5 + seed * 1.3 + phaseOffset) * 1.4;
-                    const fh = Math.max(5, hBase + flick * (hBase * 0.28));
-                    const fw = wBase;
-                    // 外焰：深猩红
+                // 懒初始化 34 簇按 Y 从后到前排序的单位圆火海点阵（零每帧分配）
+                if (!window.__rinneFireSeaPoints) {
+                    const pts = [];
+                    const golden = 2.39996323;
+                    // 内部 20 簇铺满整个圆形区域
+                    for (let i = 0; i < 20; i++) {
+                        const rad = Math.sqrt((i + 0.35) / 20) * 0.76;
+                        const ang = i * golden;
+                        const sizeBias = 1.18 - rad * 0.42;
+                        pts.push({ nx: Math.cos(ang) * rad, ny: Math.sin(ang) * rad, s: sizeBias, ph: i * 1.37, hot: i < 7 });
+                    }
+                    // 外沿 14 簇连片火墙贴边燃烧
+                    for (let i = 0; i < 14; i++) {
+                        const ang = (Math.PI * 2 * i) / 14 + 0.12;
+                        const rad = 0.83 + (i % 2) * 0.07;
+                        pts.push({ nx: Math.cos(ang) * rad, ny: Math.sin(ang) * rad, s: 0.86 + (i % 3) * 0.08, ph: 9.1 + i * 1.13, hot: i % 3 === 0 });
+                    }
+                    pts.sort((a, b) => a.ny - b.ny);
+                    window.__rinneFireSeaPoints = pts;
+                }
+
+                const flameScale = igniteScale * (0.45 + 0.55 * baseAlpha);
+                const pts = window.__rinneFireSeaPoints;
+                const rotCos = Math.cos(seed * 0.5), rotSin = Math.sin(seed * 0.5);
+
+                // 4) 绘制 34 簇连片阶梯像素火舌（底部宽厚衔接 + 中段摇曳分叉 + 炽亮焰心 + 飘断火苗尖）
+                for (let i = 0; i < pts.length; i++) {
+                    const pt = pts[i];
+                    const rx = pt.nx * rotCos - pt.ny * rotSin;
+                    const ry = pt.nx * rotSin + pt.ny * rotCos;
+                    const fx = hz.x + rx * r;
+                    const fy = hz.y + ry * r + 3;
+                    const tWave = globalTime * (12.5 + (i % 4) * 1.4) + seed + pt.ph;
+                    const flick = Math.sin(tWave);
+                    const sway = Math.cos(tWave * 0.65) * 2.2;
+                    const fw = Math.round((13.5 * pt.s) * (0.92 + 0.10 * Math.cos(tWave * 0.8)));
+                    const fh = Math.max(6, Math.round((18.5 * pt.s + flick * 5.2 * pt.s) * flameScale));
+
+                    // 基座：宽厚深猩红连片火根
                     ctx.fillStyle = '#991b1b';
-                    ctx.fillRect(fx - fw * 0.5, fy - fh * 0.55, fw, fh * 0.55 + 2);
+                    ctx.fillRect(fx - fw * 0.58, fy - fh * 0.36, fw * 1.16, fh * 0.36 + 3);
+                    // 下焰体：饱和暗红
+                    ctx.fillStyle = '#b91c1c';
+                    ctx.fillRect(fx - fw * 0.48 + sway * 0.2, fy - fh * 0.66, fw * 0.96, fh * 0.66 + 1);
+                    // 中焰体：明亮猩红阶梯收窄
                     ctx.fillStyle = '#dc2626';
-                    ctx.fillRect(fx - fw * 0.44 + sway * 0.3, fy - fh, fw * 0.88, fh + 1);
-                    // 中焰：亮炽红 / 绯红
+                    ctx.fillRect(fx - fw * 0.38 + sway * 0.45, fy - fh * 0.88, fw * 0.76, fh * 0.72);
+                    // 上焰舌：炽烈亮红尖舌（随摆动偏移，打破呆板矩形感）
                     ctx.fillStyle = '#ef4444';
-                    ctx.fillRect(fx - fw * 0.32 + sway * 0.55, fy - fh * 0.84, fw * 0.64, fh * 0.80);
-                    ctx.fillStyle = '#fb7185';
-                    ctx.fillRect(fx - fw * 0.20 + sway * 0.7, fy - fh * 0.58, fw * 0.40, fh * 0.52);
-                    // 内芯：炽白粉红高光尖芯
-                    ctx.fillStyle = '#fff1f2';
-                    ctx.fillRect(fx - Math.max(1, fw * 0.11) + sway * 0.5, fy - fh * 0.32, Math.max(2, fw * 0.22), fh * 0.28);
-                };
-
-                // 中心主焰
-                drawRedFlameTongue(hz.x, hz.y + 2, 12, 16, 0.3);
-                // 内环 4 簇火舌
-                for (let k = 0; k < 4; k++) {
-                    const ang = seed * 0.7 + k * (Math.PI * 0.5) + 0.35;
-                    const dist = r * (0.36 + ((k * 7) % 5) * 0.025);
-                    drawRedFlameTongue(hz.x + Math.cos(ang) * dist, hz.y + Math.sin(ang) * dist + 2, 9.5, 12.5, 1.7 + k * 2.1);
-                }
-                // 外环 7 簇沿边火舌
-                for (let k = 0; k < 7; k++) {
-                    const ang = seed + (Math.PI * 2 * k) / 7;
-                    const dist = r * (0.70 + ((k * 13) % 7) * 0.022);
-                    drawRedFlameTongue(hz.x + Math.cos(ang) * dist, hz.y + Math.sin(ang) * dist + 2, 8, 10, 4.2 + k * 1.65);
+                    ctx.fillRect(fx - fw * 0.24 + sway * 0.75, fy - fh, fw * 0.48, fh * 0.62);
+                    // 焰心：亮红橙 / 绯粉过渡
+                    ctx.fillStyle = pt.hot ? '#fb923c' : '#f87171';
+                    ctx.fillRect(fx - fw * 0.22 + sway * 0.4, fy - fh * 0.56, fw * 0.44, fh * 0.46);
+                    // 炽核：最热点亮黄白/粉白芯
+                    if (pt.hot || flick > 0.25) {
+                        const coreW = Math.max(2, Math.round(fw * 0.20));
+                        ctx.fillStyle = pt.hot ? '#fef08a' : '#ffe4e6';
+                        ctx.fillRect(fx - coreW * 0.5 + sway * 0.35, fy - fh * 0.36, coreW, Math.max(3, fh * 0.26));
+                    }
+                    // 断离跃动小火苗（部分火簇顶部飞出2×3像素火星舌）
+                    if ((i & 1) === 0) {
+                        const lickP = (globalTime * 2.1 + pt.ph * 0.43) % 1;
+                        const ly = fy - fh - 1 - lickP * 9;
+                        const lx = fx + sway * 0.9 + Math.sin(lickP * 6 + pt.ph) * 2.2;
+                        ctx.fillStyle = lickP < 0.45 ? '#ef4444' : '#fca5a5';
+                        const ls = lickP < 0.5 ? 3 : 2;
+                        ctx.fillRect(lx - ls * 0.5, ly - ls * 0.5, ls, ls);
+                    }
                 }
 
-                // 4) 周期上升红色火星粒子（零对象分配）
-                for (let sp = 0; sp < 6; sp++) {
-                    const spPhase = (globalTime * (1.45 + (sp % 3) * 0.28) + seed * 0.5 + sp * 0.19) % 1;
-                    const spAng = seed * 1.4 + sp * 1.08 + spPhase * 0.45;
-                    const spDist = r * (0.18 + ((sp * 29) % 10) * 0.068);
-                    const spX = hz.x + Math.cos(spAng) * spDist + Math.sin(globalTime * 7 + sp * 2.3) * 3.2;
-                    const spY = hz.y + Math.sin(spAng) * spDist - 4 - spPhase * 22;
+                // 5) 密集升腾红色与金白火星粒子（14 颗零分配）
+                for (let sp = 0; sp < 14; sp++) {
+                    const spPhase = (globalTime * (1.25 + (sp % 4) * 0.26) + seed * 0.4 + sp * 0.13) % 1;
+                    const spAng = seed * 1.1 + sp * 0.89 + spPhase * 0.55;
+                    const spDist = r * (0.12 + ((sp * 23) % 10) * 0.082);
+                    const spX = hz.x + Math.cos(spAng) * spDist + Math.sin(globalTime * 7.5 + sp * 2.1) * 4.5;
+                    const spY = hz.y + Math.sin(spAng) * spDist - 6 - spPhase * 30;
                     ctx.globalAlpha = baseAlpha * Math.max(0, 1 - spPhase);
-                    ctx.fillStyle = sp % 3 === 0 ? '#ffe4e6' : (sp % 2 === 0 ? '#fb7185' : '#ef4444');
-                    const spSize = sp % 3 === 0 ? 2.5 : 3;
+                    ctx.fillStyle = sp % 4 === 0 ? '#fef08a' : (sp % 3 === 0 ? '#fda4af' : '#ef4444');
+                    const spSize = sp % 4 === 0 ? 2.5 : 3;
                     ctx.fillRect(spX - spSize * 0.5, spY - spSize * 0.5, spSize, spSize);
                 }
                 ctx.restore();
@@ -30125,14 +30198,15 @@
         const equityStacks = (player.trinkets && player.trinkets.trinket_black_market_equity) || 0;
         const harvestGrowthPct = Math.round((0.04 + equityStacks * 0.02) * 100);
 
+        const dispMaxHp = stats.maxHp || player.maxHp;
         const statItems = [
             // 1~5：生存与防御
             {
                 label: '最大生命',
                 icon: PAUSE_STAT_ICON_URLS.hp,
-                val: `${fmt1(player.hp)}/${fmt1(player.maxHp)}`,
+                val: `${fmt1(Math.min(player.hp, dispMaxHp))}/${fmt1(dispMaxHp)}`,
                 color: 'text-rose-300',
-                desc: `当前生命：${fmt1(player.hp)} / ${fmt1(player.maxHp)}\n当前护盾：${fmt1(player.shield || 0)}${stats.bookMaxHp < 1 ? `\n账面生命：${fmt1(stats.bookMaxHp)}（按 1 生效）` : ''}`
+                desc: `当前生命：${fmt1(Math.min(player.hp, dispMaxHp))} / ${fmt1(dispMaxHp)}\n当前护盾：${fmt1(player.shield || 0)}${stats.bookMaxHp < 1 ? `\n账面生命：${fmt1(stats.bookMaxHp)}（按 1 生效）` : ''}`
             },
             {
                 label: '防御与免伤',
@@ -30153,7 +30227,7 @@
                 icon: PAUSE_STAT_ICON_URLS.lifesteal,
                 val: `${fmt1(stats.bookLifestealPct)}%`,
                 color: stats.bookLifestealPct < 0 ? 'text-rose-400' : 'text-rose-300',
-                desc: `生效吸血率：${fmt1(stats.lifestealRate * 100)}%（上限 15%）${stats.bookLifestealPct < 0 ? `\n账面累计：${fmt1(stats.bookLifestealPct)}%` : ''}\n单次恢复上限：${fmt1(1 + player.maxHp * 0.04)}`
+                desc: `生效吸血率：${fmt1(stats.lifestealRate * 100)}%（上限 15%）${stats.bookLifestealPct < 0 ? `\n账面累计：${fmt1(stats.bookLifestealPct)}%` : ''}\n单次恢复上限：${fmt1(1 + dispMaxHp * 0.04)}`
             },
             {
                 label: '闪避率',
@@ -31187,7 +31261,6 @@
             sfx.levelUp();
             spawnPixelParticles(player.x, player.y - 10, '#f59e0b', 16, 145, 3.8, 0.36);
             spawnFloatingText(player.x, player.y - 68, '烈酒随身壶: 攻击力+1 · 暴击率+1.5%!', '#f59e0b', 13, -42);
-            showTavernFlaskGrowthBanner();
         }
         if (fromTraining) {
             gameState = 'PLAYING';
@@ -31582,6 +31655,16 @@
         renderDiceFooter();
     }
 
+    window.reopenTavernTrinketToast = function () {
+        if (!tavernState || !tavernState.diceGrantedTrinket) return;
+        if (window.showTavernTrinketToast) {
+            window.showTavernTrinketToast(
+                tavernState.diceGrantedTrinket,
+                tavernState.diceOutcome ? tavernState.diceOutcome.label : '酒馆奖励'
+            );
+        }
+    };
+
     window.pickTavernDiceCard = function (idx) {
         if (tavernState.mode !== 'dice' || tavernState.dicePhase !== 'pick_card' || !player) return;
         const st = tavernState.diceCardChoices[idx];
@@ -31702,7 +31785,7 @@
                     const iconUrl = tr.iconUrl || (SKILL_MAP[tr.iconSkillId] ? SKILL_MAP[tr.iconSkillId].iconUrl : '');
                     detailHtml = `<div class="flex items-center gap-2 mt-1 flex-wrap">
                         <span class="text-xs text-amber-100">已退还 ${stakeDesc}，获得${o.type === 'grand_triple' ? '传说' : '史诗'}饰品：</span>
-                        <button type="button" onclick="window.showTavernTrinketToast && window.showTavernTrinketToast(tavernState.diceGrantedTrinket, tavernState.diceOutcome ? tavernState.diceOutcome.label : '酒馆奖励')" class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-slate-950/90 border ${o.type === 'grand_triple' ? 'border-yellow-400/90' : 'border-purple-400/90'} hover:brightness-110 cursor-pointer touch-manipulation">
+                        <button type="button" onclick="window.reopenTavernTrinketToast && window.reopenTavernTrinketToast()" class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-slate-950/90 border ${o.type === 'grand_triple' ? 'border-yellow-400/90' : 'border-purple-400/90'} hover:brightness-110 cursor-pointer touch-manipulation">
                             ${iconUrl ? `<img src="${iconUrl}" alt="" class="w-5 h-5 shrink-0" style="image-rendering:pixelated;" />` : ''}
                             <b class="text-xs ${headCol}">${escapeHtmlStr(tr.name)}</b>
                             <span class="text-[10px] text-amber-300/80">查看卡片</span>
@@ -31723,7 +31806,7 @@
                     const iconUrl = tr.iconUrl || (SKILL_MAP[tr.iconSkillId] ? SKILL_MAP[tr.iconSkillId].iconUrl : '');
                     detailHtml = `<div class="flex items-center gap-2 mt-1 flex-wrap">
                         <span class="text-xs text-amber-100">总点数 ≥ 13，已退还 <b class="text-yellow-300">${stakeDesc}</b>，获得白色饰品：</span>
-                        <button type="button" onclick="window.showTavernTrinketToast && window.showTavernTrinketToast(tavernState.diceGrantedTrinket, tavernState.diceOutcome ? tavernState.diceOutcome.label : '酒馆奖励')" class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-slate-950/90 border border-slate-300/85 hover:brightness-110 cursor-pointer touch-manipulation">
+                        <button type="button" onclick="window.reopenTavernTrinketToast && window.reopenTavernTrinketToast()" class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-slate-950/90 border border-slate-300/85 hover:brightness-110 cursor-pointer touch-manipulation">
                             ${iconUrl ? `<img src="${iconUrl}" alt="" class="w-5 h-5 shrink-0" style="image-rendering:pixelated;" />` : ''}
                             <b class="text-xs text-slate-100">${escapeHtmlStr(tr.name)}</b>
                             <span class="text-[10px] text-amber-300/80">查看卡片</span>
