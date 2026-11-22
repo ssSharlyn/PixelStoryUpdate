@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>像素物语 V0.7.1</title>
+    <title>像素物语 V0.7.2</title>
     <script>window.__mountPixelStoryGame = null; window.__pixelGameBooted = false;</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -506,7 +506,7 @@
             if (mode === 'big') {
                 if (smallBox) smallBox.style.display = 'none';
                 if (bigM) bigM.style.display = 'flex';
-                if (logEl) logEl.innerText = "【V0.7.1 版本更新】\n· 新增黑市饰品：扩充白/蓝/紫品质纯正向与流派饰品，补全多维属性构筑，修复训练营饰品排序\n· 价格与经济调优：大幅下调遗物售价并提高出售返还至40%，下调黑市与升级刷新费，加强预付定金与战地意外险\n· 升级项与界面改版：升级改为四选一（至少2张属性卡），重构结算面板布局并重新校准默认音量\n· 战斗特效升级：重做凛音小技能为全域铺满像素火海，优化脓包丧尸、首领1与首领3技能特效表现";
+                if (logEl) logEl.innerText = "【V0.7.2 版本更新】\n· 角色与流派：全局吸血冷却调为0.5s且上限固定5点，全面加强近战战技，优化凌汐被动宽限与大招填弹逻辑\n· 首领调优：下调后期首领血量与伤害倍率，降低4号首领十字死光转速并新增骨刺囚笼防卡位\n· 升级与属性：新增升级光柱演出与连升队列，重构晶核磁力仪、快速装填、纳米力场与预付定金数值\n· 体验与界面：结算面板存活时长改为游戏时长，同步优化属性面板与 Buff 栏数值说明";
                 if (pWrap) pWrap.style.display = 'none';
                 if (cBtn) {
                     cBtn.disabled = false;
@@ -548,11 +548,11 @@
                     pct = Math.min(100, pct + 25);
                     if (hBar) hBar.style.width = pct + '%';
                     if (pct < 100) {
-                        if (hTip) hTip.innerText = `正在同步 V0.7.1 更新内容 (${pct}%)...`;
+                        if (hTip) hTip.innerText = `正在同步 V0.7.2 更新内容 (${pct}%)...`;
                     } else {
                         clearInterval(previewTimerId);
                         previewTimerId = null;
-                        if (hTip) hTip.innerText = '更新完成 (V0.7.1)，即将进入战场！';
+                        if (hTip) hTip.innerText = '更新完成 (V0.7.2)，即将进入战场！';
                     }
                 }, 400);
             }
@@ -873,7 +873,7 @@
 
             const finishUpToDate = (msg) => {
                 if (hBar) hBar.style.width = '100%';
-                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.7.1)，无需更新！`;
+                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.7.2)，无需更新！`;
                 setTimeout(() => {
                     if (ov) ov.style.display = 'none';
                     isManualChecking = false;
@@ -920,10 +920,10 @@
                 }
 
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.1)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.2)，无需更新！`), 260);
             } catch (e) {
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.1)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.2)，无需更新！`), 260);
             }
         };
 
@@ -1779,7 +1779,7 @@
             <div id="mainMenuTitleBox" class="pixel-box px-7 sm:px-11 py-3.5 sm:py-4 border-4 border-sky-400 bg-[#121726] flex flex-col items-center shadow-[0_8px_0_#05060a] shrink-0">
                 <div class="flex items-center gap-2 mb-1.5">
                     <span class="bg-rose-600 text-white font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5">PIXEL STORY</span>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.7.1</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.7.2</span>
                 </div>
                 <canvas id="mainMenuLogoCanvas" width="312" height="76" class="w-[218px] h-[53px] sm:w-[288px] sm:h-[70px] block pointer-events-none" aria-label="像素物语"></canvas>
                 <p class="text-[11px] sm:text-xs text-sky-300 mt-1.5 tracking-wider font-bold">二次元点阵像素 · 街区生存激战</p>
@@ -1892,7 +1892,7 @@
                         <div>
                             <div class="font-bold text-sky-300 text-xs sm:text-sm flex items-center gap-2">
                                 <span>版本更新</span>
-                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.7.1</span>
+                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.7.2</span>
                             </div>
                             <div class="text-[11px] text-slate-400 mt-0.5">检查并获取游戏最新版本内容</div>
                         </div>
@@ -2201,7 +2201,7 @@
                 <div class="flex items-center gap-2">
                     <canvas class="ui-px-icon w-5 h-5" data-icon="notice" width="20" height="20"></canvas>
                     <h3 class="text-base sm:text-lg font-bold text-amber-300 tracking-wider">游戏公告</h3>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.7.1</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.7.2</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="window.manualCheckGameUpdate && window.manualCheckGameUpdate()" class="pixel-btn px-2.5 py-1 text-xs font-bold text-white flex items-center gap-1">
@@ -2214,8 +2214,18 @@
             </div>
             <div id="announcementBodyBox" class="flex-1 min-h-0 bg-[#0b0e17] border border-slate-800 p-3.5 sm:p-4 overflow-y-auto text-xs sm:text-sm text-slate-300 leading-relaxed space-y-3">
                 <div class="bg-[#111624] border border-amber-400/50 p-3 space-y-1.5">
-                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.7.1 更新内容】</div>
+                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.7.2 更新内容】</div>
                     <ul class="text-xs text-slate-200 space-y-1 list-disc list-inside">
+                        <li><b>角色与流派平衡</b>：全局吸血冷却调整为 0.5s、单次上限固定 5 点；全面加强 5 项近战战技；优化凌汐「屏息校准」移动宽限计时与「超限架狙」实际开火后填弹。</li>
+                        <li><b>首领与机制调优</b>：下调后期首领血量与伤害倍率，降低 4 号首领十字死光转速，新增骨刺囚笼防小怪卡位机制。</li>
+                        <li><b>升级与属性重构</b>：新增升级光柱延迟演出与连升队列；「晶核磁力仪」改为百分比拾取且保底不低于初始范围；「快速装填」改为独立乘算减换弹时间，「纳米力场」改为按品质加换弹速度；调整「预付定金」为单层 -8%。</li>
+                        <li><b>体验与界面</b>：结算面板「存活时长」更名为「游戏时长」，同步优化属性面板与底部 Buff 栏数值说明。</li>
+                    </ul>
+                </div>
+
+                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
+                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.7.1 往期更新】</div>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
                         <li><b>新增黑市饰品</b>：扩充白/蓝/紫品质纯正向与流派饰品，补全多维属性构筑选择，修复训练营饰品未按稀有度排列问题。</li>
                         <li><b>价格与经济调优</b>：大幅下调主动遗物售价并提升出售返还至 40%，降低黑市与升级刷新费；加强「预付定金」，「战地意外险」赔付改为随波次通胀。</li>
                         <li><b>升级与界面调整</b>：升级选择由三选一扩充为四选一（至少 2 张属性卡）；重构结算面板布局并重新校准默认音量。</li>
@@ -2235,76 +2245,11 @@
                 </div>
 
                 <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
-                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.6.1 往期更新】</div>
+                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.0 ~ V0.6.1 早期更新汇总】</div>
                     <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
-                        <li><b>凌汐机制优化</b>：小技能可直接收枪退出大招，小技能与闪避新增0.5s互锁冷却，炸弹固定0.7s延迟引爆；大招优先锁定Boss与高血量精英。</li>
-                        <li><b>夜瞳与精英调整</b>：夜瞳两段普攻在0.75s内共享同一吸血窗口；腐沼粘液怪改为三连吐泥沼并延长所有泥沼持续时间。</li>
-                        <li><b>体验与显示修复</b>：修复凌汐大招特效音效偶发丢失及手机端扫描冷却遮罩对齐问题。</li>
-                    </ul>
-                </div>
-
-                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
-                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.6.0 往期更新】</div>
-                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
-                        <li><b>新角色「凌汐」</b>：重型反器材狙击特工参战，携带「屏息校准」、「战术雷步」（2层充能）与「超限架狙」（3层充能贯穿狙击）。</li>
-                        <li><b>急救血瓶与图鉴</b>：血瓶改为无次数限制（60s冷却，10%瞬回+20%持续回复）；全英雄图鉴接入专属武器展示。</li>
-                    </ul>
-                </div>
-
-                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
-                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.6 往期更新】</div>
-                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
-                        <li><b>平衡性与黑市重塑</b>：优化吸血内置冷却与单次上限、属性成长曲线及黑市饰品/遗物机制。</li>
-                        <li><b>星澜与交互优化</b>：「万剑归鞘」新增四剑命中定身；修复星澜普攻吸血与移动端模式卡片滑动。</li>
-                    </ul>
-                </div>
-
-                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
-                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.5 往期更新】</div>
-                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
-                        <li><b>新角色「星澜」</b>：御剑特工参战，携带「周天剑环·留影」、「万剑归鞘」回收爆发与「万剑归宗」追踪剑阵。</li>
-                        <li><b>新精英丧尸</b>：新增「骸骨筑墙者」（骨墙封路）、「腐沼粘液怪」（减速泥沼）与「三刃处刑者」（激光预警三刃追猎）。</li>
-                        <li><b>战斗与训练营</b>：首领击败后直接进入下一波（保留场上剩余丧尸）；训练营新增丧尸召唤滑动栏，优化同英雄切换保留局内状态。</li>
-                    </ul>
-                </div>
-
-                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
-                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.4 往期更新】</div>
-                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
-                        <li><b>首领强化</b>：重构天穹炽天使（B5）六翼封锁阵与脉冲壁垒；提升虚空死灵暴君（B4）十字激光转速与连斩预判。</li>
-                        <li><b>战斗与界面</b>：收紧连续受击无敌保护时间；修正移动端主页居中与按钮图标边距。</li>
-                    </ul>
-                </div>
-
-                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
-                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.3 往期更新】</div>
-                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
-                        <li><b>更新系统</b>：全新像素风格更新界面；设置与公告新增手动「检查更新」功能。</li>
-                        <li><b>屏幕适配</b>：重构移动端横屏弹性布局，修复小屏设备主页与底部按钮溢出问题。</li>
-                    </ul>
-                </div>
-
-                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
-                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.2 往期更新】</div>
-                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
-                        <li><b>界面与交互</b>：重绘主菜单像素标题；模式选择升级为跟手滚轮；滑动栏重开自动归位；局内重来与菜单增加确认弹窗。</li>
-                        <li><b>问题修复</b>：修正穿透升级项数值描述；修复五号Boss位移技能偶发卡死。</li>
-                    </ul>
-                </div>
-
-                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
-                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.1 往期更新】</div>
-                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
-                        <li>重构首领技能释放 AI 与连段判定。</li>
-                        <li>优化全局战斗音效，新增动态 BGM 与音量调节滑块。</li>
-                    </ul>
-                </div>
-
-                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
-                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.5.0 往期更新】</div>
-                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
-                        <li>新增角色「夜瞳 · Yomi」与五号首领「天穹炽天使」。</li>
-                        <li>重构黑市商店饰品与双槽位主动遗物，实装在线热更新。</li>
+                        <li><b>新英雄与首领</b>：陆续实装「夜瞳」「星澜」「凌汐」三位特工、五号首领「天穹炽天使」及三类特色精英丧尸。</li>
+                        <li><b>核心系统演进</b>：实装双槽位主动遗物、无限次冷却急救血瓶、训练营召唤栏、全英雄武器图鉴、动态 BGM 与在线热更新。</li>
+                        <li><b>交互与体验优化</b>：重绘主菜单标题与滚轮模式选择，全面适配移动端横屏小屏布局，持续优化首领 AI 与战斗平衡。</li>
                     </ul>
                 </div>
             </div>
@@ -2497,7 +2442,7 @@
     function round2(val) { return Math.round((Number(val) || 0) * 100) / 100; }
     function fmt1(val) { const r = round1(val); return Number.isInteger(r) ? String(r) : r.toFixed(1); }
 
-    const APP_VERSION_NAME = 'V0.7.1';
+    const APP_VERSION_NAME = 'V0.7.2';
     const STORAGE_KEY_NOTICE_READ = `pixel_story_notice_read_${APP_VERSION_NAME}`;
     const STORAGE_KEY_SETTINGS = 'pixel_story_v037_settings';
     const STORAGE_KEY_KEYBINDS = 'pixel_story_v037_keybinds';
@@ -5525,7 +5470,7 @@
                     name: '屏息校准（被动）',
                     badge: '被动技能',
                     iconSkillId: 'sn_passive_upgrade',
-                    desc: '天生自带2级【钨芯穿甲弹】（子弹穿透+2，每次穿透伤害递减20%，保底50%）。不移动时每0.5秒叠加1层“校准”，最多5层；每层提供3%攻击力与2%暴击率加成。开始移动后，校准层数每0.5秒衰减1层（战术雷步翻滚与闪避期间不掉层）。\n【升级效果】：每级每层额外提升+1.5%攻击力、+1%暴击率（满级每层+10.5%攻击力、+7%暴击率）。'
+                    desc: '天生自带2级【钨芯穿甲弹】（子弹穿透+2，每次穿透伤害递减20%，保底50%）。不移动时每0.5秒叠加1层“校准”，最多5层；每层提供3%攻击力与2%暴击率加成。开始移动后，累计移动 0.5×当前层数 秒后一次性清零（宽限期内停下重置计时；战术雷步翻滚与闪避期间不掉层）。\n【升级效果】：每级每层额外提升+1.5%攻击力、+1%暴击率（满级每层+10.5%攻击力、+7%暴击率）。'
                 },
                 {
                     name: '战术雷步（小技能 · E）',
@@ -5537,7 +5482,7 @@
                     name: '超限架狙（大招 · R）',
                     badge: '终极技能 · 每15秒充能1发（最多3发）',
                     iconSkillId: 'sn_ult_upgrade',
-                    desc: '每15秒获得1层大招狙击充能（最多储存3层；每次普攻命中敌人减少当前大招层数0.5秒获取时间）。拥有至少1层时点击大招键可原地架设狙击阵地并拉大视野（自动优先锁定首领，其次精英与高生命值丧尸），由摇杆/方向键实时控制激光瞄准线。每次点击大招键消耗1层充能（连续射击间隔0.5秒），打出一发全程全额贯穿的强力穿甲弹，造成300%攻击力伤害与1秒50%减速。打空当前大招充能、点击小技能/闪避键或单次架狙满8秒时收枪结束并有1秒冷却（提前收枪保留未消耗的大招层数）。\n【升级效果】：每级强力穿甲弹伤害+50%（满级550%），每层获取时间-5%（满级11.3秒/层）。'
+                    desc: '每15秒获得1层大招狙击充能（最多储存3层；每次普攻命中敌人减少当前大招层数0.5秒获取时间）。拥有至少1层时点击大招键可原地架设狙击阵地并拉大视野（自动优先锁定首领，其次精英与高生命值丧尸），由摇杆/方向键实时控制激光瞄准线。每次点击大招键消耗1层充能（连续射击间隔0.5秒），打出一发全程全额贯穿的强力穿甲弹，造成300%攻击力伤害与1秒50%减速。本次架狙实际开火消耗充能后填满主武器弹匣（未开火直接取消不填弹）；打空当前大招充能、点击小技能/闪避键或单次架狙满8秒时收枪结束并有1秒冷却（提前收枪保留未消耗的大招层数）。\n【升级效果】：每级强力穿甲弹伤害+50%（满级550%），每层获取时间-5%（满级11.3秒/层）。'
                 }
             ]
         }
@@ -6653,6 +6598,7 @@
         window.__trainingHeroSwitchPending = false;
         pendingInGameConfirmAction = null;
         gameState = 'START';
+        if (typeof levelUpState !== 'undefined' && levelUpState) levelUpState.delayTimer = 0;
         ['modeSelectModal', 'startModal', 'codexModal', 'settingsModal', 'keybindEditorModal', 'pauseModal', 'inGameConfirmModal', 'gameOverModal', 'levelUpModal', 'waveShopModal', 'trainingTopBar', 'trainingSkillsModal', 'trainingShopModal', 'announcementModal'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.classList.add('hidden');
@@ -8329,7 +8275,7 @@
             ".oo....oooooo.",
             "..............",
             ".............."
-        ], getDesc(l) { return `1.5秒内未普攻，下一次普攻伤害提高${l * 20}%。`; } },
+        ], getDesc(l) { return `1.0秒内未普攻，下一次普攻伤害提高${l * 30}%。`; } },
         // 破甲重创：一刀劈成两半裂开的精钢盾牌 + 绯红崩裂火花
         { id: 'melee_armor_break', meleeOnly: true, name: '破甲重创', category: '近战战技', catColor: 'text-pink-300 border-pink-500/60 bg-pink-950/60', order: 202, maxLv: 5, hasCd: false, iconMatrix: [
             "..oooo..oooo..",
@@ -8346,7 +8292,7 @@
             "..............",
             "..............",
             ".............."
-        ], getDesc(l) { return `普攻使目标破甲1.5秒（最多5层），每层使目标受到伤害增加${fmt1(l * 0.8)}%。`; } },
+        ], getDesc(l) { return `普攻使目标破甲1.5秒（最多5层），每层使目标受到伤害增加${fmt1(l * 1.5)}%。`; } },
         // 残影追击：前后错位的紫魅幻影刃 + 亮银实体刀锋
         { id: 'melee_phantom_slash', meleeOnly: true, name: '残影追击', category: '近战战技', catColor: 'text-pink-300 border-pink-500/60 bg-pink-950/60', order: 203, maxLv: 5, hasCd: false, iconMatrix: [
             "....oo....oo..",
@@ -8363,7 +8309,7 @@
             "...oRRo.......",
             "...ooo........",
             ".............."
-        ], getDesc(l) { return `普攻有${l * 8}%概率额外触发一次40%伤害的残影（可叠加灼烧与流血；仅当前普攻触发电弧时同步触发电弧且不计入电弧计数；不触发吸血）。`; } },
+        ], getDesc(l) { return `普攻有${l * 10}%概率额外触发一次50%伤害的残影（可叠加灼烧与流血；仅当前普攻触发电弧时同步触发电弧且不计入电弧计数；不触发吸血）。`; } },
         // 陷阵战意：燃起双角炽焰的暗铁鬼面战盔
         { id: 'melee_battle_spirit', meleeOnly: true, name: '陷阵战意', category: '近战战技', catColor: 'text-pink-300 border-pink-500/60 bg-pink-950/60', order: 204, maxLv: 5, hasCd: false, iconMatrix: [
             ".f..........f.",
@@ -8380,7 +8326,7 @@
             "....ooRRoo....",
             "......oo......",
             ".............."
-        ], getDesc(l) { return `普攻每次命中获得1层战意（持续1.5秒，最多5层），每层提供${fmt1(l * 0.8)}%攻速和${fmt1(l * 0.8)}%移速。`; } },
+        ], getDesc(l) { return `普攻每次命中获得1层战意（持续1.5秒，最多5层），每层提供${fmt1(l * 1.5)}%攻速和${fmt1(l * 0.8)}%移速。`; } },
         // 裂空剑气：破空呼啸的巨型青金月牙斩击波
         { id: 'phantom_afterglow', meleeOnly: true, name: '裂空剑气', category: '近战战技', catColor: 'text-pink-300 border-pink-500/60 bg-pink-950/60', order: 205, maxLv: 5, hasCd: false, iconMatrix: [
             "......ooooo...",
@@ -8397,7 +8343,7 @@
             "...oBbwwwwbBo.",
             "....ooBbbbBo..",
             "......ooooo..."
-        ], getDesc(l) { return `每3秒获得1次剑气充能，下一次普攻额外挥出穿透剑气，造成${55 + l * 25}%攻击力伤害（不暴击、不吸血、不触发普攻特效）。`; } },
+        ], getDesc(l) { return `每3秒获得1次剑气充能，下一次普攻额外挥出穿透剑气，造成${70 + l * 30}%攻击力伤害（不暴击、不吸血、不触发普攻特效）。`; } },
 
         // 3. 元素特效 (301 ~ 303) —— 14×14 高层次元素像素图标
         // 灼烧：跃动三舌立体烈焰 + 火星飞溅
@@ -8503,7 +8449,7 @@
             "..occwwwccco..",
             "...oocccooo...",
             ".............."
-        ], getDesc(l) { return `换弹速度+10（+${l * 10}）。`; } },
+        ], getDesc(l) { return `换弹时间-${l * 8}%（独立乘算）。`; } },
         // 钨芯穿甲弹：斜向击穿厚铁板的蓝银尖头钨芯长弹 + 碎钢火星
         { id: 'pierce_up', excludeHeroes: ['sakura', 'yomi'], name: '钨芯穿甲弹', category: '枪械改造', catColor: 'text-emerald-300 border-emerald-500/60 bg-emerald-950/50', order: 404, maxLv: 5, hasCd: false, iconMatrix: [
             "..........ooo.",
@@ -8537,7 +8483,7 @@
             "..oRRRRBBBBBo.",
             "...ooooooooo..",
             ".............."
-        ], getDesc(l) { return `拾取范围+8（+${l * 8}），经验获取+10%（+${l * 10}%）。`; } },
+        ], getDesc(l) { return `拾取范围+${l * 10}%，经验获取+10%（+${l * 10}%）。`; } },
         // 处决弹头：暗红重型处决弹头 + 弹身清晰白色骷髅徽记
         { id: 'exec_ammo', name: '处决弹头', category: '战术体能', catColor: 'text-slate-200 border-slate-500/60 bg-slate-800/70', order: 407, maxLv: 5, hasCd: false, iconMatrix: [
             ".....oooo.....",
@@ -9203,7 +9149,7 @@
             "..oooooooooo..",
             "..............",
             ".............."
-        ], desc: '收获-2；在黑市【锁定】的商品，下一波价格-15%。', onBuy(p) { p.statBonuses.harvest = round1((p.statBonuses.harvest || 0) - 2); } },
+        ], desc: '收获-2；在黑市【锁定】的商品，下一波价格-8%。', onBuy(p) { p.statBonuses.harvest = round1((p.statBonuses.harvest || 0) - 2); } },
         { id: 'trinket_cold_trigger', name: '冷血扳机', rarity: 0, baseCost: 14, maxStacks: 3, iconMatrix: [
             "..oooooooooo..",
             ".oAAAAAAAAAAo.",
@@ -11220,7 +11166,7 @@
             ".oGGggggggGGo.",
             "..ooGGGGGGoo..",
             "....oooooo...."
-        ], getDesc(r) { const aspd = 35 + r * 10; const atk = 20 + r * 8; return `在脚下部署持续5秒的纳米力场，站在力场内时攻击速度+${aspd}%、攻击力+${atk}%、换弹时间减半。`; } },
+        ], getDesc(r) { const aspd = 35 + r * 10; const atk = 20 + r * 8; const reloadSpd = 50 + r * 15; return `在脚下部署持续5秒的纳米力场，站在力场内时攻击速度+${aspd}%、攻击力+${atk}%、换弹速度+${reloadSpd}。`; } },
         { id: 'relic_black_hole', name: '引力坍缩奇点', baseCd: 30.0, baseCost: 42, iconMatrix: [
             "....oooooo....",
             "..ooPPPPPPoo..",
@@ -13339,7 +13285,7 @@
         };
     }
 
-    let levelUpState = { pendingLevels: 0, choices: [], levelRerollCount: 0 };
+    let levelUpState = { pendingLevels: 0, choices: [], levelRerollCount: 0, delayTimer: 0, delayTotal: 0.50 };
     let hudCache = { hpStr: '', hpPct: -1, shieldStr: '', shieldPct: -1, xpStr: '', xpPct: -1, lv: -1, ammoStr: '', waveStr: '', timerStr: '', bossSubStr: '', aliveCount: -1, kills: -1, gold: -1, grenadeLvStr: '', grenadeCdStr: '', dodgeLvStr: '', dodgeCdStr: '', potionCount: -1, potionCdStr: '', ultLvStr: '', ultCdStr: '', ultActiveStr: '' };
 
     function createInitialPlayer(heroId = 'rinne') {
@@ -13597,7 +13543,7 @@
 
         // 攻击速度（支持负数百分比，含余震发条、狂风转子、近战战意、纳米力场、过载词条加成）
         const nanoPwr = p.nanoFieldPowerMult || 1.0;
-        const spiritAspdBonus = activeSpiritStacks * ((battleSpiritLv * 0.8) * 0.01);
+        const spiritAspdBonus = activeSpiritStacks * ((battleSpiritLv * 1.5) * 0.01);
         const afterglowAspdBonus = 0;
         const nanoAspdBonus = hasNanoBuff ? (0.35 + nanoR * 0.10) * nanoPwr : 0;
         const overloadAspdBonus = hasOverloadBuff ? 0.20 : 0;
@@ -13628,18 +13574,25 @@
         // 生命恢复（<= 0 时不回血也不扣血；含泰坦之心转化）
         const regenFlatPer5s = round1((sb.regenFlat || 0) + (s.hp_regen || 0) * 1.5 + titanHeartRegen);
 
-        // 换弹速度（无单位数值，支持正负值与凛音大招加成；近战英雄不参与）
+        // 换弹速度（无单位数值，支持正负值、凛音大招与纳米力场加成；快速装填升级项为每级-8%换弹时间独立乘算；近战英雄不参与）
         const rinneUltReloadBonus = (p.heroId === 'rinne' && isUltActive) ? (10 + ultLv * 8) : 0;
-        const reloadSpeed = isMelee ? 0 : round1((sb.reloadSpeed || 0) + reloadSpdLv * 10 + rinneUltReloadBonus);
+        const nanoReloadBonus = hasNanoBuff ? round1((50 + nanoR * 15) * nanoPwr) : 0;
+        const reloadSpeed = isMelee ? 0 : round1((sb.reloadSpeed || 0) + rinneUltReloadBonus + nanoReloadBonus);
         const reloadRatio = reloadSpeed / 100;
         const reloadMult = reloadRatio >= 0 ? (1 / (1 + reloadRatio)) : (1 - reloadRatio);
-        const baseReloadEff = p.reloadDuration * reloadMult;
-        const effectiveReloadDuration = hasNanoBuff ? baseReloadEff * 0.5 : baseReloadEff;
+        const reloadCardReducePct = isMelee ? 0 : (reloadSpdLv * 8);
+        const reloadCardMult = Math.max(0.2, 1 - reloadCardReducePct * 0.01);
+        const effectiveReloadDuration = Math.max(0.15, round2(p.reloadDuration * reloadMult * reloadCardMult));
 
-        // 拾取范围（彻底解耦幸运；基础95 + 晶核磁力仪每级+8 + 饰品加成，保底25像素）
-        const bookPickupBonus = round1((s.xp_magnet || 0) * 8 + (sb.pickupFlat || 0));
-        const bookPickupRadius = round1(p.basePickupRadius + bookPickupBonus);
-        const effPickupRadius = Math.max(25, bookPickupRadius);
+        // 拾取范围（彻底解耦幸运；(基础95 + 饰品固定加成) × (1 + 晶核磁力仪每级+10%)，生效值永不低于初始范围）
+        const pickupTrinketFlat = round1(sb.pickupFlat || 0);
+        const pickupUpgradePct = round1((s.xp_magnet || 0) * 10);
+        const pickupBaseWithTrinkets = round1(p.basePickupRadius + pickupTrinketFlat);
+        const bookPickupRadius = pickupBaseWithTrinkets < 0
+            ? pickupBaseWithTrinkets
+            : round1(pickupBaseWithTrinkets * (1 + pickupUpgradePct * 0.01));
+        const bookPickupBonus = round1(bookPickupRadius - p.basePickupRadius);
+        const effPickupRadius = Math.max(p.basePickupRadius, bookPickupRadius);
 
         // 攻击力与【逆熵芯片】（每有 1 项属性为负数，攻击力 +1/层）
         const nanoAtkMult = hasNanoBuff ? (0.20 + nanoR * 0.08) * nanoPwr : 0;
@@ -13692,6 +13645,7 @@
             aspdBonusPct,
             fireInterval: effectiveFireInterval,
             reloadSpeed,
+            reloadCardReducePct,
             reloadTime: effectiveReloadDuration,
             attackRange: effAttackRange,
             bookAttackRange,
@@ -13706,6 +13660,8 @@
             pickupRadius: effPickupRadius,
             bookPickupRadius,
             bookPickupBonus,
+            pickupTrinketFlat,
+            pickupUpgradePct,
             xpGainPct,
             xpMultiplier,
             defense: defenseVal,
@@ -14705,7 +14661,7 @@
         if (rate <= 0) return;
         // 取消暴击伤害对吸血的翻倍加成：若该发子弹暴击，还原为未暴击基础有效伤害计算吸血
         const nonCritDealt = bullet.isCrit ? round1(dealtDamage / Math.max(1, stats.critDamageMult || 1.5)) : dealtDamage;
-        const maxVampCap = round1(1 + player.maxHp * 0.04);
+        const maxVampCap = 5.0;
         if (player.heroId === 'chinatsu') {
             if (!bullet.canLifestealPellet || bullet.pelletLifestealUsed) return;
             bullet.pelletLifestealUsed = true;
@@ -14716,7 +14672,7 @@
         }
         const salvo = bullet.salvoState;
         if (!salvo) {
-            if (globalTime - (player.lastLifestealTime || -999) < 0.75) return;
+            if (globalTime - (player.lastLifestealTime || -999) < 0.50) return;
             const healAmt = Math.min(maxVampCap, round1(nonCritDealt * rate));
             if (healAmt > 0) {
                 player.lastLifestealTime = globalTime;
@@ -14726,9 +14682,9 @@
             return;
         }
         if (salvo.lifestealHitTime === null) {
-            // 最先命中的子弹/散弹触发吸血（检查 0.75s 全局内置冷却）
+            // 最先命中的子弹/散弹触发吸血（检查 0.50s 全局内置冷却）
             salvo.lifestealHitTime = globalTime;
-            if (globalTime - (player.lastLifestealTime || -999) < 0.75) {
+            if (globalTime - (player.lastLifestealTime || -999) < 0.50) {
                 salvo.lifestealBlockedByIcd = true;
                 return;
             }
@@ -14814,24 +14770,38 @@
         // 残影追击不触发吸血
         if (!slashFx.isPhantomSlash && slashFx.lifestealRate > 0 && tickMaxDealt > (slashFx.maxSingleHitDealt || 0)) {
             slashFx.maxSingleHitDealt = tickMaxDealt;
-            // 第四次强化普攻「朔风连斩」的两刀共享同一个 salvoState 与同一个吸血额度窗口（合计上限 1 + 4% 最大生命，共享 0.75s 内置冷却）
+            // 第四次强化普攻「朔风连斩」的两刀在 0.50s 窗口内共享同一个 salvoState 与吸血额度（单次上限固定 5 点，全局冷却 0.50s）
             const salvo = slashFx.salvoState || slashFx;
-            if (slashFx.isSecondSlash) {
-                salvo.slash2MaxDealt = Math.max(salvo.slash2MaxDealt || 0, tickMaxDealt);
-            } else {
-                salvo.slash1MaxDealt = Math.max(salvo.slash1MaxDealt || 0, tickMaxDealt);
-            }
-            if (!salvo.meleeVampChecked) {
-                salvo.meleeVampChecked = true;
-                if (globalTime - (player.lastLifestealTime || -999) >= 0.75) {
-                    salvo.meleeVampPassed = true;
-                    player.lastLifestealTime = globalTime;
-                } else {
-                    salvo.meleeVampPassed = false;
+            const hasValidWindow = Boolean(
+                salvo.meleeVampPassed &&
+                typeof salvo.meleeVampWindowStart === 'number' &&
+                (globalTime - salvo.meleeVampWindowStart) <= 0.50
+            );
+            if (!hasValidWindow) {
+                if (!salvo.meleeVampChecked || (typeof salvo.meleeVampWindowStart === 'number' && (globalTime - salvo.meleeVampWindowStart) > 0.50)) {
+                    salvo.meleeVampChecked = true;
+                    if (globalTime - (player.lastLifestealTime || -999) >= 0.50) {
+                        salvo.meleeVampPassed = true;
+                        salvo.meleeVampWindowStart = globalTime;
+                        player.lastLifestealTime = globalTime;
+                        salvo.slash1MaxDealt = 0;
+                        salvo.slash2MaxDealt = 0;
+                        salvo.meleeTotalHealed = 0;
+                        salvo.meleeTotalEffHealed = 0;
+                        salvo.meleeVampTextShown = false;
+                        salvo.meleeVampTextObj = null;
+                    } else {
+                        salvo.meleeVampPassed = false;
+                    }
                 }
             }
             if (salvo.meleeVampPassed) {
-                const maxVampCap = round1(1 + player.maxHp * 0.04);
+                if (slashFx.isSecondSlash) {
+                    salvo.slash2MaxDealt = Math.max(salvo.slash2MaxDealt || 0, tickMaxDealt);
+                } else {
+                    salvo.slash1MaxDealt = Math.max(salvo.slash1MaxDealt || 0, tickMaxDealt);
+                }
+                const maxVampCap = 5.0;
                 const combinedDealt = (salvo.slash1MaxDealt || 0) + (salvo.slash2MaxDealt || 0);
                 const targetHeal = Math.min(maxVampCap, round1(combinedDealt * slashFx.lifestealRate));
                 const diffHeal = round1(targetHeal - (salvo.meleeTotalHealed || 0));
@@ -14861,13 +14831,13 @@
         sfx.swordSlash(isSecondSlashOfCombo || isPhantomSlash);
 
         let mult = 1.0;
-        if (isPhantomSlash) mult = 0.40;
+        if (isPhantomSlash) mult = 0.50;
         else if (isSecondSlashOfCombo) mult = stats.skSecondHitDmgMult;
 
-        // 近战升级 1：蓄势拔刀（1.5 秒未普攻，下一次普攻伤害提高 20%*L）
+        // 近战升级 1：蓄势拔刀（1.0 秒未普攻，下一次普攻伤害提高 30%*L）
         const chargeStrikeLv = player.skills.melee_charge_strike || 0;
-        if (!isSecondSlashOfCombo && !isPhantomSlash && chargeStrikeLv > 0 && (player.noAttackTimer || 0) >= 1.5) {
-            const chargeBonus = chargeStrikeLv * 0.20;
+        if (!isSecondSlashOfCombo && !isPhantomSlash && chargeStrikeLv > 0 && (player.noAttackTimer || 0) >= 1.0) {
+            const chargeBonus = chargeStrikeLv * 0.30;
             mult *= (1 + chargeBonus);
             spawnFloatingText(player.x, player.y - 48, `蓄势拔刀 +${Math.round(chargeBonus * 100)}%!`, '#facc15', 13, -44);
         }
@@ -14930,9 +14900,9 @@
         }
         evaluateSakuraSlashHitbox(slashFx);
 
-        // 近战升级 3：残影追击（8%*L 概率滞后 0.13s 额外触发一次侧位错开的 40% 伤害英雄残影攻击）
+        // 近战升级 3：残影追击（10%*L 概率滞后 0.13s 额外触发一次侧位错开的 50% 伤害英雄残影攻击）
         const phantomLv = player.skills.melee_phantom_slash || 0;
-        if (!isSecondSlashOfCombo && !isPhantomSlash && phantomLv > 0 && Math.random() < phantomLv * 0.08) {
+        if (!isSecondSlashOfCombo && !isPhantomSlash && phantomLv > 0 && Math.random() < phantomLv * 0.10) {
             player.sakuraPendingPhantomSlashTimer = 0.13;
             player.sakuraPendingPhantomSlashAngle = baseAngle;
             player.sakuraPendingPhantomParentSalvo = salvoState;
@@ -14940,12 +14910,12 @@
         return salvoState;
     }
 
-    // 近战专属战技【裂空剑气】：每3秒获得1次充能，普攻时向前挥出宽幅月牙穿透剑气（造成80%~180%伤害，不暴击、不吸血、不触发普攻特效）
+    // 近战专属战技【裂空剑气】：每3秒获得1次充能，普攻时向前挥出宽幅月牙穿透剑气（造成100%~220%伤害，不暴击、不吸血、不触发普攻特效）
     function launchMeleeSwordWave(baseAngle) {
         if (!player) return;
         const lv = Math.max(1, player.skills.phantom_afterglow || 1);
         const stats = getPlayerStats(player);
-        const dmgMult = (55 + lv * 25) * 0.01;
+        const dmgMult = (70 + lv * 30) * 0.01;
         const waveDmg = round1(stats.damage * dmgMult);
         const speed = 520;
         const duration = 0.50;
@@ -14997,12 +14967,12 @@
     function launchYomiChainBlade(baseAngle, isExtraUltBlade = false, isPhantomBlade = false, sharedSalvoState = null) {
         if (!player) return;
         const stats = getPlayerStats(player);
-        let outMult = isPhantomBlade ? 0.40 : (isExtraUltBlade ? stats.ymUltExtraBladeDmgMult : 1.0);
-        let retMult = isPhantomBlade ? (stats.ymReturnDmgMult * 0.40) : (isExtraUltBlade ? (stats.ymReturnDmgMult * 0.75) : stats.ymReturnDmgMult);
+        let outMult = isPhantomBlade ? 0.50 : (isExtraUltBlade ? stats.ymUltExtraBladeDmgMult : 1.0);
+        let retMult = isPhantomBlade ? (stats.ymReturnDmgMult * 0.50) : (isExtraUltBlade ? (stats.ymReturnDmgMult * 0.75) : stats.ymReturnDmgMult);
 
         const chargeStrikeLv = player.skills.melee_charge_strike || 0;
-        if (!isExtraUltBlade && !isPhantomBlade && chargeStrikeLv > 0 && (player.noAttackTimer || 0) >= 1.5) {
-            const chargeBonus = chargeStrikeLv * 0.20;
+        if (!isExtraUltBlade && !isPhantomBlade && chargeStrikeLv > 0 && (player.noAttackTimer || 0) >= 1.0) {
+            const chargeBonus = chargeStrikeLv * 0.30;
             outMult *= (1 + chargeBonus);
             retMult *= (1 + chargeBonus);
             spawnFloatingText(player.x, player.y - 48, `蓄势拔刀 +${Math.round(chargeBonus * 100)}%!`, '#facc15', 13, -44);
@@ -15094,7 +15064,7 @@
 
         // 残影追击：滞后普攻 0.13s 触发，与本体动作错开，并关联当前普攻 salvoState 以同步电弧触发判定
         const phantomLv = player.skills.melee_phantom_slash || 0;
-        if (!isExtraUltBlade && !isPhantomBlade && phantomLv > 0 && Math.random() < phantomLv * 0.08) {
+        if (!isExtraUltBlade && !isPhantomBlade && phantomLv > 0 && Math.random() < phantomLv * 0.10) {
             player.yomiPendingPhantomTimer = 0.13;
             player.yomiPendingPhantomAngle = baseAngle + (Math.random() - 0.5) * 0.10;
             player.yomiPendingPhantomSalvoState = salvoState;
@@ -15109,14 +15079,14 @@
         const rate = stats.lifestealRate || 0;
         if (rate <= 0) return;
         const salvo = yb.salvoState || yb;
-        // 若当前攻击尚未开启有效吸血窗口，或两段普攻间隔已超过 0.75s，则尝试开启新的 0.75s 吸血窗口
+        // 若当前攻击尚未开启有效吸血窗口，或两段普攻间隔已超过 0.50s，则尝试开启新的 0.50s 吸血窗口
         const hasValidWindow = Boolean(
             salvo.yomiVampWindowActive &&
             typeof salvo.yomiVampWindowStart === 'number' &&
-            (globalTime - salvo.yomiVampWindowStart) <= 0.75
+            (globalTime - salvo.yomiVampWindowStart) <= 0.50
         );
         if (!hasValidWindow) {
-            if (globalTime - (player.lastLifestealTime || -999) < 0.75) {
+            if (globalTime - (player.lastLifestealTime || -999) < 0.50) {
                 return;
             }
             salvo.yomiVampWindowActive = true;
@@ -15128,13 +15098,13 @@
             salvo.yomiWindowTextShown = false;
             salvo.yomiWindowTextObj = null;
         }
-        // 在同一个 0.75s 吸血窗口内，去程（第1段）与回程（第2段）共享同一个吸血额度窗口（合计上限 1 + 4% 最大生命）
+        // 在同一个 0.50s 吸血窗口内，去程（第1段）与回程（第2段）共享同一个吸血额度窗口（单次上限固定 5 点）
         if (isInboundStage) {
             salvo.yomiWindowRetMaxDealt = Math.max(salvo.yomiWindowRetMaxDealt || 0, stageMaxDealt);
         } else {
             salvo.yomiWindowOutMaxDealt = Math.max(salvo.yomiWindowOutMaxDealt || 0, stageMaxDealt);
         }
-        const maxVampCap = round1(1 + player.maxHp * 0.04);
+        const maxVampCap = 5.0;
         const combinedDealt = (salvo.yomiWindowOutMaxDealt || 0) + (salvo.yomiWindowRetMaxDealt || 0);
         const targetHeal = Math.min(maxVampCap, round1(combinedDealt * rate));
         const diffHeal = round1(targetHeal - (salvo.yomiWindowTotalHealed || 0));
@@ -15217,7 +15187,7 @@
         }
         if (!nextTarget) {
             finishSakuraShadowStrike();
-            if (levelUpState.pendingLevels > 0 && gameState === 'PLAYING') openLevelUpModal();
+            if (levelUpState.pendingLevels > 0 && gameState === 'PLAYING') triggerLevelUpCelebration(false);
             return;
         }
         const prevX = player.x, prevY = player.y;
@@ -15250,7 +15220,7 @@
             const hasMoreNearby = zombies.some(z => z && z.hp > 0 && !z.isHidden && Math.hypot(z.x - refX, z.y - refY) <= chainMaxDist);
             if (!hasMoreNearby) {
                 finishSakuraShadowStrike();
-                if (levelUpState.pendingLevels > 0 && gameState === 'PLAYING') openLevelUpModal();
+                if (levelUpState.pendingLevels > 0 && gameState === 'PLAYING') triggerLevelUpCelebration(false);
                 return;
             }
         }
@@ -15543,6 +15513,12 @@
         if (prevChg <= 0) return;
         player.sniperUltCharges = prevChg - 1;
         player.sniperUltShotsLeft = player.sniperUltCharges;
+        // 仅在实际开火消耗大招充能后填满主武器弹匣
+        player.sniperUltFiredAny = true;
+        player.isReloading = false;
+        player.reloadTimer = 0;
+        player.fireTimer = 0;
+        player.ammo = stats.maxAmmo;
         if (player.sniperUltCharges < maxChg && (player.sniperUltChargeTimer || 0) <= 0) {
             player.sniperUltChargeTimer = stats.ultMaxCd || 15.0;
         }
@@ -15550,6 +15526,7 @@
             player.ultActiveTimer = 0;
             player.sniperUltPostFireTimer = 0;
             player.sniperUltExitCdTimer = 1.0;
+            player.sniperUltFiredAny = false;
         } else {
             player.sniperUltPostFireTimer = 0.50;
         }
@@ -15640,11 +15617,8 @@
             player.sniperUltShotsLeft = player.sniperUltCharges;
             player.sniperUltPostFireTimer = 0;
             player.sniperUltManualAimed = false;
+            player.sniperUltFiredAny = false;
             player.sniperMouseMoveTime = -999;
-            player.isReloading = false;
-            player.reloadTimer = 0;
-            player.fireTimer = 0;
-            player.ammo = stats.maxAmmo;
             const bestZ = findLingxiUltPriorityTarget();
             if (bestZ) {
                 player.aimAngle = Math.atan2(bestZ.y - (player.y - 6), bestZ.x - player.x);
@@ -15922,6 +15896,7 @@
                 player.ultActiveTimer = 0;
                 player.sniperUltPostFireTimer = 0;
                 player.sniperUltExitCdTimer = 1.0;
+                player.sniperUltFiredAny = false;
                 player.ultCdTimer = Math.max(1.0, remShots <= 0 ? Math.max(0, player.sniperUltChargeTimer || 0) : 0);
             }
             const nextSkillCharges = Math.max(0, curSkillCharges - 1);
@@ -16090,6 +16065,7 @@
                 player.ultActiveTimer = 0;
                 player.sniperUltPostFireTimer = 0;
                 player.sniperUltExitCdTimer = 1.0;
+                player.sniperUltFiredAny = false;
                 player.ultCdTimer = Math.max(1.0, remShots <= 0 ? Math.max(0, player.sniperUltChargeTimer || 0) : 0);
                 spawnFloatingText(player.x, player.y - 46, remShots > 0 ? `收枪闪避! (保留${remShots}发大招)` : '收枪闪避!', '#38bdf8', 13, -46);
             }
@@ -16315,11 +16291,11 @@
         13: { totalQuota: 90,  eliteQuota: 18, spawnDuration: 30, isBossWave: false, isEliteSurge: false, burstEvery: 7,  burstSize: 6 },
         14: { totalQuota: 96,  eliteQuota: 25, spawnDuration: 32, isBossWave: false, isEliteSurge: true,  burstEvery: 7,  burstSize: 7 },
         15: { totalQuota: 102, eliteQuota: 21, spawnDuration: 32, isBossWave: false, isEliteSurge: false, burstEvery: 7,  burstSize: 7 },
-        16: { totalQuota: 44,  eliteQuota: 10, spawnDuration: 38, isBossWave: true,  isEliteSurge: false, bossKind: 'void_boss',     bossHp: 16000 },
+        16: { totalQuota: 44,  eliteQuota: 10, spawnDuration: 38, isBossWave: true,  isEliteSurge: false, bossKind: 'void_boss',     bossHp: 13000 },
         17: { totalQuota: 108, eliteQuota: 24, spawnDuration: 32, isBossWave: false, isEliteSurge: false, burstEvery: 7,  burstSize: 7 },
         18: { totalQuota: 116, eliteQuota: 30, spawnDuration: 34, isBossWave: false, isEliteSurge: true,  burstEvery: 7,  burstSize: 8 },
         19: { totalQuota: 124, eliteQuota: 28, spawnDuration: 35, isBossWave: false, isEliteSurge: false, burstEvery: 7,  burstSize: 8 },
-        20: { totalQuota: 48,  eliteQuota: 12, spawnDuration: 40, isBossWave: true,  isEliteSurge: false, bossKind: 'seraphim_boss', bossHp: 24500 }
+        20: { totalQuota: 48,  eliteQuota: 12, spawnDuration: 40, isBossWave: true,  isEliteSurge: false, bossKind: 'seraphim_boss', bossHp: 20000 }
     };
 
     function getWaveQuotaConfig(w) {
@@ -16338,7 +16314,7 @@
             burstEvery: 7,
             burstSize: 8,
             bossKind: bossOrder[bossIdx],
-            bossHp: Math.round(24500 * Math.pow(1.22, Math.max(1, Math.floor((waveNum - 20) / 4))))
+            bossHp: Math.round(20000 * Math.pow(1.22, Math.max(1, Math.floor((waveNum - 20) / 4))))
         };
     }
 
@@ -16351,9 +16327,9 @@
         return round2(base);
     }
 
-    // 首领独立阶梯伤害倍率（前20波只与首领位阶挂钩，脱离通用波次膨胀：1.00x / 1.20x / 1.40x / 1.60x / 1.80x；W21+无尽深渊继续递增）
+    // 首领独立阶梯伤害倍率（前20波只与首领位阶挂钩，脱离通用波次膨胀：1.00x / 1.15x / 1.30x / 1.42x / 1.55x；W21+无尽深渊继续递增）
     function getBossDamageScale(bossKind) {
-        const tierMap = { boss: 1.00, frost_boss: 1.20, flame_boss: 1.40, void_boss: 1.60, seraphim_boss: 1.80 };
+        const tierMap = { boss: 1.00, frost_boss: 1.15, flame_boss: 1.30, void_boss: 1.42, seraphim_boss: 1.55 };
         const baseTier = tierMap[bossKind] || 1.00;
         const w = Math.max(1, waveState.wave || 1);
         if (waveState.mode === 'endless' && w > 20) {
@@ -16603,7 +16579,7 @@
             const bossOrder = ['boss', 'frost_boss', 'flame_boss', 'void_boss', 'seraphim_boss'];
             const idx = Math.max(0, Math.min(4, (waveState.wave || 1) - 1));
             if (!bossKind) bossKind = bossOrder[idx];
-            const rushHpTable = [3200, 6200, 10500, 15500, 23000];
+            const rushHpTable = [3200, 6200, 10500, 12600, 19000];
             bossHp = rushHpTable[idx] || 3600;
         } else {
             const qCfg = getWaveQuotaConfig(waveState.wave || 4);
@@ -17108,7 +17084,7 @@
                         sfx.bossAlert();
                         boss.actionState = 'chase'; boss.skillCd = 3.2;
                     } else if (chosen === 'cross_void_laser') {
-                        // 0.85s 明显锁定蓄力前摇 + 4.0s 高速旋转激发（角速度提升50%至 1.32 rad/s，迫使中远距离玩家结合闪避或方尖碑掩体应对）
+                        // 0.85s 明显锁定蓄力前摇 + 4.0s 旋转激发（角速度 1.05 rad/s，留出清晰走位/闪避/方尖碑遮挡空间）
                         const warnDur = 0.85, activeDur = 4.0;
                         boss.windupTotal = warnDur;
                         boss.stateTimer = warnDur + activeDur;
@@ -17116,7 +17092,7 @@
                             type: 'void_cross_laser',
                             x: boss.x, y: boss.y,
                             baseAngle: Math.random() * Math.PI,
-                            rotSpeed: 1.32,
+                            rotSpeed: 1.05,
                             length: 1650,
                             radius: 1650,
                             warnDuration: warnDur,
@@ -17134,7 +17110,9 @@
                         boss.slamTargetX = clampVal(tPos.x, -HALF_MAP + 85, HALF_MAP - 85);
                         boss.slamTargetY = clampVal(tPos.y, -HALF_MAP + 85, HALF_MAP - 85);
                         boss.currentSlamDuration = 0.95;
-                        hazardZones.push({ type: 'void_bone_prison_slam', x: boss.slamTargetX, y: boss.slamTargetY, radius: 108, gapAngle: Math.random() * Math.PI * 2, timer: 0, duration: 0.95, playerDamage: round1(42 * scale) });
+                        const prisonHz = { type: 'void_bone_prison_slam', x: boss.slamTargetX, y: boss.slamTargetY, radius: 108, gapAngle: Math.random() * Math.PI * 2, timer: 0, duration: 0.95, playerDamage: round1(42 * scale) };
+                        hazardZones.push(prisonHz);
+                        pushNonBossZombiesOutOfBonePrison(prisonHz.x, prisonHz.y, prisonHz.radius, 16, 18, true);
                         sfx.bossAlert();
                     } else if (chosen === 'void_rift_slashes') {
                         boss.spikeCountLeft = 3;
@@ -17882,7 +17860,7 @@
             triggerKnowledgeCashOnLevelUp(p, gainedLevels);
         }
         if (levelUpState.pendingLevels > 0 && gameState === 'PLAYING' && !(p.sakuraVanishState && p.sakuraVanishState.active)) {
-            openLevelUpModal();
+            triggerLevelUpCelebration(false);
         }
     }
 
@@ -18185,7 +18163,7 @@
         // 近战升级 2：破甲重创（初始每层+0.8%增伤，每级+0.8%）
         if ((z.armorBreakTimer || 0) > 0 && (z.armorBreakStacks || 0) > 0 && player) {
             const abLv = player.skills.melee_armor_break || 0;
-            if (abLv > 0) mult *= (1 + z.armorBreakStacks * ((abLv * 0.8) * 0.01));
+            if (abLv > 0) mult *= (1 + z.armorBreakStacks * ((abLv * 1.5) * 0.01));
         }
 
         if (player && player.trinkets) {
@@ -18617,7 +18595,7 @@
         const baseRaw = typeof offer.rawCost === 'number' ? offer.rawCost : (offer.cost || 1);
         const smugglerStacks = (player && player.trinkets && player.trinkets.trinket_smuggler_card) || 0;
         const depositStacks = (offer.lockedFromPrevWave && player && player.trinkets) ? (player.trinkets.trinket_prepaid_deposit || 0) : 0;
-        const discountPct = smugglerStacks * 0.05 + depositStacks * 0.15;
+        const discountPct = smugglerStacks * 0.05 + depositStacks * 0.08;
         return Math.max(1, Math.round(baseRaw * Math.max(0.1, 1 - discountPct)));
     }
 
@@ -18849,7 +18827,7 @@
                         : (canAfford ? `购买 (${offer.cost}G)` : `不足 (${offer.cost}G)`)));
 
             const depositDiscountStacks = (offer.lockedFromPrevWave && player && player.trinkets) ? (player.trinkets.trinket_prepaid_deposit || 0) : 0;
-            const depositBadgeHtml = depositDiscountStacks > 0 ? `<span class="text-[9px] text-emerald-300 ml-1">定金-${depositDiscountStacks * 15}%</span>` : '';
+            const depositBadgeHtml = depositDiscountStacks > 0 ? `<span class="text-[9px] text-emerald-300 ml-1">定金-${depositDiscountStacks * 8}%</span>` : '';
 
             card.innerHTML = `
                 <div>
@@ -19633,6 +19611,62 @@
         }
     }
 
+    // 骨刺囚笼防卡位：将圈内及周边的非首领丧尸震退/阻挡在囚笼之外，同时严格约束地图边界与障碍物防卡墙
+    function pushNonBossZombiesOutOfBonePrison(cx, cy, prisonRadius, detectMargin, pushMargin, withBurstFx = false) {
+        if (!Array.isArray(zombies) || zombies.length === 0) return;
+        for (let i = 0; i < zombies.length; i++) {
+            const z = zombies[i];
+            if (!z || z.hp <= 0 || z.isBoss || z.kind === 'void_obelisk' || z.isDummy) continue;
+            const zr = z.radius || 14;
+            const dx = z.x - cx, dy = z.y - cy;
+            const dist = Math.hypot(dx, dy);
+            const detectR = prisonRadius + zr + detectMargin;
+            if (dist < detectR) {
+                const ang = dist > 0.001 ? Math.atan2(dy, dx) : (((z.uid || i) * 1.6180339) % (Math.PI * 2));
+                const targetR = prisonRadius + zr + pushMargin;
+                let nx = clampVal(cx + Math.cos(ang) * targetR, -HALF_MAP + zr + 4, HALF_MAP - zr - 4);
+                let ny = clampVal(cy + Math.sin(ang) * targetR, -HALF_MAP + zr + 4, HALF_MAP - zr - 4);
+                for (let k = 0; k < obstacles.length; k++) {
+                    const col = resolveCircleRectCollision(nx, ny, zr, obstacles[k]);
+                    if (col) {
+                        nx += col.nx * col.overlap;
+                        ny += col.ny * col.overlap;
+                    }
+                }
+                z.x = clampVal(nx, -HALF_MAP + zr + 4, HALF_MAP - zr - 4);
+                z.y = clampVal(ny, -HALF_MAP + zr + 4, HALF_MAP - zr - 4);
+                if (withBurstFx) {
+                    z.knockVx = Math.cos(ang) * 140;
+                    z.knockVy = Math.sin(ang) * 140;
+                    spawnPixelParticles(z.x, z.y, '#e879f9', 5, 115, 3, 0.22);
+                }
+            }
+        }
+    }
+
+    function triggerLevelUpCelebration(immediate = false) {
+        if (!player || levelUpState.pendingLevels <= 0 || gameState !== 'PLAYING') return;
+        if (player.sakuraVanishState && player.sakuraVanishState.active) return;
+        if (immediate) {
+            levelUpState.delayTimer = 0;
+            openLevelUpModal(false);
+            return;
+        }
+        // 连续升级时仅触发 1 次演出计时器，多出等级全部攒入 pendingLevels 队列
+        if ((levelUpState.delayTimer || 0) > 0) {
+            spawnPixelParticles(player.x, player.y - 6, '#fde047', 10, 145, 3.5, 0.34);
+            return;
+        }
+        levelUpState.delayTotal = 0.50;
+        levelUpState.delayTimer = 0.50;
+        sfx.levelUp();
+        player.invulnTimer = Math.max(player.invulnTimer || 0, 0.5);
+        player.upgradeInvulnTimer = Math.max(player.upgradeInvulnTimer || 0, 0.5);
+        spawnPixelParticles(player.x, player.y - 4, '#fde047', 20, 175, 4.0, 0.42);
+        spawnPixelParticles(player.x, player.y + 6, '#38bdf8', 12, 130, 3.2, 0.36);
+        spawnFloatingText(player.x, player.y - 46, 'LEVEL UP!', '#fde047', 14, -42);
+    }
+
     function addPlayerXp(amount) {
         const stats = getPlayerStats(player);
         player.xp = round2(player.xp + Math.max(0, amount * stats.xpMultiplier));
@@ -19649,7 +19683,7 @@
             triggerKnowledgeCashOnLevelUp(player, gainedLevels);
         }
         if (levelUpState.pendingLevels > 0 && gameState === 'PLAYING' && !(player.sakuraVanishState && player.sakuraVanishState.active)) {
-            openLevelUpModal();
+            triggerLevelUpCelebration(false);
         }
     }
 
@@ -19696,7 +19730,8 @@
         return Math.max(1, Math.round(rawCost * Math.max(0.1, 1 - holoStacks * 0.10)));
     }
 
-    function openLevelUpModal() {
+    function openLevelUpModal(skipCelebrationSfx = false) {
+        levelUpState.delayTimer = 0;
         rollThreeSkillChoices();
         if (levelUpState.choices.length === 0) {
             levelUpState.pendingLevels = 0;
@@ -19706,7 +19741,7 @@
         }
         snapshotAutoCruiseBeforeModal();
         gameState = 'LEVEL_UP';
-        sfx.levelUp();
+        if (!skipCelebrationSfx) sfx.levelUp();
         renderLevelUpCards();
         document.getElementById('levelUpModal').classList.remove('hidden');
         resetScrollbarsIn('levelUpModal');
@@ -22122,15 +22157,15 @@
         const isMelee = MELEE_HERO_IDS.includes(player.heroId);
 
         // 1) 就绪型战技（无倒计时遮罩，消耗即隐藏）
-        if (isMelee && (s.melee_charge_strike || 0) > 0 && (player.noAttackTimer || 0) >= 1.5) {
-            const pct = (s.melee_charge_strike || 0) * 20;
+        if (isMelee && (s.melee_charge_strike || 0) > 0 && (player.noAttackTimer || 0) >= 1.0) {
+            const pct = (s.melee_charge_strike || 0) * 30;
             list.push({
                 id: 'charge_strike', kind: 'ready', name: '蓄势拔刀', stacks: 0, rem: 0, max: 0,
                 desc: `下一次近战普攻伤害 +${pct}%（出刀后消耗）`
             });
         }
         if (isMelee && (s.phantom_afterglow || 0) > 0 && player.swordWaveReady) {
-            const wavePct = 55 + (s.phantom_afterglow || 1) * 25;
+            const wavePct = 70 + (s.phantom_afterglow || 1) * 30;
             list.push({
                 id: 'sword_wave', kind: 'ready', name: '裂空剑气', stacks: 0, rem: 0, max: 0,
                 desc: `下一次近战普攻斩出穿透剑气，造成 ${wavePct}% 攻击力伤害`
@@ -22148,11 +22183,12 @@
         const spiritLv = s.melee_battle_spirit || 0;
         if (spiritLv > 0 && (player.battleSpiritTimer || 0) > 0.02 && (player.battleSpiritStacks || 0) > 0) {
             const stk = player.battleSpiritStacks;
-            const bonusPct = round1(stk * spiritLv * 0.8);
+            const aspdBonusPct = round1(stk * spiritLv * 1.5);
+            const spdBonusPct = round1(stk * spiritLv * 0.8);
             list.push({
                 id: 'battle_spirit', kind: 'buff', name: '陷阵战意', stacks: stk,
                 rem: player.battleSpiritTimer, max: 1.5,
-                desc: `攻速 +${bonusPct}%、移速 +${bonusPct}%（命中刷新 1.5s）`
+                desc: `攻速 +${aspdBonusPct}%、移速 +${spdBonusPct}%（命中刷新 1.5s）`
             });
         }
         if (player.heroId === 'lingxi' && (player.calibrationStacks || 0) > 0) {
@@ -22160,13 +22196,14 @@
             const snPassLv = s.sn_passive_upgrade || 0;
             const atkPct = round1(stk * (3 + snPassLv * 1.5));
             const critPct = round1(stk * (2 + snPassLv * 1));
+            const graceDur = round1(stk * 0.5);
             const decaying = (player.calibrationDecayTimer || 0) > 0.01;
             list.push({
                 id: 'lingxi_calib', kind: 'buff', name: '屏息校准', stacks: stk,
-                rem: decaying ? Math.max(0, 0.5 - (player.calibrationDecayTimer || 0)) : 0,
-                max: decaying ? 0.5 : 0,
-                metaTag: decaying ? '衰减中' : '站定维持',
-                desc: `攻击力 +${atkPct}%、暴击率 +${critPct}%（站定叠层，移动逐层衰减）`
+                rem: decaying ? Math.max(0, graceDur - (player.calibrationDecayTimer || 0)) : 0,
+                max: decaying ? graceDur : 0,
+                metaTag: decaying ? '移动计时' : '站定维持',
+                desc: `攻击力 +${atkPct}%、暴击率 +${critPct}%（移动累计 ${fmt1(graceDur)}s 清零，停下重置）`
             });
         }
         if (player.heroId === 'yomi' && (player.yomiVampBuffTimer || 0) > 0.02) {
@@ -22203,10 +22240,12 @@
             const nanoR = player.nanoFieldRarity || 0;
             const nanoPwr = player.nanoFieldPowerMult || 1.0;
             const nanoPct = Math.round((0.35 + nanoR * 0.10) * nanoPwr * 100);
+            const nanoAtkPct = Math.round((0.20 + nanoR * 0.08) * nanoPwr * 100);
+            const nanoReloadSpd = Math.round((50 + nanoR * 15) * nanoPwr);
             list.push({
                 id: 'nano_field', kind: 'buff', name: '纳米力场', stacks: 0,
-                rem: 0, max: 0, metaTag: '立场内',
-                desc: `位于力场范围内：攻击速度 +${nanoPct}%`
+                rem: 0, max: 0, metaTag: '力场内',
+                desc: `位于力场范围内：攻速 +${nanoPct}%、攻击力 +${nanoAtkPct}%、换弹速度 +${nanoReloadSpd}`
             });
         }
         if ((player.relicFocusBuffTimer || 0) > 0.02) {
@@ -23049,7 +23088,7 @@
             if (vs.stepTimer <= 0) {
                 if (vs.finishingNextTick) {
                     finishSakuraShadowStrike();
-                    if (levelUpState.pendingLevels > 0 && gameState === 'PLAYING') openLevelUpModal();
+                    if (levelUpState.pendingLevels > 0 && gameState === 'PLAYING') triggerLevelUpCelebration(false);
                     else if (waveState && waveState.pendingWaveShop && gameState === 'PLAYING') openWaveShopModal();
                 } else {
                     executeSakuraNextShadowStrike();
@@ -23146,7 +23185,7 @@
             }
         }
 
-        // 凌汐被动【屏息校准】：静止每0.5秒+1层（上限5层），移动每0.5秒衰减1层，战术雷步翻滚与闪避期间不掉层数
+        // 凌汐被动【屏息校准】：静止每0.5秒+1层（上限5层），移动累计 0.5×当前层数 秒后一次性清零（宽限期内停下重置计时，翻滚与闪避期间不计时）
         if (player.heroId === 'lingxi') {
             const isRollingOrDodging = (player.sniperRollTimer || 0) > 0 || player.isDodging;
             if (!player.isMoving && !isRollingOrDodging) {
@@ -23163,10 +23202,11 @@
             } else if (player.isMoving && !isRollingOrDodging) {
                 player.calibrationTimer = 0;
                 if ((player.calibrationStacks || 0) > 0) {
+                    const graceDur = 0.5 * player.calibrationStacks;
                     player.calibrationDecayTimer = (player.calibrationDecayTimer || 0) + dt;
-                    if (player.calibrationDecayTimer >= 0.5) {
-                        player.calibrationDecayTimer -= 0.5;
-                        player.calibrationStacks = Math.max(0, (player.calibrationStacks || 0) - 1);
+                    if (player.calibrationDecayTimer >= graceDur) {
+                        player.calibrationStacks = 0;
+                        player.calibrationDecayTimer = 0;
                     }
                 } else {
                     player.calibrationDecayTimer = 0;
@@ -23192,6 +23232,14 @@
 
         if (player.invulnTimer > 0) player.invulnTimer = Math.max(0, player.invulnTimer - dt);
         if (player.upgradeInvulnTimer > 0) player.upgradeInvulnTimer = Math.max(0, player.upgradeInvulnTimer - dt);
+        // 升级延迟演出计时器（暂停或樱隐身期间自动冻结；演完后统一打开选卡并连续消耗 pendingLevels）
+        if ((levelUpState.delayTimer || 0) > 0 && gameState === 'PLAYING' && !(player.sakuraVanishState && player.sakuraVanishState.active)) {
+            levelUpState.delayTimer = Math.max(0, levelUpState.delayTimer - dt);
+            if (levelUpState.delayTimer <= 0 && levelUpState.pendingLevels > 0) {
+                openLevelUpModal(true);
+                return;
+            }
+        }
         if (player.muzzleFlashTimer > 0) player.muzzleFlashTimer = Math.max(0, player.muzzleFlashTimer - dt);
         if (player.recoilOffset > 0) player.recoilOffset = Math.max(0, player.recoilOffset - dt * 32);
         if (player.rangeHighlightTimer > 0) player.rangeHighlightTimer = Math.max(0, player.rangeHighlightTimer - dt);
@@ -23224,8 +23272,8 @@
                 player.potionCdTimer = 0;
                 player.medkitCount = Math.max(2, player.medkitCount || 2);
                 player.sgPassiveCdTimer = 0;
-                if (player.heroId === 'sakura') {
-                    player.noAttackTimer = Math.max(player.noAttackTimer || 0, 1.5);
+                if (MELEE_HERO_IDS.includes(player.heroId)) {
+                    player.noAttackTimer = Math.max(player.noAttackTimer || 0, 1.0);
                 }
                 if (Array.isArray(player.activeRelics)) {
                     for (let r = 0; r < player.activeRelics.length; r++) {
@@ -23282,6 +23330,7 @@
                 if (player.ultActiveTimer <= 0) {
                     player.sniperUltPostFireTimer = 0;
                     player.sniperUltExitCdTimer = 1.0;
+                    player.sniperUltFiredAny = false;
                     player.ultCdTimer = Math.max(1.0, (player.sniperUltCharges <= 0) ? Math.max(0, player.sniperUltChargeTimer || 0) : 0);
                 }
             }
@@ -24134,7 +24183,7 @@
                         sfx.frostNova();
                     }
                     const activeElapsed = hz.timer - warnDur;
-                    const curBaseAng = hz.baseAngle + activeElapsed * (hz.rotSpeed || 1.32);
+                    const curBaseAng = hz.baseAngle + activeElapsed * (hz.rotSpeed || 1.05);
 
                     if (!isSakuraVanished) {
                         for (let arm = 0; arm < 4; arm++) {
@@ -24154,6 +24203,8 @@
                 continue;
             }
             if (hz.type === 'void_bone_prison_slam') {
+                // 囚笼持续期间禁止任何非首领丧尸进入 hz.radius + z.radius + 8 以内（持续外推阻挡，不关小怪进圈）
+                pushNonBossZombiesOutOfBonePrison(hz.x, hz.y, hz.radius, 8, 8, false);
                 if (!isSakuraVanished) {
                     const distFromCenter = Math.hypot(player.x - hz.x, player.y - hz.y);
                     const angFromCenter = Math.atan2(player.y - hz.y, player.x - hz.x);
@@ -26849,7 +26900,7 @@
                 } else {
                     // 正式旋转十字死光阶段（白芯紫边高能光束 + 击中招魂方尖碑时在碑面持续炸出格挡火花）
                     const activeElapsed = hz.timer - warnDur;
-                    const curBaseAng = hz.baseAngle + activeElapsed * (hz.rotSpeed || 1.32);
+                    const curBaseAng = hz.baseAngle + activeElapsed * (hz.rotSpeed || 1.05);
                     const beamPulse = Math.sin(globalTime * 32) * 1.4;
                     for (let arm = 0; arm < 4; arm++) {
                         const armAng = curBaseAng + (Math.PI * 0.5) * arm;
@@ -29446,7 +29497,7 @@
                     }
 
                     // 蓄势拔刀就绪特效：在英雄身上与刀柄处呈现周期性大小缩放的锐利十字星芒特效
-                    if (MELEE_HERO_IDS.includes(player.heroId) && (player.skills.melee_charge_strike || 0) > 0 && (player.noAttackTimer || 0) >= 1.5) {
+                    if (MELEE_HERO_IDS.includes(player.heroId) && (player.skills.melee_charge_strike || 0) > 0 && (player.noAttackTimer || 0) >= 1.0) {
                         ctx.save();
                         const starX = player.x + (player.facing > 0 ? 11 : -11);
                         const starY = player.y - 7;
@@ -29688,6 +29739,59 @@
                             ctx.fillRect(exX - 2, exY + 4, 4, 4);
                         }
                         ctx.restore();
+                    }
+                    ctx.restore();
+                }
+                // 升级延迟演出：街机像素风升空光柱 + 脚下扩散冲击波环（独立绘制，不受受击闪烁影响）
+                if ((levelUpState.delayTimer || 0) > 0 && gameState === 'PLAYING') {
+                    const lvTotal = levelUpState.delayTotal || 0.50;
+                    const lvProg = clampVal(1 - (levelUpState.delayTimer / lvTotal), 0, 1);
+                    const lvFade = lvProg < 0.72 ? 1.0 : Math.max(0, (1 - lvProg) / 0.28);
+                    const px = Math.round(player.x), py = Math.round(player.y + 12);
+                    ctx.save();
+                    ctx.globalAlpha = 1.0;
+
+                    // 1) 脚下扩散像素光波环
+                    const waveRx = 18 + lvProg * 56;
+                    const waveRy = waveRx * 0.44;
+                    ctx.strokeStyle = `rgba(250, 204, 21, ${(0.88 * lvFade).toFixed(3)})`;
+                    ctx.lineWidth = Math.max(2, 4.5 * (1 - lvProg * 0.5));
+                    ctx.beginPath();
+                    ctx.ellipse(px, py, waveRx, waveRy, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    const innerRx = 10 + lvProg * 36;
+                    ctx.strokeStyle = `rgba(125, 211, 252, ${(0.72 * lvFade).toFixed(3)})`;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.ellipse(px, py, innerRx, innerRx * 0.44, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // 2) 垂直贯穿天际的像素光柱（三层色带）
+                    const pillarW = Math.max(6, Math.round((1 - lvProg * 0.42) * 34));
+                    const pillarH = Math.round(150 + lvProg * 110);
+                    ctx.fillStyle = `rgba(250, 204, 21, ${(0.28 * lvFade).toFixed(3)})`;
+                    ctx.fillRect(px - Math.round(pillarW * 0.5), py - pillarH, pillarW, pillarH);
+                    const midW = Math.max(4, Math.round(pillarW * 0.58));
+                    ctx.fillStyle = `rgba(254, 240, 138, ${(0.56 * lvFade).toFixed(3)})`;
+                    ctx.fillRect(px - Math.round(midW * 0.5), py - pillarH, midW, pillarH);
+                    const coreW = Math.max(2, Math.round(pillarW * 0.24));
+                    ctx.fillStyle = `rgba(255, 255, 255, ${(0.86 * lvFade).toFixed(3)})`;
+                    ctx.fillRect(px - Math.round(coreW * 0.5), py - pillarH, coreW, pillarH);
+
+                    // 3) 底部能量底座 + 上升像素星屑
+                    ctx.fillStyle = `rgba(254, 240, 138, ${(0.65 * lvFade).toFixed(3)})`;
+                    ctx.beginPath();
+                    ctx.ellipse(px, py, Math.max(10, pillarW * 0.72), Math.max(4, pillarW * 0.28), 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    for (let m = 0; m < 8; m++) {
+                        const mPhase = (lvProg * 1.45 + m * 0.13) % 1;
+                        const mx = px + Math.round(Math.sin(m * 2.1 + lvProg * 6) * (pillarW * 0.65));
+                        const my = py - Math.round(mPhase * (pillarH * 0.85));
+                        const mSz = m % 2 === 0 ? 4 : 3;
+                        ctx.fillStyle = m % 3 === 0 ? '#ffffff' : (m % 3 === 1 ? '#fde047' : '#7dd3fc');
+                        ctx.globalAlpha = Math.max(0, (1 - mPhase) * lvFade);
+                        ctx.fillRect(mx - 2, my - 2, mSz, mSz);
                     }
                     ctx.restore();
                 }
@@ -30667,12 +30771,12 @@
 
         if (isBossRush) {
             player.level = 10; player.xp = 0; player.xpNext = getXpRequired(10);
-            levelUpState = { pendingLevels: 10, choices: [], levelRerollCount: 0 };
+            levelUpState = { pendingLevels: 10, choices: [], levelRerollCount: 0, delayTimer: 0, delayTotal: 0.50 };
         } else if (isTraining) {
             player.gold = 99999;
-            levelUpState = { pendingLevels: 0, choices: [], levelRerollCount: 0 };
+            levelUpState = { pendingLevels: 0, choices: [], levelRerollCount: 0, delayTimer: 0, delayTotal: 0.50 };
         } else {
-            levelUpState = { pendingLevels: 0, choices: [], levelRerollCount: 0 };
+            levelUpState = { pendingLevels: 0, choices: [], levelRerollCount: 0, delayTimer: 0, delayTotal: 0.50 };
         }
 
         updateGlobalFlowField(player.x, player.y, true);
@@ -31108,7 +31212,7 @@
                 icon: PAUSE_STAT_ICON_URLS.lifesteal,
                 val: `${fmt1(stats.bookLifestealPct)}%`,
                 color: stats.bookLifestealPct < 0 ? 'text-rose-400' : 'text-rose-300',
-                desc: `生效吸血率：${fmt1(stats.lifestealRate * 100)}%（上限 15%）${stats.bookLifestealPct < 0 ? `\n账面累计：${fmt1(stats.bookLifestealPct)}%` : ''}\n单次恢复上限：${fmt1(1 + dispMaxHp * 0.04)}`
+                desc: `生效吸血率：${fmt1(stats.lifestealRate * 100)}%（上限 15%）${stats.bookLifestealPct < 0 ? `\n账面累计：${fmt1(stats.bookLifestealPct)}%` : ''}\n单次恢复上限：5（全局冷却 0.50s）`
             },
             {
                 label: '闪避率',
@@ -31144,7 +31248,7 @@
                 icon: PAUSE_STAT_ICON_URLS.reloadSpeed,
                 val: reloadValStr,
                 color: !isMelee && reloadSpdVal < 0 ? 'text-rose-400' : 'text-cyan-300',
-                desc: isMelee ? '当前英雄为近战形态，无需换弹' : `换弹速度：${reloadSign}${fmt1(reloadSpdVal)}\n当前换弹时间：${reloadTimeStr}`
+                desc: isMelee ? '当前英雄为近战形态，无需换弹' : `换弹速度：${reloadSign}${fmt1(reloadSpdVal)}${(stats.reloadCardReducePct || 0) > 0 ? `\n快速装填减时：-${fmt1(stats.reloadCardReducePct)}%（独立乘算）` : ''}\n当前换弹时间：${reloadTimeStr}`
             },
             {
                 label: '技能急速',
@@ -31187,7 +31291,7 @@
                 icon: PAUSE_STAT_ICON_URLS.pickup,
                 val: `${fmt1(stats.pickupRadius)}`,
                 color: (stats.bookPickupBonus || 0) < 0 ? 'text-rose-400' : 'text-indigo-300',
-                desc: `当前拾取范围：${fmt1(stats.pickupRadius)}\n范围加成：${pickupBonusSign}${fmt1(stats.bookPickupBonus || 0)}`
+                desc: `当前拾取范围：${fmt1(stats.pickupRadius)}（不低于初始 95）\n饰品加成：${(stats.pickupTrinketFlat || 0) >= 0 ? '+' : ''}${fmt1(stats.pickupTrinketFlat || 0)} | 升级加成：+${fmt1(stats.pickupUpgradePct || 0)}%`
             },
             {
                 label: '经验获取',
@@ -31407,7 +31511,7 @@
         const revives = Math.max(0, Math.floor(waveState.reviveCount || 0));
         if (summary) {
             const modeLabel = waveState.mode === 'boss_rush' ? `首领挑战 (BOSS ${waveState.wave}/${BOSS_RUSH_TOTAL_BOSSES})` : `街区生存 (WAVE ${waveState.wave})`;
-            summary.innerHTML = buildGameOverSummaryHtml(modeLabel, '存活时长', `${mm}:${ss}`, '累计击败', `${waveState.totalKills} 个`, revives, false);
+            summary.innerHTML = buildGameOverSummaryHtml(modeLabel, '游戏时长', `${mm}:${ss}`, '累计击败', `${waveState.totalKills} 个`, revives, false);
         }
         document.getElementById('gameOverModal').classList.remove('hidden');
         resetScrollbarsIn('gameOverModal');
@@ -31450,7 +31554,7 @@
         waveState.pendingWaveShop = false;
         waveState.pendingWaveStartSnapshot = false;
 
-        levelUpState = { pendingLevels: 0, choices: [], levelRerollCount: 0 };
+        levelUpState = { pendingLevels: 0, choices: [], levelRerollCount: 0, delayTimer: 0, delayTotal: 0.50 };
         for (const k in keys) keys[k] = false;
         touchJoystick.active = false; touchJoystick.dx = 0; touchJoystick.dy = 0;
         screenShake = 0;
