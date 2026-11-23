@@ -1203,7 +1203,7 @@
     </script>
     <!-- =================== 双轨更新引擎代码结束 =================== -->
 
-    <div class="crt-overlay"></div>
+    <div class="crt-overlay" style="display: none;"></div>
     <canvas id="gameCanvas" class="block w-full h-full bg-[#141722]"></canvas>
 
     <div class="fixed top-12 sm:top-16 inset-x-0 flex justify-center z-30 pointer-events-none">
@@ -1865,7 +1865,7 @@
                         <canvas class="ui-px-icon w-6 h-6 shrink-0" data-icon="crt" width="24" height="24"></canvas>
                         <div><div class="font-bold text-white text-xs sm:text-sm">复古横线滤镜 (CRT)</div><div class="text-[11px] text-slate-400 mt-0.5">屏幕表面的扫描横线与暗角</div></div>
                     </div>
-                    <button id="btnToggleCrt" onclick="window.toggleSettingOption('crt')" class="pixel-btn px-3.5 py-1.5 font-bold text-xs text-white min-w-[72px] shrink-0">已开启</button>
+                    <button id="btnToggleCrt" onclick="window.toggleSettingOption('crt')" class="pixel-icon-btn px-3.5 py-1.5 font-bold text-xs text-slate-400 min-w-[72px] shrink-0">已关闭</button>
                 </div>
                 <div class="pixel-box bg-[#101420] border border-slate-700 p-3 sm:p-4 flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2.5">
@@ -2485,7 +2485,7 @@
         return null;
     }
 
-    let gameSettings = { sfx: true, bgm: true, sfxVolume: 1.0, bgmVolume: 1.0, crt: true, shake: true, perf: false, fovScale: 1.0, circleOpacity: 1.0 };
+    let gameSettings = { sfx: true, bgm: true, sfxVolume: 1.0, bgmVolume: 1.0, crt: false, shake: true, perf: false, fovScale: 1.0, circleOpacity: 1.0 };
 
     const DEFAULT_KEYBINDS = {
         dodge:      { name: '闪避键',     btnId: 'btnActiveDodge',    dx: 0, dy: 0, scale: 1.0, opacity: 1.0 },
@@ -11340,15 +11340,16 @@
         { id: 'harvest_up', name: '物资搜刮', statLabel: '收获', values: [6, 10, 15, 22], unit: '', iconSkillId: 'harvest_up', descFn(v) { return `收获+${v}。`; } }
     ];
 
-    // 波次隐藏等效幸运（不写入面板主数值；第 1 波 0，每波 +2.5，第 19 波封顶 +45；首领连战按进度映射）
+    // 波次隐藏等效幸运（不写入面板主数值；无尽 1~8 波每波 +1.5 至 10.5，9~20 波每波 +3.0 至封顶 45；首领连战 [0, 10, 22, 34, 45]）
     function getWaveBonusLuck() {
         if (typeof waveState === 'undefined' || !waveState || waveState.mode === 'training') return 0;
         const w = Math.max(1, Number(waveState.wave) || 1);
         if (waveState.mode === 'boss_rush') {
-            const rushTable = [7.5, 17.5, 27.5, 37.5, 45];
+            const rushTable = [0, 10, 22, 34, 45];
             return rushTable[Math.min(rushTable.length - 1, w - 1)] || 0;
         }
-        return Math.min(45, Math.max(0, round1((w - 1) * 2.5)));
+        if (w <= 8) return Math.max(0, round1((w - 1) * 1.5));
+        return Math.min(45, Math.max(0, round1(10.5 + (w - 8) * 3.0)));
     }
 
     // 总有效幸运：负幸运会直接抵消波次自然成长幸运，保底不低于 0
