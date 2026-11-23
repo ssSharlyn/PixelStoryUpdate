@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>像素物语 V0.7.2</title>
+    <title>像素物语 V0.7.3</title>
     <script>window.__mountPixelStoryGame = null; window.__pixelGameBooted = false;</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -219,7 +219,7 @@
             #dodgeBtnCanvas { width: 34px !important; height: 34px !important; }
             #grenadeBtnCanvas, #ultBtnCanvas { width: 30px !important; height: 30px !important; }
             #potionBtnCanvas { width: 24px !important; height: 24px !important; }
-            #skillChargeSweepCanvas, #ultChargeSweepCanvas { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; border-radius: 50% !important; }
+            #skillChargeSweepCanvas, #ultChargeSweepCanvas, #relicChargeSweepCanvas, #relic2ChargeSweepCanvas { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; border-radius: 50% !important; }
             .act-key-hint { display: none !important; }
             #startModalInner, #codexModalInner, #settingsModalInner, #modeSelectModalInner { padding: 6px 12px !important; height: 100% !important; max-height: 100% !important; }
             .mode-wheel-card { width: 220px !important; height: 154px !important; padding: 6px !important; }
@@ -506,7 +506,7 @@
             if (mode === 'big') {
                 if (smallBox) smallBox.style.display = 'none';
                 if (bigM) bigM.style.display = 'flex';
-                if (logEl) logEl.innerText = "【V0.7.2 版本更新】\n· 角色与流派：全局吸血冷却调为0.5s且上限固定5点，全面加强近战战技，优化凌汐被动宽限与大招填弹逻辑\n· 首领调优：下调后期首领血量与伤害倍率，降低4号首领十字死光转速并新增骨刺囚笼防卡位\n· 升级与属性：新增升级光柱演出与连升队列，重构晶核磁力仪、快速装填、纳米力场与预付定金数值\n· 体验与界面：结算面板存活时长改为游戏时长，同步优化属性面板与 Buff 栏数值说明";
+                if (logEl) logEl.innerText = "【V0.7.3 版本更新】\n· 英雄调整：重构凌汐【屏息校准】掉层、站定止损及技能加层机制；星澜初始攻击力调整为 26\n· 经济与幸运：新增波次隐藏幸运并重构平滑品质概率曲线；20波后收获停止自然成长；升级与黑市刷新基础费用各降1G\n· 饰品与修复：调整「万象收藏盒」被动为每件+0.5最大生命（额外上限+15）；修复镜像卡复制「遗物升阶核心」只弹一次横幅\n· 体验优化：黑市与酒馆离开按钮新增下波波次与首领提示；优化神秘酒馆过场动画节奏并清零残留震屏；精简快速装填文案";
                 if (pWrap) pWrap.style.display = 'none';
                 if (cBtn) {
                     cBtn.disabled = false;
@@ -548,11 +548,11 @@
                     pct = Math.min(100, pct + 25);
                     if (hBar) hBar.style.width = pct + '%';
                     if (pct < 100) {
-                        if (hTip) hTip.innerText = `正在同步 V0.7.2 更新内容 (${pct}%)...`;
+                        if (hTip) hTip.innerText = `正在同步 V0.7.3 更新内容 (${pct}%)...`;
                     } else {
                         clearInterval(previewTimerId);
                         previewTimerId = null;
-                        if (hTip) hTip.innerText = '更新完成 (V0.7.2)，即将进入战场！';
+                        if (hTip) hTip.innerText = '更新完成 (V0.7.3)，即将进入战场！';
                     }
                 }, 400);
             }
@@ -873,7 +873,7 @@
 
             const finishUpToDate = (msg) => {
                 if (hBar) hBar.style.width = '100%';
-                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.7.2)，无需更新！`;
+                if (hTip) hTip.innerText = msg || `当前已是最新版本 (V0.7.3)，无需更新！`;
                 setTimeout(() => {
                     if (ov) ov.style.display = 'none';
                     isManualChecking = false;
@@ -920,10 +920,10 @@
                 }
 
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.2)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.3)，无需更新！`), 260);
             } catch (e) {
                 if (hBar) hBar.style.width = '75%';
-                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.2)，无需更新！`), 260);
+                setTimeout(() => finishUpToDate(`当前已是最新版本 (V0.7.3)，无需更新！`), 260);
             }
         };
 
@@ -1259,7 +1259,7 @@
                     <span id="tavernDiceChoiceSub" class="text-[9px] sm:text-[10px] text-amber-100/85 font-normal">金币/12%血限 · 博极品饰品</span>
                 </button>
                 <button id="btnTavernDecline" onclick="window.leaveMysteryTavern && window.leaveMysteryTavern()" class="tavern-btn-slate py-2 px-2 text-stone-200 font-bold text-xs sm:text-sm flex flex-col items-center justify-center gap-0.5 cursor-pointer touch-manipulation">
-                    <span>算了吧</span>
+                    <span id="tavernDeclineMain" class="inline-flex items-center justify-center gap-1">算了吧</span>
                     <span id="tavernDeclineSub" class="text-[9px] sm:text-[10px] text-stone-400 font-normal">直接前往黑市商店</span>
                 </button>
             </div>
@@ -1465,19 +1465,21 @@
 
                 <button id="btnActiveRelic" class="hidden act-btn-relic relative pixel-box border-2 border-purple-400 bg-slate-900 flex items-center justify-center group active:scale-95 transition overflow-hidden cursor-pointer touch-manipulation" title="主动遗物 1 (Q)">
                     <img id="relicBtnImg" src="" alt="Relic 1" class="w-7 h-7 pointer-events-none" />
-                    <span class="act-key-hint absolute bottom-0.5 bg-slate-950/90 text-purple-300 font-pixel-en text-[5px] px-1 py-0.5 border border-purple-500/60 leading-none pointer-events-none">Q</span>
-                    <span id="hudRelicChargeBadge" class="hidden absolute top-0.5 right-1 bg-purple-400 text-slate-950 font-pixel-en text-[7px] px-1 py-0.5 font-bold leading-none pointer-events-none"></span>
-                    <div id="hudRelicCdOverlay" class="hidden absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center pointer-events-none">
-                        <span id="hudRelicCdText" class="font-pixel-en text-[9px] text-purple-300 font-bold">15.0</span>
+                    <canvas id="relicChargeSweepCanvas" width="64" height="64" class="hidden absolute inset-0 w-full h-full pointer-events-none z-10"></canvas>
+                    <span class="act-key-hint absolute bottom-0.5 bg-slate-950/90 text-purple-300 font-pixel-en text-[5px] px-1 py-0.5 border border-purple-500/60 leading-none pointer-events-none z-20">Q</span>
+                    <span id="hudRelicChargeBadge" class="hidden absolute top-0.5 right-1 bg-purple-400 text-slate-950 font-pixel-en text-[7px] px-1 py-0.5 font-bold leading-none pointer-events-none z-20"></span>
+                    <div id="hudRelicCdOverlay" class="hidden absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center pointer-events-none z-20">
+                        <span id="hudRelicCdText" class="font-pixel-en text-[9px] text-purple-300 font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">15.0</span>
                     </div>
                 </button>
 
                 <button id="btnActiveRelic2" class="hidden act-btn-relic2 relative pixel-box border-2 border-fuchsia-400 bg-slate-900 flex items-center justify-center group active:scale-95 transition overflow-hidden cursor-pointer touch-manipulation" title="主动遗物 2 (F)">
                     <img id="relic2BtnImg" src="" alt="Relic 2" class="w-7 h-7 pointer-events-none" />
-                    <span class="act-key-hint absolute bottom-0.5 bg-slate-950/90 text-fuchsia-300 font-pixel-en text-[5px] px-1 py-0.5 border border-fuchsia-500/60 leading-none pointer-events-none">F</span>
-                    <span id="hudRelic2ChargeBadge" class="hidden absolute top-0.5 right-1 bg-fuchsia-400 text-slate-950 font-pixel-en text-[7px] px-1 py-0.5 font-bold leading-none pointer-events-none"></span>
-                    <div id="hudRelic2CdOverlay" class="hidden absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center pointer-events-none">
-                        <span id="hudRelic2CdText" class="font-pixel-en text-[9px] text-fuchsia-300 font-bold">15.0</span>
+                    <canvas id="relic2ChargeSweepCanvas" width="64" height="64" class="hidden absolute inset-0 w-full h-full pointer-events-none z-10"></canvas>
+                    <span class="act-key-hint absolute bottom-0.5 bg-slate-950/90 text-fuchsia-300 font-pixel-en text-[5px] px-1 py-0.5 border border-fuchsia-500/60 leading-none pointer-events-none z-20">F</span>
+                    <span id="hudRelic2ChargeBadge" class="hidden absolute top-0.5 right-1 bg-fuchsia-400 text-slate-950 font-pixel-en text-[7px] px-1 py-0.5 font-bold leading-none pointer-events-none z-20"></span>
+                    <div id="hudRelic2CdOverlay" class="hidden absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center pointer-events-none z-20">
+                        <span id="hudRelic2CdText" class="font-pixel-en text-[9px] text-fuchsia-300 font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">15.0</span>
                     </div>
                 </button>
             </div>
@@ -1735,9 +1737,9 @@
                 <button id="btnShopReroll" onclick="window.rerollWaveShop && window.rerollWaveShop()" class="pixel-btn px-2 sm:px-2.5 py-1 text-xs font-bold text-white flex items-center gap-1 cursor-pointer whitespace-nowrap">
                     <canvas class="ui-px-icon w-3 h-3 shrink-0" data-icon="reroll" width="12" height="12"></canvas>
                     <span>刷新</span>
-                    <span id="shopRerollCostText" class="font-mono text-yellow-300 text-[11px]">(15G)</span>
+                    <span id="shopRerollCostText" class="font-mono text-yellow-300 text-[11px]">(2G)</span>
                 </button>
-                <button onclick="window.closeWaveShopAndContinue && window.closeWaveShopAndContinue()" class="pixel-play-btn px-2.5 sm:px-3.5 py-1 text-xs font-bold text-slate-950 tracking-wide whitespace-nowrap shrink-0">
+                <button id="btnWaveShopNext" onclick="window.closeWaveShopAndContinue && window.closeWaveShopAndContinue()" class="pixel-play-btn px-2.5 sm:px-3.5 py-1 text-xs font-bold text-slate-950 tracking-wide whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1">
                     下一波 ▶
                 </button>
             </div>
@@ -1779,7 +1781,7 @@
             <div id="mainMenuTitleBox" class="pixel-box px-7 sm:px-11 py-3.5 sm:py-4 border-4 border-sky-400 bg-[#121726] flex flex-col items-center shadow-[0_8px_0_#05060a] shrink-0">
                 <div class="flex items-center gap-2 mb-1.5">
                     <span class="bg-rose-600 text-white font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5">PIXEL STORY</span>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.7.2</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] sm:text-[10px] px-2 py-0.5 font-bold">V0.7.3</span>
                 </div>
                 <canvas id="mainMenuLogoCanvas" width="312" height="76" class="w-[218px] h-[53px] sm:w-[288px] sm:h-[70px] block pointer-events-none" aria-label="像素物语"></canvas>
                 <p class="text-[11px] sm:text-xs text-sky-300 mt-1.5 tracking-wider font-bold">二次元点阵像素 · 街区生存激战</p>
@@ -1892,7 +1894,7 @@
                         <div>
                             <div class="font-bold text-sky-300 text-xs sm:text-sm flex items-center gap-2">
                                 <span>版本更新</span>
-                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.7.2</span>
+                                <span class="bg-amber-400 text-slate-950 font-pixel-en text-[8px] px-1.5 py-0.5 font-bold">V0.7.3</span>
                             </div>
                             <div class="text-[11px] text-slate-400 mt-0.5">检查并获取游戏最新版本内容</div>
                         </div>
@@ -2201,7 +2203,7 @@
                 <div class="flex items-center gap-2">
                     <canvas class="ui-px-icon w-5 h-5" data-icon="notice" width="20" height="20"></canvas>
                     <h3 class="text-base sm:text-lg font-bold text-amber-300 tracking-wider">游戏公告</h3>
-                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.7.2</span>
+                    <span class="bg-amber-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold">V0.7.3</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="window.manualCheckGameUpdate && window.manualCheckGameUpdate()" class="pixel-btn px-2.5 py-1 text-xs font-bold text-white flex items-center gap-1">
@@ -2214,11 +2216,21 @@
             </div>
             <div id="announcementBodyBox" class="flex-1 min-h-0 bg-[#0b0e17] border border-slate-800 p-3.5 sm:p-4 overflow-y-auto text-xs sm:text-sm text-slate-300 leading-relaxed space-y-3">
                 <div class="bg-[#111624] border border-amber-400/50 p-3 space-y-1.5">
-                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.7.2 更新内容】</div>
+                    <div class="text-sm sm:text-base font-bold text-amber-300">【V0.7.3 更新内容】</div>
                     <ul class="text-xs text-slate-200 space-y-1 list-disc list-inside">
+                        <li><b>英雄机制调整</b>：重构凌汐「屏息校准」（移动每 1.0s 掉 1 层，站定 0.5s 止损刷新并 +1 层，E 技能/大招开火立即 +2 层，翻滚与闪避冻结计时）；星澜初始攻击力上调至 26。</li>
+                        <li><b>幸运与经济调优</b>：新增波次隐藏保底幸运并重构平滑品质概率曲线（15 紫 / 35 金 / 120 封顶）；20 波后收获停止自然成长；升级与黑市刷新基础费用各降低 1G。</li>
+                        <li><b>饰品与弹窗修复</b>：「万象收藏盒」被动调整为每种不同饰品 +0.5 最大生命（额外上限 +15）；修复镜像打印卡复制「遗物升阶核心」时只显示一次升阶横幅的问题。</li>
+                        <li><b>交互与演出优化</b>：黑市与神秘酒馆离开按钮新增下一波波次与首领图标提示；优化神秘酒馆过场动画节奏并清零残留震屏；精简快速装填属性描述。</li>
+                    </ul>
+                </div>
+
+                <div class="bg-[#111624] border border-slate-800 p-3 space-y-1">
+                    <div class="text-xs sm:text-sm font-bold text-slate-300">【V0.7.2 往期更新】</div>
+                    <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
                         <li><b>角色与流派平衡</b>：全局吸血冷却调整为 0.5s、单次上限固定 5 点；全面加强 5 项近战战技；优化凌汐「屏息校准」移动宽限计时与「超限架狙」实际开火后填弹。</li>
                         <li><b>首领与机制调优</b>：下调后期首领血量与伤害倍率，降低 4 号首领十字死光转速，新增骨刺囚笼防小怪卡位机制。</li>
-                        <li><b>升级与属性重构</b>：新增升级光柱延迟演出与连升队列；「晶核磁力仪」改为百分比拾取且保底不低于初始范围；「快速装填」改为独立乘算减换弹时间，「纳米力场」改为按品质加换弹速度；调整「预付定金」为单层 -8%。</li>
+                        <li><b>升级与属性重构</b>：新增升级光柱延迟演出与连升队列；「晶核磁力仪」改为百分比拾取且保底不低于初始范围；「快速装填」改为减换弹时间，「纳米力场」改为按品质加换弹速度；调整「预付定金」为单层 -8%。</li>
                         <li><b>体验与界面</b>：结算面板「存活时长」更名为「游戏时长」，同步优化属性面板与底部 Buff 栏数值说明。</li>
                     </ul>
                 </div>
@@ -2442,7 +2454,7 @@
     function round2(val) { return Math.round((Number(val) || 0) * 100) / 100; }
     function fmt1(val) { const r = round1(val); return Number.isInteger(r) ? String(r) : r.toFixed(1); }
 
-    const APP_VERSION_NAME = 'V0.7.2';
+    const APP_VERSION_NAME = 'V0.7.3';
     const STORAGE_KEY_NOTICE_READ = `pixel_story_notice_read_${APP_VERSION_NAME}`;
     const STORAGE_KEY_SETTINGS = 'pixel_story_v037_settings';
     const STORAGE_KEY_KEYBINDS = 'pixel_story_v037_keybinds';
@@ -5437,7 +5449,7 @@
             name: '星澜 · Xinglan',
             tag: '星穹御剑',
             tagCls: 'bg-indigo-600 text-white',
-            intro: '中远程星穹御剑使。初始携带4把飞剑首尾相接绕身旋转，随【扩容弹匣】同步增多（满级9把，攻击24 / 间隔0.42秒 / 射程270）；飞剑耗尽后需1秒凝聚灵气重新召唤。',
+            intro: '中远程星穹御剑使。初始携带4把飞剑首尾相接绕身旋转，随【扩容弹匣】同步增多（满级9把，攻击26 / 间隔0.42秒 / 射程270）；飞剑耗尽后需1秒凝聚灵气重新召唤。',
             skills: [
                 {
                     name: '周天剑环 · 留影（被动）',
@@ -5470,19 +5482,19 @@
                     name: '屏息校准（被动）',
                     badge: '被动技能',
                     iconSkillId: 'sn_passive_upgrade',
-                    desc: '天生自带2级【钨芯穿甲弹】（子弹穿透+2，每次穿透伤害递减20%，保底50%）。不移动时每0.5秒叠加1层“校准”，最多5层；每层提供3%攻击力与2%暴击率加成。开始移动后，累计移动 0.5×当前层数 秒后一次性清零（宽限期内停下重置计时；战术雷步翻滚与闪避期间不掉层）。\n【升级效果】：每级每层额外提升+1.5%攻击力、+1%暴击率（满级每层+10.5%攻击力、+7%暴击率）。'
+                    desc: '天生自带2级【钨芯穿甲弹】（子弹穿透+2，每次穿透伤害递减20%，保底50%）。站定每0.5秒+1层“校准”（最多5层），每层提供3%攻击力与2%暴击率；有层数时移动进入掉层状态，每1.0秒掉1层。中途停步不足0.5秒时掉层计时继续，重新移动则清空站定计时；站定满0.5秒立刻停止掉层、清空掉层计时并+1层（满层同样停止并刷新）。释放小技能（E）或大招每次开火时立即+2层并停止掉层刷新计时；翻滚（E）与闪避（Space）期间冻结计时。\n【升级效果】：每级每层额外提升+1.5%攻击力、+1%暴击率（满级每层+10.5%攻击力、+7%暴击率）。'
                 },
                 {
                     name: '战术雷步（小技能 · E）',
                     badge: '主动技能 · 每20秒储存1次（最多2次）',
                     iconSkillId: 'sn_skill_upgrade',
-                    desc: '初始每20秒储存1次（最多储存2次，使用后有1秒技能冷却且使闪避进入0.5秒冷却；使用闪避也会使本技能进入0.5秒冷却；每次普攻命中敌人减少当前层数0.5秒储存时间）。向方向键/移动方向翻滚一段距离（翻滚期间不掉被动校准层数；大招架狙期间释放会直接收枪退出狙击状态并保留剩余大招充能），同时在原地留下一枚战术炸弹。炸弹固定延迟0.7秒后爆炸，对范围内敌人造成100%攻击力伤害与0.5秒眩晕。\n【升级效果】：每级炸弹伤害+30%（满级250%），每层储存时间-5%（满级15.0秒/次）。'
+                    desc: '初始每20秒储存1次（最多储存2次，使用后有1秒技能冷却且使闪避进入0.5秒冷却；使用闪避也会使本技能进入0.5秒冷却；每次普攻命中敌人减少当前层数0.5秒储存时间）。向方向键/移动方向翻滚一段距离（释放立即+2层被动校准并停止掉层，翻滚期间冻结计时；大招架狙期间释放会直接收枪退出狙击状态并保留剩余大招充能），同时在原地留下一枚战术炸弹。炸弹固定延迟0.7秒后爆炸，对范围内敌人造成100%攻击力伤害与0.5秒眩晕。\n【升级效果】：每级炸弹伤害+30%（满级250%），每层储存时间-5%（满级15.0秒/次）。'
                 },
                 {
                     name: '超限架狙（大招 · R）',
                     badge: '终极技能 · 每15秒充能1发（最多3发）',
                     iconSkillId: 'sn_ult_upgrade',
-                    desc: '每15秒获得1层大招狙击充能（最多储存3层；每次普攻命中敌人减少当前大招层数0.5秒获取时间）。拥有至少1层时点击大招键可原地架设狙击阵地并拉大视野（自动优先锁定首领，其次精英与高生命值丧尸），由摇杆/方向键实时控制激光瞄准线。每次点击大招键消耗1层充能（连续射击间隔0.5秒），打出一发全程全额贯穿的强力穿甲弹，造成300%攻击力伤害与1秒50%减速。本次架狙实际开火消耗充能后填满主武器弹匣（未开火直接取消不填弹）；打空当前大招充能、点击小技能/闪避键或单次架狙满8秒时收枪结束并有1秒冷却（提前收枪保留未消耗的大招层数）。\n【升级效果】：每级强力穿甲弹伤害+50%（满级550%），每层获取时间-5%（满级11.3秒/层）。'
+                    desc: '每15秒获得1层大招狙击充能（最多储存3层；每次普攻命中敌人减少当前大招层数0.5秒获取时间）。拥有至少1层时点击大招键可原地架设狙击阵地并拉大视野（自动优先锁定首领，其次精英与高生命值丧尸），由摇杆/方向键实时控制激光瞄准线。每次点击大招键消耗1层充能（连续射击间隔0.5秒，并立即+2层被动校准与停止掉层），打出一发全程全额贯穿的强力穿甲弹，造成300%攻击力伤害与1秒50%减速。本次架狙实际开火消耗充能后填满主武器弹匣（未开火直接取消不填弹）；打空当前大招充能、点击小技能/闪避键或单次架狙满8秒时收枪结束并有1秒冷却（提前收枪保留未消耗的大招层数）。\n【升级效果】：每级强力穿甲弹伤害+50%（满级550%），每层获取时间-5%（满级11.3秒/层）。'
                 }
             ]
         }
@@ -5883,8 +5895,9 @@
         }
         if (id === 'trinket_curio_box') {
             const distinctCount = Object.keys(tr).filter(k => (tr[k] || 0) > 0 && k !== 'trinket_high_stakes_bet' && k !== 'trinket_field_insurance').length;
-            const showHp = ownedStacks > 0 ? distinctCount : (distinctCount + 1);
-            return `（${prefix}最大生命+${showHp}）`;
+            const showCount = ownedStacks > 0 ? distinctCount : (distinctCount + 1);
+            const showHp = Math.min(15, round1(showCount * 0.5));
+            return `（${prefix}最大生命+${fmt1(showHp)}/15）`;
         }
         if (id === 'trinket_range_finder') {
             const extraR = Math.min(150, Math.max(0, (stats.attackRange || 0) - (p.baseAttackRange || 0)));
@@ -5938,9 +5951,16 @@
         return note ? `${t.desc}${note}` : t.desc;
     }
 
+    let shopRevealQueue = [];
     window.hideShopRevealModal = function () {
         const modal = document.getElementById('shopRevealModal');
         if (modal) modal.classList.add('hidden');
+        if (shopRevealQueue.length > 0) {
+            const nextItem = shopRevealQueue.shift();
+            if (nextItem && nextItem.type === 'relic_upgrade') {
+                renderRelicUpgradeRevealModal(nextItem.relSnap, nextItem.prevRarity, nextItem.nextRarity, nextItem.addedAffix);
+            }
+        }
     };
 
     let geneAwakenBannerTimeout = null;
@@ -6112,23 +6132,27 @@
         resetScrollbarsIn(modal);
     }
 
-    function showRelicUpgradeReveal(rel, prevRarity, nextRarity, addedAffix) {
+    function renderRelicUpgradeRevealModal(relSnap, prevRarity, nextRarity, addedAffix) {
         const modal = document.getElementById('shopRevealModal');
         const box = document.getElementById('shopRevealModalBox');
         const badgeEl = document.getElementById('shopRevealBadge');
         const titleEl = document.getElementById('shopRevealTitle');
         const subEl = document.getElementById('shopRevealSubtitle');
         const gridEl = document.getElementById('shopRevealCardsGrid');
-        if (!modal || !gridEl || !rel) return;
+        if (!modal || !gridEl || !relSnap) return;
         const oldMeta = STAT_RARITY_META[prevRarity] || STAT_RARITY_META[0];
         const newMeta = STAT_RARITY_META[nextRarity] || STAT_RARITY_META[0];
+        const remainingCount = shopRevealQueue.length;
         if (box) box.className = 'pixel-box w-full max-w-lg max-h-[90vh] overflow-y-auto p-3 sm:p-5 border-2 border-amber-400 bg-[#0d111c] space-y-3 shadow-[0_0_36px_rgba(250,204,21,0.42)]';
-        if (badgeEl) { badgeEl.className = 'text-[10px] font-bold text-amber-300 tracking-wide'; badgeEl.textContent = '遗物升阶核心 · 品质跃升'; }
-        if (titleEl) titleEl.textContent = `${rel.name} 升阶成功！`;
+        if (badgeEl) {
+            badgeEl.className = 'text-[10px] font-bold text-amber-300 tracking-wide';
+            badgeEl.textContent = remainingCount > 0 ? `遗物升阶核心 · 品质跃升（后续还有 ${remainingCount} 次升阶）` : '遗物升阶核心 · 品质跃升';
+        }
+        if (titleEl) titleEl.textContent = `${relSnap.name} 升阶成功！`;
         if (subEl) subEl.innerHTML = `品质跃升：<span class="font-bold ${oldMeta.textCls}">[${oldMeta.name}]</span> <span class="text-amber-300 mx-1">➔</span> <span class="font-bold ${newMeta.textCls}">[${newMeta.name}]</span>`;
         gridEl.className = 'grid grid-cols-1 gap-2';
-        const affixListHtml = (rel.affixes && rel.affixes.length > 0)
-            ? rel.affixes.map(a => {
+        const affixListHtml = (relSnap.affixes && relSnap.affixes.length > 0)
+            ? relSnap.affixes.map(a => {
                 const isNew = addedAffix && a.id === addedAffix.id;
                 return `<div class="text-[11px] ${isNew ? 'text-amber-200 bg-amber-500/15 border border-amber-400/50 px-2 py-1' : 'text-slate-300 px-1 py-0.5'}">★ [${a.name}]${isNew ? ' <span class="text-emerald-300 font-bold">[新增]</span>' : ''}：${formatStatColoredHtml(a.desc)}</div>`;
             }).join('')
@@ -6137,17 +6161,17 @@
             <div class="reveal-item-card p-3 bg-[#111726] border-2 ${newMeta.borderCls} space-y-2">
                 <div class="flex items-center gap-2.5">
                     <div class="w-11 h-11 bg-[#090d16] border-2 ${newMeta.borderCls} flex items-center justify-center shrink-0">
-                        <img src="${rel.iconUrl}" class="w-8 h-8" alt="${rel.name}" />
+                        <img src="${relSnap.iconUrl}" class="w-8 h-8" alt="${relSnap.name}" />
                     </div>
                     <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="text-sm sm:text-base font-bold ${newMeta.textCls}">${rel.name}</span>
+                            <span class="text-sm sm:text-base font-bold ${newMeta.textCls}">${relSnap.name}</span>
                             <span class="text-[10px] px-1.5 py-0.5 border font-bold ${newMeta.badgeCls}">${newMeta.name}</span>
                         </div>
-                        <div class="text-[11px] font-mono text-purple-300 mt-0.5">冷却: ${rel.maxCd}s · 充能: ${rel.maxCharges}次</div>
+                        <div class="text-[11px] font-mono text-purple-300 mt-0.5">冷却: ${relSnap.maxCd}s · 充能: ${relSnap.maxCharges}次</div>
                     </div>
                 </div>
-                <div class="text-xs text-slate-200 leading-relaxed border-t border-slate-800 pt-2">${formatStatColoredHtml(rel.desc)}</div>
+                <div class="text-xs text-slate-200 leading-relaxed border-t border-slate-800 pt-2">${formatStatColoredHtml(relSnap.desc)}</div>
                 <div class="border-t border-slate-800 pt-2 space-y-1">
                     <div class="text-[10px] font-bold text-amber-300">当前词条：</div>
                     ${affixListHtml}
@@ -6155,6 +6179,29 @@
             </div>`;
         modal.classList.remove('hidden');
         resetScrollbarsIn(modal);
+    }
+
+    function showRelicUpgradeReveal(rel, prevRarity, nextRarity, addedAffix) {
+        const modal = document.getElementById('shopRevealModal');
+        if (!modal || !rel) return;
+        const relSnap = {
+            name: rel.name,
+            iconUrl: rel.iconUrl,
+            maxCd: rel.maxCd,
+            maxCharges: rel.maxCharges,
+            desc: rel.desc,
+            affixes: Array.isArray(rel.affixes) ? rel.affixes.map(a => ({ id: a.id, name: a.name, desc: a.desc })) : []
+        };
+        const affixSnap = addedAffix ? { id: addedAffix.id, name: addedAffix.name, desc: addedAffix.desc } : null;
+        if (!modal.classList.contains('hidden')) {
+            shopRevealQueue.push({ type: 'relic_upgrade', relSnap, prevRarity, nextRarity, addedAffix: affixSnap });
+            const badgeEl = document.getElementById('shopRevealBadge');
+            if (badgeEl && badgeEl.textContent.includes('遗物升阶核心')) {
+                badgeEl.textContent = `遗物升阶核心 · 品质跃升（后续还有 ${shopRevealQueue.length} 次升阶）`;
+            }
+            return;
+        }
+        renderRelicUpgradeRevealModal(relSnap, prevRarity, nextRarity, affixSnap);
     }
 
     window.showSkillDetailTooltip = function (title, badge, desc, iconUrl) {
@@ -8449,7 +8496,7 @@
             "..occwwwccco..",
             "...oocccooo...",
             ".............."
-        ], getDesc(l) { return `换弹时间-${l * 8}%（独立乘算）。`; } },
+        ], getDesc(l) { return `换弹时间-${l * 8}%。`; } },
         // 钨芯穿甲弹：斜向击穿厚铁板的蓝银尖头钨芯长弹 + 碎钢火星
         { id: 'pierce_up', excludeHeroes: ['sakura', 'yomi'], name: '钨芯穿甲弹', category: '枪械改造', catColor: 'text-emerald-300 border-emerald-500/60 bg-emerald-950/50', order: 404, maxLv: 5, hasCd: false, iconMatrix: [
             "..........ooo.",
@@ -9728,7 +9775,7 @@
             "..............",
             "..............",
             ".............."
-        ], desc: '最大生命+4。【唯一】每持有1种不同的饰品，额外获得最大生命+1。', onBuy(p) { addPlayerMaxHpBonus(p, 4); getPlayerStats(p); } },
+        ], desc: '最大生命+4。【唯一】每持有1种不同的饰品，额外获得最大生命+0.5（最多额外+15）。', onBuy(p) { addPlayerMaxHpBonus(p, 4); getPlayerStats(p); } },
         { id: 'trinket_regen_plating', name: '再生镀层', rarity: 1, baseCost: 28, maxStacks: 3, iconMatrix: [
             "..oooooooooo..",
             ".oGGGGGGGGGGGo",
@@ -11293,32 +11340,51 @@
         { id: 'harvest_up', name: '物资搜刮', statLabel: '收获', values: [6, 10, 15, 22], unit: '', iconSkillId: 'harvest_up', descFn(v) { return `收获+${v}。`; } }
     ];
 
-    // 稀有度硬性解锁门槛（Hard Thresholds）：0幸运(90/10/0/0) -> 20幸运解锁史诗(4%起步) -> 45幸运解锁传说(3%起步) -> 75+幸运封顶(15/40/30/15)
-    function getLuckRarityProbabilities(luck) {
-        const lk = Math.max(0, Number(luck) || 0);
+    // 波次隐藏等效幸运（不写入面板主数值；第 1 波 0，每波 +2.5，第 19 波封顶 +45；首领连战按进度映射）
+    function getWaveBonusLuck() {
+        if (typeof waveState === 'undefined' || !waveState || waveState.mode === 'training') return 0;
+        const w = Math.max(1, Number(waveState.wave) || 1);
+        if (waveState.mode === 'boss_rush') {
+            const rushTable = [7.5, 17.5, 27.5, 37.5, 45];
+            return rushTable[Math.min(rushTable.length - 1, w - 1)] || 0;
+        }
+        return Math.min(45, Math.max(0, round1((w - 1) * 2.5)));
+    }
+
+    // 总有效幸运：负幸运会直接抵消波次自然成长幸运，保底不低于 0
+    function getEffectiveRollLuck(rawPlayerLuck) {
+        return Math.max(0, round1((Number(rawPlayerLuck) || 0) + getWaveBonusLuck()));
+    }
+
+    // 平滑分段品质概率公式（15 解锁史诗、35 解锁传说、120 封顶 15/37/30/18）
+    function getLuckRarityProbabilities(rawPlayerLuck) {
+        const waveLuck = getWaveBonusLuck();
+        const lk = Math.max(0, round1((Number(rawPlayerLuck) || 0) + waveLuck));
         let w0 = 90, w1 = 10, w2 = 0, w3 = 0;
-        if (lk <= 0) {
-            w0 = 90; w1 = 10; w2 = 0; w3 = 0;
-        } else if (lk < 20) {
-            const t = Math.min(1, lk / 19);
+        if (lk < 15) {
+            const t = lk / 15;
             w0 = 90 - 25 * t;
             w1 = 10 + 25 * t;
-            w2 = 0; w3 = 0;
-        } else if (lk < 45) {
-            const t = Math.min(1, (lk - 20) / 24);
-            w2 = 4 + 14 * t;
-            w1 = 35 + 12 * t;
-            w0 = Math.max(35, 100 - w1 - w2);
+            w2 = 0;
             w3 = 0;
-        } else {
-            const t = Math.min(1, (lk - 45) / 30);
-            w3 = 3 + 12 * t;
+        } else if (lk < 35) {
+            const t = (lk - 15) / 20;
+            w0 = 65 - 30 * t;
+            w1 = 35 + 12 * t;
+            w2 = 18 * t;
+            w3 = 0;
+        } else if (lk < 120) {
+            const t = (lk - 35) / 85;
+            w0 = 35 - 20 * t;
+            w1 = 47 - 10 * t;
             w2 = 18 + 12 * t;
-            w1 = 47 - 7 * t;
-            w0 = Math.max(15, 100 - w1 - w2 - w3);
+            w3 = 18 * t;
+        } else {
+            w0 = 15; w1 = 37; w2 = 30; w3 = 18;
         }
         const total = w0 + w1 + w2 + w3 || 100;
         return {
+            lk, waveLuck,
             w0, w1, w2, w3,
             p0: round1((w0 / total) * 100),
             p1: round1((w1 / total) * 100),
@@ -11327,8 +11393,8 @@
         };
     }
 
-    function rollStatRarityTier(level, luck) {
-        const { w0, w1, w2, w3 } = getLuckRarityProbabilities(luck);
+    function rollStatRarityTier(level, rawPlayerLuck) {
+        const { w0, w1, w2, w3 } = getLuckRarityProbabilities(rawPlayerLuck);
         let r = Math.random() * (w0 + w1 + w2 + w3);
         if (r < w0) return 0; r -= w0;
         if (r < w1) return 1; r -= w1;
@@ -13304,7 +13370,7 @@
             muzzleFlashTimer: 0, recoilOffset: 0, level: 1, xp: 0, xpNext: getXpRequired(1),
             hp: initHp, maxHp: initHp, baseMaxHp: initHp, shield: 0, shieldTimer: 0,
             sunfireTickTimer: 1.0, periodicShieldTimer: 0,
-            baseMoveSpeed: 205, baseDamage: isLingxi ? 50 : (isXinglan ? 24 : (isYomi ? 32 : (isSakura ? 35 : (isChinatsu ? 30 : 25)))),
+            baseMoveSpeed: 205, baseDamage: isLingxi ? 50 : (isXinglan ? 26 : (isYomi ? 32 : (isSakura ? 35 : (isChinatsu ? 30 : 25)))),
             baseFireInterval: isLingxi ? 0.95 : (isXinglan ? 0.42 : (isYomi ? 0.68 : (isSakura ? 0.475 : (isChinatsu ? 0.48 : 0.4)))),
             reloadDuration: isLingxi ? 1.4 : (isXinglan ? 1.0 : (isChinatsu ? 0.8 : 1.2)),
             baseAttackRange: isLingxi ? 350 : (isXinglan ? 270 : (isYomi ? 130 : (isSakura ? 105 : (isChinatsu ? 190 : 290)))),
@@ -13321,7 +13387,7 @@
             sakuraSwordSwingDir: 1, sakuraSwordSwingVisualTimer: 0, sakuraPostSkillSpeedTimer: 0,
             yomiBlades: [], yomiSkillState: { active: false, timer: 0, maxTimer: 4.0, targetUid: null }, yomiPullAnim: null, yomiDashAnim: null, yomiVampBuffTimer: 0, yomiUltTickTimer: 0.25,
             xinglanRingAngle: 0, xinglanGroundSwords: [], xinglanReturningSwords: [], xinglanUltTickTimer: 0,
-            calibrationStacks: 0, calibrationTimer: 0, calibrationDecayTimer: 0, sniperRollTimer: 0, sniperRollVx: 0, sniperRollVy: 0,
+            calibrationStacks: 0, calibrationTimer: 0, calibrationDecayTimer: 0, calibrationDecaying: false, sniperRollTimer: 0, sniperRollVx: 0, sniperRollVy: 0,
             sniperSkillCharges: 2, sniperSkillMaxCharges: 2, sniperSkillChargeTimer: 0, sniperSkillCastCdTimer: 0,
             sniperUltCharges: 3, sniperUltMaxCharges: 3, sniperUltChargeTimer: 0, sniperUltShotsLeft: 3, sniperUltPostFireTimer: 0, sniperUltExitCdTimer: 0,
             noAttackTimer: 0, battleSpiritStacks: 0, battleSpiritTimer: 0, phantomAfterglowTimer: 0,
@@ -13437,7 +13503,7 @@
         const marauderStacks = tr.trinket_marauder_armor || 0;
         const marauderTargetHpBonus = marauderStacks > 0 ? Math.min(20, Math.floor(effHarvest / 15) * 2) : 0;
         const distinctTrinketCount = Object.keys(tr).filter(k => (tr[k] || 0) > 0 && k !== 'trinket_high_stakes_bet' && k !== 'trinket_field_insurance').length;
-        const curioBoxTargetHpBonus = (tr.trinket_curio_box || 0) > 0 ? (distinctTrinketCount * 1) : 0;
+        const curioBoxTargetHpBonus = (tr.trinket_curio_box || 0) > 0 ? Math.min(15, round1(distinctTrinketCount * 0.5)) : 0;
         const combinedDynHpBonus = marauderTargetHpBonus + curioBoxTargetHpBonus;
         const prevDynHpBonus = (p.appliedMarauderHpBonus || 0) + (p.appliedCurioBoxHpBonus || 0);
         if (!excludeTempBuffs && combinedDynHpBonus !== prevDynHpBonus) {
@@ -15507,12 +15573,17 @@
 
     function fireLingxiUltRailShot() {
         if (!player || player.heroId !== 'lingxi') return;
-        const stats = getPlayerStats(player);
         const maxChg = player.sniperUltMaxCharges || 3;
         const prevChg = Math.max(0, player.sniperUltCharges ?? 3);
         if (prevChg <= 0) return;
         player.sniperUltCharges = prevChg - 1;
         player.sniperUltShotsLeft = player.sniperUltCharges;
+        // 大招每次发射时立即 +2 层屏息校准（上限 5 层），同时停止掉层并刷新计时器（在计算本次伤害前生效）
+        player.calibrationStacks = Math.min(5, (player.calibrationStacks || 0) + 2);
+        player.calibrationDecaying = false;
+        player.calibrationDecayTimer = 0;
+        player.calibrationTimer = 0;
+        const stats = getPlayerStats(player);
         // 仅在实际开火消耗大招充能后填满主武器弹匣
         player.sniperUltFiredAny = true;
         player.isReloading = false;
@@ -15906,6 +15977,12 @@
             }
             player.sniperSkillCastCdTimer = 1.0;
             player.grenadeCdTimer = Math.max(1.0, nextSkillCharges <= 0 ? (player.sniperSkillChargeTimer || stats.grenadeMaxCd || 20.0) : 0);
+            // 释放小技能立即 +2 层屏息校准（上限 5 层），同时停止掉层并刷新计时器
+            player.calibrationStacks = Math.min(5, (player.calibrationStacks || 0) + 2);
+            player.calibrationDecaying = false;
+            player.calibrationDecayTimer = 0;
+            player.calibrationTimer = 0;
+            const postCalibStats = getPlayerStats(player);
             // 使用小技能后，闪避进入 0.5s 冷却
             player.dodgeCdTimer = Math.max(player.dodgeCdTimer || 0, 0.5);
             applyQuantumWatchSkillCast();
@@ -15916,7 +15993,7 @@
                 radius: 95,
                 timer: 0,
                 duration: 0.70,
-                damage: round1(stats.damage * stats.snBombDmgMult),
+                damage: round1(postCalibStats.damage * postCalibStats.snBombDmgMult),
                 stunDuration: 0.5
             });
             const dDir = getCurrentOrLastInputDir(player);
@@ -17766,7 +17843,7 @@
         let fallbackGold = 0;
         for (let k = 0; k < 3; k++) {
             const stats = getPlayerStats(p);
-            const probs = getLuckRarityProbabilities(stats.effLuck);
+            const probs = getLuckRarityProbabilities(stats.luck);
             const blueChance = (probs.w1 + probs.w2 + probs.w3) / Math.max(0.01, probs.w0 + probs.w1 + probs.w2 + probs.w3);
             const targetRarity = Math.random() < blueChance ? 1 : 0;
             const validPool = SHOP_TRINKET_POOL.filter(t => {
@@ -17939,7 +18016,7 @@
             if (!p.trinkets) p.trinkets = {};
             const isMelee = MELEE_HERO_IDS.includes(p.heroId);
             const stats = getPlayerStats(p);
-            const targetRarity = Math.min(2, rollStatRarityTier(p.level, stats.effLuck));
+            const targetRarity = Math.min(2, rollStatRarityTier(p.level, stats.luck));
             const excludedConsumables = new Set(['trinket_smuggler_blindbox', 'trinket_mirror_printer', 'trinket_relic_upgrader', 'trinket_high_stakes_bet', 'trinket_field_insurance']);
             const validPool = SHOP_TRINKET_POOL.filter(t => {
                 if (t.rarity > 2) return false;
@@ -18399,14 +18476,19 @@
             if (wage > 0) {
                 player.gold = Math.floor((player.gold || 0) + wage);
             }
+            const curWaveNum = Math.max(1, Number(waveState && waveState.wave) || 1);
+            const allowNaturalGrowth = Boolean(waveState && waveState.mode === 'boss_rush') || curWaveNum <= 20;
             const equityStacks = (player.trinkets && player.trinkets.trinket_black_market_equity) || 0;
             const growthRate = 0.04 + equityStacks * 0.02;
-            const addHarvest = round1(curHarvest * growthRate);
+            const addHarvest = allowNaturalGrowth ? round1(curHarvest * growthRate) : 0;
             if (addHarvest > 0) {
                 player.statBonuses.harvest = round1((player.statBonuses.harvest || 0) + addHarvest);
                 getPlayerStats(player);
             }
-            spawnFloatingText(player.x, player.y - 58, `收获结算 +${wage}G (收获+${fmt1(addHarvest)})`, '#fde047', 14, -40);
+            const harvestMsg = allowNaturalGrowth
+                ? `收获结算 +${wage}G (收获+${fmt1(addHarvest)})`
+                : `收获结算 +${wage}G (无尽停止成长)`;
+            spawnFloatingText(player.x, player.y - 58, harvestMsg, '#fde047', 14, -40);
         }
     }
 
@@ -18625,8 +18707,9 @@
     function rollWaveShopOffers() {
         if (!player) return;
         const stats = getPlayerStats(player, true);
-        const curLuck = Math.max(0, stats.luck || 0);
-        const maxAllowedRarity = curLuck >= 45 ? 3 : (curLuck >= 20 ? 2 : 1);
+        const curRawLuck = stats.luck || 0;
+        const effRollLuck = getEffectiveRollLuck(curRawLuck);
+        const maxAllowedRarity = effRollLuck > 35 ? 3 : (effRollLuck > 15 ? 2 : 1);
         const prevOffers = Array.isArray(waveState.shopOffers) ? waveState.shopOffers : [];
         const isMelee = MELEE_HERO_IDS.includes(player.heroId);
         const hasUpgradableRelic = Array.isArray(player.activeRelics) && player.activeRelics.some(r => r && (r.rarity || 0) < 3);
@@ -18653,7 +18736,7 @@
         const inflationMult = getShopWaveInflationMult();
         for (let i = 0; i < 3; i++) {
             if (offers[i]) continue;
-            const targetRarity = Math.min(maxAllowedRarity, rollStatRarityTier(player.level, curLuck));
+            const targetRarity = Math.min(maxAllowedRarity, rollStatRarityTier(player.level, curRawLuck));
             let candidates = availableTrinkets.filter(t => !pickedIds.has(t.id) && t.rarity <= targetRarity);
             if (candidates.length === 0) candidates = availableTrinkets.filter(t => !pickedIds.has(t.id));
             if (candidates.length === 0) continue;
@@ -18667,7 +18750,7 @@
             offerObj.cost = getEffectiveShopOfferCost(offerObj);
             offers[i] = offerObj;
         }
-        if (!offers[3]) offers[3] = generateRelicOffer(player.level, curLuck);
+        if (!offers[3]) offers[3] = generateRelicOffer(player.level, curRawLuck);
         waveState.shopOffers = offers.filter(Boolean);
     }
 
@@ -18675,7 +18758,7 @@
         const smugglerStacks = (player && player.trinkets && player.trinkets.trinket_smuggler_card) || 0;
         if (smugglerStacks > 0 && (waveState.shopRerollCount || 0) === 0) return 0;
         const inflationMult = getShopWaveInflationMult();
-        const rawCost = Math.round((3 + (waveState.shopRerollCount || 0) * 2) * inflationMult);
+        const rawCost = Math.round((2 + (waveState.shopRerollCount || 0) * 2) * inflationMult);
         const chipStacks = (player && player.trinkets && player.trinkets.trinket_gilded_chip) || 0;
         return Math.max(1, Math.round(rawCost * Math.max(0.1, 1 - chipStacks * 0.10)));
     }
@@ -18723,12 +18806,31 @@
         updateHUD(true);
     };
 
+    let _cachedTopBossIconUrl = '';
+    function getTopBossIconHtml(sizeCls = 'w-3.5 h-3.5') {
+        if (!_cachedTopBossIconUrl && typeof SPRITES !== 'undefined' && SPRITES && SPRITES.topBoss) {
+            try { _cachedTopBossIconUrl = SPRITES.topBoss.toDataURL(); } catch (e) {}
+        }
+        if (!_cachedTopBossIconUrl) return '';
+        return `<img src="${_cachedTopBossIconUrl}" class="${sizeCls} shrink-0 inline-block" style="image-rendering:pixelated;" alt="BOSS" />`;
+    }
+
+    function getNextWavePromptMeta() {
+        const nextW = Math.max(1, Number(waveState && waveState.wave) || 1);
+        const isBossRush = Boolean(waveState && waveState.mode === 'boss_rush');
+        const isBossWave = isBossRush || (nextW % 4 === 0);
+        const waveLabel = isBossRush ? `BOSS ${nextW}` : `第${nextW}波`;
+        const bossIconHtml = isBossWave ? getTopBossIconHtml('w-3.5 h-3.5') : '';
+        return { nextW, isBossRush, isBossWave, waveLabel, bossIconHtml };
+    }
+
     function openWaveShopModal(skipTavernCheck = false) {
         if (!player || gameState === 'GAME_OVER') return;
         if (!skipTavernCheck && typeof shouldTriggerMysteryTavern === 'function' && shouldTriggerMysteryTavern()) {
             startMysteryTavernSequence(false);
             return;
         }
+        shopRevealQueue = [];
         waveState.pendingWaveShop = false;
         if (Array.isArray(waveState.shopOffers)) {
             waveState.shopOffers.forEach(o => {
@@ -18751,9 +18853,21 @@
         const goldEl = document.getElementById('shopGoldText');
         const rerollCostEl = document.getElementById('shopRerollCostText');
         const rerollBtn = document.getElementById('btnShopReroll');
+        const nextWaveBtn = document.getElementById('btnWaveShopNext');
         const equippedBox = document.getElementById('shopEquippedRelicsBox');
         const ownedTrinketsBox = document.getElementById('shopOwnedTrinketsBox');
         if (!container || !player) return;
+
+        if (nextWaveBtn) {
+            const meta = getNextWavePromptMeta();
+            if (meta.isBossWave) {
+                nextWaveBtn.className = 'px-2.5 sm:px-3.5 py-1 text-xs font-bold text-rose-100 bg-gradient-to-b from-rose-900 to-red-950 border-2 border-rose-400 shadow-[0_3px_0_#3f0a12,0_0_12px_rgba(244,63,94,0.35)] hover:brightness-110 active:translate-y-0.5 tracking-wide whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1 cursor-pointer';
+                nextWaveBtn.innerHTML = `${meta.bossIconHtml}<span>${meta.waveLabel} ▶</span>`;
+            } else {
+                nextWaveBtn.className = 'pixel-play-btn px-2.5 sm:px-3.5 py-1 text-xs font-bold text-slate-950 tracking-wide whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1';
+                nextWaveBtn.innerHTML = `<span>${meta.waveLabel} ▶</span>`;
+            }
+        }
 
         const curseBanner = document.getElementById('shopTavernCurseBanner');
         if (curseBanner) {
@@ -19725,7 +19839,7 @@
     function getLevelUpRerollCost() {
         const inflationMult = getShopWaveInflationMult();
         const rerollIdx = (levelUpState && levelUpState.levelRerollCount) || 0;
-        const rawCost = Math.round((2 + rerollIdx * 1) * inflationMult);
+        const rawCost = Math.round((1 + rerollIdx * 1) * inflationMult);
         const holoStacks = (player && player.trinkets && player.trinkets.trinket_holo_simulator) || 0;
         return Math.max(1, Math.round(rawCost * Math.max(0.1, 1 - holoStacks * 0.10)));
     }
@@ -21381,27 +21495,93 @@
             const relicSlots = player.activeRelics || [player.activeRelic || null, null];
             const btnIds = ['btnActiveRelic', 'btnActiveRelic2'];
             const imgIds = ['relicBtnImg', 'relic2BtnImg'];
+            const sweepIds = ['relicChargeSweepCanvas', 'relic2ChargeSweepCanvas'];
             const cdOverlayIds = ['hudRelicCdOverlay', 'hudRelic2CdOverlay'];
             const cdTextIds = ['hudRelicCdText', 'hudRelic2CdText'];
             const chargeBadgeIds = ['hudRelicChargeBadge', 'hudRelic2ChargeBadge'];
             for (let sIdx = 0; sIdx < 2; sIdx++) {
                 const rBtn = document.getElementById(btnIds[sIdx]), rImg = document.getElementById(imgIds[sIdx]);
+                const rSweepCv = document.getElementById(sweepIds[sIdx]);
                 const rOverlay = document.getElementById(cdOverlayIds[sIdx]), rCdText = document.getElementById(cdTextIds[sIdx]);
                 const rChargeBadge = document.getElementById(chargeBadgeIds[sIdx]), rel = relicSlots[sIdx];
                 if (!rBtn) continue;
                 if (rel) {
+                    const relChg = Math.max(0, rel.charges || 0);
+                    const relMaxChg = Math.max(1, rel.maxCharges || 1);
                     rBtn.classList.remove('hidden');
                     if (rImg && rImg.getAttribute('src') !== rel.iconUrl) rImg.src = rel.iconUrl;
                     if (rChargeBadge) {
-                        if (rel.maxCharges > 1) { rChargeBadge.classList.remove('hidden'); rChargeBadge.textContent = `x${rel.charges}`; }
+                        if (relMaxChg > 1) { rChargeBadge.classList.remove('hidden'); rChargeBadge.textContent = `x${relChg}`; }
                         else rChargeBadge.classList.add('hidden');
                     }
+                    if (rSweepCv) {
+                        if (relMaxChg > 1 && relChg < relMaxChg && (rel.cdTimer || 0) > 0.01) {
+                            rSweepCv.classList.remove('hidden');
+                            const rctx = rSweepCv.getContext('2d');
+                            const rw = rSweepCv.width, rh = rSweepCv.height;
+                            const rcx = rw * 0.5, rcy = rh * 0.5;
+                            const rMaxCd = Math.max(0.1, rel.maxCd || 15.0);
+                            const rProg = clampVal(1 - (rel.cdTimer || 0) / rMaxCd, 0, 1);
+                            const rStartA = -Math.PI * 0.5;
+                            const rCurA = rStartA + rProg * Math.PI * 2;
+                            const rEndA = rStartA + Math.PI * 2;
+                            const handColor = sIdx === 0 ? '#c084fc' : '#e879f9';
+                            const trailColor = sIdx === 0 ? 'rgba(192, 132, 252, 0.28)' : 'rgba(232, 121, 249, 0.28)';
+                            rctx.clearRect(0, 0, rw, rh);
+                            if (relChg <= 0) {
+                                // 0层时绘制深色扇形遮罩；≥1层时不盖黑色遮罩，仅显示顺时针充能指针
+                                rctx.fillStyle = 'rgba(2, 6, 23, 0.62)';
+                                rctx.fillRect(0, 0, rw, rh);
+                                rctx.beginPath();
+                                rctx.moveTo(rcx, rcy);
+                                rctx.arc(rcx, rcy, rw * 0.78, rCurA, rEndA, false);
+                                rctx.closePath();
+                                rctx.fillStyle = 'rgba(2, 6, 23, 0.48)';
+                                rctx.fill();
+                            }
+                            const rTrailStart = Math.max(rStartA, rCurA - 0.42);
+                            rctx.fillStyle = trailColor;
+                            rctx.beginPath();
+                            rctx.moveTo(rcx, rcy);
+                            rctx.arc(rcx, rcy, rw * 0.48, rTrailStart, rCurA, false);
+                            rctx.closePath();
+                            rctx.fill();
+                            rctx.strokeStyle = handColor;
+                            rctx.lineWidth = 2.4;
+                            rctx.beginPath();
+                            rctx.arc(rcx, rcy, rw * 0.45, rStartA, rCurA, false);
+                            rctx.stroke();
+                            const rHandX = rcx + Math.cos(rCurA) * (rw * 0.48);
+                            const rHandY = rcy + Math.sin(rCurA) * (rh * 0.48);
+                            rctx.strokeStyle = handColor;
+                            rctx.lineWidth = 3.0;
+                            rctx.beginPath();
+                            rctx.moveTo(rcx, rcy);
+                            rctx.lineTo(rHandX, rHandY);
+                            rctx.stroke();
+                            rctx.strokeStyle = '#ffffff';
+                            rctx.lineWidth = 1.4;
+                            rctx.beginPath();
+                            rctx.moveTo(rcx, rcy);
+                            rctx.lineTo(rHandX, rHandY);
+                            rctx.stroke();
+                            rctx.fillStyle = '#ffffff';
+                            rctx.beginPath();
+                            rctx.arc(rcx, rcy, 2.0, 0, Math.PI * 2);
+                            rctx.fill();
+                        } else {
+                            rSweepCv.classList.add('hidden');
+                        }
+                    }
                     if (rOverlay && rCdText) {
-                        if ((rel.charges || 0) <= 0 && (rel.cdTimer || 0) > 0.05) {
-                            rOverlay.classList.remove('hidden');
+                        if (relChg <= 0 && (rel.cdTimer || 0) > 0.05) {
+                            rOverlay.className = relMaxChg > 1
+                                ? 'absolute inset-0 bg-transparent flex flex-col items-center justify-center pointer-events-none z-20'
+                                : 'absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center pointer-events-none z-20';
                             rCdText.textContent = rel.cdTimer.toFixed(1);
-                        } else if ((rel.charges || 0) > 0 && (rel.recastLockTimer || 0) > 0.05) {
-                            rOverlay.classList.remove('hidden');
+                        } else if (relChg > 0 && (rel.recastLockTimer || 0) > 0.05) {
+                            // 仍有充能层数时不盖黑色遮罩，仅清晰显示短暂连发间隔倒计时
+                            rOverlay.className = 'absolute inset-0 bg-transparent flex flex-col items-center justify-center pointer-events-none z-20';
                             rCdText.textContent = rel.recastLockTimer.toFixed(1);
                         } else {
                             rOverlay.classList.add('hidden');
@@ -21409,6 +21589,7 @@
                     }
                 } else {
                     rBtn.classList.add('hidden');
+                    if (rSweepCv) rSweepCv.classList.add('hidden');
                 }
             }
         }
@@ -21462,30 +21643,48 @@
                     const startAng = -Math.PI * 0.5;
                     const curAng = startAng + progress * Math.PI * 2;
                     sctx.clearRect(0, 0, sw, sh);
+                    sctx.save();
                     if (curS <= 0) {
+                        // 0层时绘制深色扇形遮罩；≥1层时不覆盖黑色遮罩，仅保留顺时针充能指针提示
                         sctx.fillStyle = 'rgba(2, 6, 23, 0.72)';
                         sctx.fillRect(0, 0, sw, sh);
+                        sctx.beginPath();
+                        sctx.moveTo(cx, cy);
+                        sctx.arc(cx, cy, sw * 0.78, curAng, startAng + Math.PI * 2, false);
+                        sctx.closePath();
+                        sctx.fillStyle = 'rgba(2, 6, 23, 0.48)';
+                        sctx.fill();
                     }
-                    sctx.save();
+                    const sTrailStart = Math.max(startAng, curAng - 0.42);
+                    sctx.fillStyle = curS <= 0 ? 'rgba(251, 191, 36, 0.22)' : 'rgba(251, 191, 36, 0.28)';
                     sctx.beginPath();
                     sctx.moveTo(cx, cy);
-                    sctx.arc(cx, cy, sw * 0.78, curAng, startAng + Math.PI * 2, false);
+                    sctx.arc(cx, cy, sw * 0.48, sTrailStart, curAng, false);
                     sctx.closePath();
-                    sctx.fillStyle = curS <= 0 ? 'rgba(2, 6, 23, 0.48)' : 'rgba(15, 23, 42, 0.56)';
                     sctx.fill();
-                    sctx.strokeStyle = '#fbbf24';
-                    sctx.lineWidth = 2.2;
+                    sctx.strokeStyle = curS <= 0 ? 'rgba(251, 191, 36, 0.65)' : '#fbbf24';
+                    sctx.lineWidth = 2.4;
+                    sctx.beginPath();
+                    sctx.arc(cx, cy, sw * 0.45, startAng, curAng, false);
+                    sctx.stroke();
+                    const sHandX = cx + Math.cos(curAng) * (sw * 0.48);
+                    const sHandY = cy + Math.sin(curAng) * (sh * 0.48);
+                    sctx.strokeStyle = 'rgba(251, 191, 36, 0.92)';
+                    sctx.lineWidth = 3.0;
                     sctx.beginPath();
                     sctx.moveTo(cx, cy);
-                    sctx.lineTo(cx + Math.cos(curAng) * (sw * 0.48), cy + Math.sin(curAng) * (sh * 0.48));
+                    sctx.lineTo(sHandX, sHandY);
                     sctx.stroke();
-                    sctx.strokeStyle = 'rgba(251, 191, 36, 0.55)';
-                    sctx.lineWidth = 1.5;
+                    sctx.strokeStyle = '#ffffff';
+                    sctx.lineWidth = 1.4;
                     sctx.beginPath();
-                    sctx.arc(cx, cy, sw * 0.46, startAng, curAng, false);
+                    sctx.moveTo(cx, cy);
+                    sctx.lineTo(sHandX, sHandY);
                     sctx.stroke();
                     sctx.fillStyle = '#fef08a';
-                    sctx.fillRect(cx - 1.5, cy - 1.5, 3, 3);
+                    sctx.beginPath();
+                    sctx.arc(cx, cy, 2.0, 0, Math.PI * 2);
+                    sctx.fill();
                     sctx.restore();
                 } else {
                     skillSweepCv.classList.add('hidden');
@@ -21499,12 +21698,14 @@
         const cdOverlay = document.getElementById('hudGrenadeCdOverlay'), cdText = document.getElementById('hudGrenadeCdText');
         if (player.grenadeCdTimer > 0.05) {
             cdOverlay.classList.remove('hidden');
-            const isLingxiZeroChg = player.heroId === 'lingxi' && (player.sniperSkillCharges || 0) <= 0;
-            cdOverlay.className = isLingxiZeroChg
+            cdOverlay.className = player.heroId === 'lingxi'
                 ? 'absolute inset-0 bg-transparent flex flex-col items-center justify-center pointer-events-none z-20'
-                : (player.heroId === 'lingxi'
-                    ? 'absolute inset-0 bg-slate-950/65 flex flex-col items-center justify-center pointer-events-none z-20'
-                    : 'absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center pointer-events-none z-20');
+                : 'absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center pointer-events-none z-20';
+            if (cdText) {
+                cdText.className = player.heroId === 'lingxi'
+                    ? 'font-pixel-en text-[10px] sm:text-xs text-amber-300 font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]'
+                    : 'font-pixel-en text-[10px] sm:text-xs text-amber-400 font-bold';
+            }
             const gStr = player.grenadeCdTimer.toFixed(1);
             if (hudCache.grenadeCdStr !== gStr) { hudCache.grenadeCdStr = gStr; cdText.textContent = gStr; }
         } else {
@@ -21641,7 +21842,7 @@
                     const endA = startA + Math.PI * 2;
 
                     if (chg === 0) {
-                        // 0层时：整体覆盖王者荣耀同款双阶深色遮罩（已扫过扇区微亮，未扫过扇区深暗）
+                        // 0层时：整体覆盖双阶深色遮罩（已扫过扇区微亮，未扫过扇区深暗）
                         sctx.fillStyle = 'rgba(8, 15, 30, 0.62)';
                         sctx.beginPath();
                         sctx.moveTo(cx, cy);
@@ -21655,15 +21856,8 @@
                         sctx.arc(cx, cy, 48, curA, endA, false);
                         sctx.closePath();
                         sctx.fill();
-                    } else {
-                        // 1~2层时：图标保持明亮可用，未扫过扇区仅覆盖轻薄半透明暗幕
-                        sctx.fillStyle = 'rgba(4, 10, 22, 0.36)';
-                        sctx.beginPath();
-                        sctx.moveTo(cx, cy);
-                        sctx.arc(cx, cy, 48, curA, endA, false);
-                        sctx.closePath();
-                        sctx.fill();
                     }
+                    // ≥1层时不盖任何深色/黑色遮罩，保持图标完全明亮可用，仅绘制顺时针充能指针与外圈进度环
 
                     // 顺时针时钟指针扫描尾迹扇面
                     const trailStartA = Math.max(startA, curA - 0.42);
@@ -21725,16 +21919,19 @@
             if (player.heroId === 'lingxi') {
                 const chg = Math.max(0, Math.min(3, player.sniperUltCharges ?? 3));
                 if ((player.ultActiveTimer || 0) > 0.05 && (player.sniperUltPostFireTimer || 0) > 0.03) {
-                    ultOverlay.className = 'absolute inset-0 bg-slate-950/65 flex flex-col items-center justify-center pointer-events-none z-20';
+                    ultOverlay.className = 'absolute inset-0 bg-transparent flex flex-col items-center justify-center pointer-events-none z-20';
+                    ultCdText.className = 'font-pixel-en text-[10px] sm:text-xs text-cyan-200 font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]';
                     const uStr = player.sniperUltPostFireTimer.toFixed(1);
                     if (hudCache.ultCdStr !== uStr) { hudCache.ultCdStr = uStr; ultCdText.textContent = uStr; }
                 } else if ((player.ultActiveTimer || 0) <= 0.05 && chg > 0 && (player.sniperUltExitCdTimer || 0) > 0.03) {
-                    ultOverlay.className = 'absolute inset-0 bg-slate-950/65 flex flex-col items-center justify-center pointer-events-none z-20';
+                    ultOverlay.className = 'absolute inset-0 bg-transparent flex flex-col items-center justify-center pointer-events-none z-20';
+                    ultCdText.className = 'font-pixel-en text-[10px] sm:text-xs text-cyan-200 font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]';
                     const uStr = player.sniperUltExitCdTimer.toFixed(1);
                     if (hudCache.ultCdStr !== uStr) { hudCache.ultCdStr = uStr; ultCdText.textContent = uStr; }
                 } else if (chg === 0 && Math.max(player.sniperUltExitCdTimer || 0, player.sniperUltChargeTimer || 0) > 0.05) {
                     // 0层时由 ultChargeSweepCanvas 绘制扇形深色遮罩与扫描指针，此处仅居中叠加倒计时数字
                     ultOverlay.className = 'absolute inset-0 bg-transparent flex flex-col items-center justify-center pointer-events-none z-20';
+                    ultCdText.className = 'font-pixel-en text-[10px] sm:text-xs text-rose-300 font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]';
                     const uStr = Math.max(player.sniperUltExitCdTimer || 0, player.sniperUltChargeTimer || 0).toFixed(1);
                     if (hudCache.ultCdStr !== uStr) { hudCache.ultCdStr = uStr; ultCdText.textContent = uStr; }
                 } else {
@@ -21742,6 +21939,7 @@
                 }
             } else if ((player.ultCdTimer || 0) > 0.05) {
                 ultOverlay.className = 'absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center pointer-events-none z-20';
+                ultCdText.className = 'font-pixel-en text-[10px] sm:text-xs text-rose-400 font-bold';
                 const uStr = player.ultCdTimer.toFixed(1);
                 if (hudCache.ultCdStr !== uStr) { hudCache.ultCdStr = uStr; ultCdText.textContent = uStr; }
             } else {
@@ -22196,14 +22394,13 @@
             const snPassLv = s.sn_passive_upgrade || 0;
             const atkPct = round1(stk * (3 + snPassLv * 1.5));
             const critPct = round1(stk * (2 + snPassLv * 1));
-            const graceDur = round1(stk * 0.5);
-            const decaying = (player.calibrationDecayTimer || 0) > 0.01;
+            const decaying = Boolean(player.calibrationDecaying);
             list.push({
                 id: 'lingxi_calib', kind: 'buff', name: '屏息校准', stacks: stk,
-                rem: decaying ? Math.max(0, graceDur - (player.calibrationDecayTimer || 0)) : 0,
-                max: decaying ? graceDur : 0,
-                metaTag: decaying ? '移动计时' : '站定维持',
-                desc: `攻击力 +${atkPct}%、暴击率 +${critPct}%（移动累计 ${fmt1(graceDur)}s 清零，停下重置）`
+                rem: decaying ? Math.max(0, 1.0 - (player.calibrationDecayTimer || 0)) : 0,
+                max: decaying ? 1.0 : 0,
+                metaTag: decaying ? '掉层中' : '校准维持',
+                desc: `攻击力 +${atkPct}%、暴击率 +${critPct}%（移动每 1.0s 掉 1 层；站定 0.5s 止损并 +1 层；E/大招开火 +2 层）`
             });
         }
         if (player.heroId === 'yomi' && (player.yomiVampBuffTimer || 0) > 0.02) {
@@ -23068,6 +23265,7 @@
         }
 
         const prevPlayerFrameX = player.x, prevPlayerFrameY = player.y;
+        const wasRollingOrDodgingThisFrame = (player.sniperRollTimer || 0) > 0 || !!player.isDodging;
         if ((player.mireSlowTimer || 0) > 0) player.mireSlowTimer = Math.max(0, player.mireSlowTimer - dt);
 
         if (player.sakuraVanishState && player.sakuraVanishState.active) {
@@ -23100,6 +23298,7 @@
             player.x += player.dodgeVx * stepDt;
             player.y += player.dodgeVy * stepDt;
             player.dodgeInvulnTimer = Math.max(0, player.dodgeTimer);
+            player.isMoving = false;
             if (Math.floor((player.dodgeDuration - player.dodgeTimer) * 45) > dodgeAfterimages.length) {
                 dodgeAfterimages.push({ x: player.x, y: player.y, facing: player.facing, frame: player.animFrame, life: 0.14, maxLife: 0.14 });
             }
@@ -23185,31 +23384,62 @@
             }
         }
 
-        // 凌汐被动【屏息校准】：静止每0.5秒+1层（上限5层），移动累计 0.5×当前层数 秒后一次性清零（宽限期内停下重置计时，翻滚与闪避期间不计时）
+        // 凌汐被动【屏息校准】：
+        // 开始移动且层数 > 0 时进入掉层状态，每 1.0s 掉 1 层（重新移动清空站定计时）；
+        // 站定不足 0.5s 时掉层计时不停止、继续掉层；站定满 0.5s 立刻停止掉层、清空掉层计时并 +1 层（满 5 层同样停止并刷新计时）；
+        // 翻滚（E）与闪避（Space）期间冻结计时。
         if (player.heroId === 'lingxi') {
-            const isRollingOrDodging = (player.sniperRollTimer || 0) > 0 || player.isDodging;
-            if (!player.isMoving && !isRollingOrDodging) {
-                player.calibrationDecayTimer = 0;
-                if ((player.calibrationStacks || 0) < 5) {
-                    player.calibrationTimer = (player.calibrationTimer || 0) + dt;
-                    if (player.calibrationTimer >= 0.5) {
-                        player.calibrationTimer -= 0.5;
-                        player.calibrationStacks = Math.min(5, (player.calibrationStacks || 0) + 1);
-                    }
-                } else {
+            const isRollingOrDodging = wasRollingOrDodgingThisFrame || (player.sniperRollTimer || 0) > 0 || player.isDodging;
+            if (!isRollingOrDodging) {
+                if (player.isMoving) {
                     player.calibrationTimer = 0;
-                }
-            } else if (player.isMoving && !isRollingOrDodging) {
-                player.calibrationTimer = 0;
-                if ((player.calibrationStacks || 0) > 0) {
-                    const graceDur = 0.5 * player.calibrationStacks;
-                    player.calibrationDecayTimer = (player.calibrationDecayTimer || 0) + dt;
-                    if (player.calibrationDecayTimer >= graceDur) {
-                        player.calibrationStacks = 0;
+                    if ((player.calibrationStacks || 0) > 0) {
+                        player.calibrationDecaying = true;
+                        player.calibrationDecayTimer = (player.calibrationDecayTimer || 0) + dt;
+                        while (player.calibrationDecayTimer >= 1.0 && (player.calibrationStacks || 0) > 0) {
+                            player.calibrationDecayTimer -= 1.0;
+                            player.calibrationStacks = Math.max(0, (player.calibrationStacks || 0) - 1);
+                        }
+                        if ((player.calibrationStacks || 0) <= 0) {
+                            player.calibrationStacks = 0;
+                            player.calibrationDecayTimer = 0;
+                            player.calibrationDecaying = false;
+                        }
+                    } else {
                         player.calibrationDecayTimer = 0;
+                        player.calibrationDecaying = false;
                     }
                 } else {
-                    player.calibrationDecayTimer = 0;
+                    const needStandCycle = player.calibrationDecaying || (player.calibrationStacks || 0) < 5;
+                    if (needStandCycle) {
+                        player.calibrationTimer = (player.calibrationTimer || 0) + dt;
+                        if (player.calibrationTimer >= 0.5) {
+                            player.calibrationDecaying = false;
+                            player.calibrationDecayTimer = 0;
+                            player.calibrationStacks = Math.min(5, (player.calibrationStacks || 0) + 1);
+                            player.calibrationTimer = (player.calibrationStacks >= 5) ? 0 : (player.calibrationTimer - 0.5);
+                        } else if (player.calibrationDecaying) {
+                            if ((player.calibrationStacks || 0) > 0) {
+                                player.calibrationDecayTimer = (player.calibrationDecayTimer || 0) + dt;
+                                while (player.calibrationDecayTimer >= 1.0 && (player.calibrationStacks || 0) > 0) {
+                                    player.calibrationDecayTimer -= 1.0;
+                                    player.calibrationStacks = Math.max(0, (player.calibrationStacks || 0) - 1);
+                                }
+                                if ((player.calibrationStacks || 0) <= 0) {
+                                    player.calibrationStacks = 0;
+                                    player.calibrationDecayTimer = 0;
+                                    player.calibrationDecaying = false;
+                                }
+                            } else {
+                                player.calibrationDecayTimer = 0;
+                                player.calibrationDecaying = false;
+                            }
+                        }
+                    } else {
+                        player.calibrationTimer = 0;
+                        player.calibrationDecayTimer = 0;
+                        player.calibrationDecaying = false;
+                    }
                 }
             }
         }
@@ -25185,11 +25415,12 @@
             : baseAdaptiveZoom;
         cameraZoom = (cameraZoom || baseAdaptiveZoom) + (desiredZoom - (cameraZoom || baseAdaptiveZoom)) * 0.16;
         const zoom = cameraZoom || 1.0, viewW = rawW / zoom, viewH = rawH / zoom;
-        const activeShake = (gameSettings.shake && !isEditPreview) ? screenShake : 0;
+        const isTavernStaticCam = (gameState === 'TAVERN_INTRO' || gameState === 'TAVERN');
+        const activeShake = (gameSettings.shake && !isEditPreview && !isTavernStaticCam) ? screenShake : 0;
         const shakeX = activeShake > 0 ? (Math.random() - 0.5) * activeShake * 2 : 0;
         const shakeY = activeShake > 0 ? (Math.random() - 0.5) * activeShake * 2 : 0;
-        const punchX = (gameSettings.shake && !isEditPreview) ? camPunchX : 0;
-        const punchY = (gameSettings.shake && !isEditPreview) ? camPunchY : 0;
+        const punchX = (gameSettings.shake && !isEditPreview && !isTavernStaticCam) ? camPunchX : 0;
+        const punchY = (gameSettings.shake && !isEditPreview && !isTavernStaticCam) ? camPunchY : 0;
         const centerPx = isEditPreview ? 0 : player.x, centerPy = isEditPreview ? 0 : player.y;
         const camX = centerPx - viewW * 0.5 + shakeX + punchX, camY = centerPy - viewH * 0.5 + shakeY + punchY;
 
@@ -31179,9 +31410,10 @@
         const specDrSign = stats.specialDrPct >= 0 ? '+' : '';
         const pickupBonusSign = (stats.bookPickupBonus || 0) >= 0 ? '+' : '';
 
-        const luckProbs = getLuckRarityProbabilities(stats.effLuck);
+        const luckProbs = getLuckRarityProbabilities(stats.luck);
         const equityStacks = (player.trinkets && player.trinkets.trinket_black_market_equity) || 0;
         const harvestGrowthPct = Math.round((0.04 + equityStacks * 0.02) * 100);
+        const isHarvestGrowthStopped = Boolean(waveState && waveState.mode !== 'boss_rush' && (waveState.wave || 1) > 20);
 
         const dispMaxHp = stats.maxHp || player.maxHp;
         const statItems = [
@@ -31248,7 +31480,7 @@
                 icon: PAUSE_STAT_ICON_URLS.reloadSpeed,
                 val: reloadValStr,
                 color: !isMelee && reloadSpdVal < 0 ? 'text-rose-400' : 'text-cyan-300',
-                desc: isMelee ? '当前英雄为近战形态，无需换弹' : `换弹速度：${reloadSign}${fmt1(reloadSpdVal)}${(stats.reloadCardReducePct || 0) > 0 ? `\n快速装填减时：-${fmt1(stats.reloadCardReducePct)}%（独立乘算）` : ''}\n当前换弹时间：${reloadTimeStr}`
+                desc: isMelee ? '当前英雄为近战形态，无需换弹' : `换弹速度：${reloadSign}${fmt1(reloadSpdVal)}\n当前换弹时间：${reloadTimeStr}`
             },
             {
                 label: '技能急速',
@@ -31305,14 +31537,14 @@
                 icon: PAUSE_STAT_ICON_URLS.luck,
                 val: `${fmt1(stats.luck)}`,
                 color: stats.luck < 0 ? 'text-rose-400' : 'text-lime-300',
-                desc: `当前幸运：${fmt1(stats.luck)}${stats.luck < 0 ? '（按 0 生效）' : ''}\n普通 ${fmt1(luckProbs.p0)}% | 稀有 ${fmt1(luckProbs.p1)}%\n史诗 ${fmt1(luckProbs.p2)}% | 传说 ${fmt1(luckProbs.p3)}%`
+                desc: `当前幸运：${fmt1(stats.luck)}\n普通 ${fmt1(luckProbs.p0)}% | 稀有 ${fmt1(luckProbs.p1)}%\n史诗 ${fmt1(luckProbs.p2)}% | 传说 ${fmt1(luckProbs.p3)}%`
             },
             {
                 label: '收获值',
                 icon: PAUSE_STAT_ICON_URLS.harvest,
                 val: `${fmt1(stats.harvest || 0)}`,
                 color: (stats.harvest || 0) < 0 ? 'text-rose-400' : 'text-yellow-300',
-                desc: `当前收获：${fmt1(stats.harvest || 0)}${(stats.harvest || 0) < 0 ? '（按 0 生效）' : ''}\n每波结算金币：+${Math.round(stats.effHarvest * 0.80)}G\n每波收获成长：+${harvestGrowthPct}%`
+                desc: `当前收获：${fmt1(stats.harvest || 0)}${(stats.harvest || 0) < 0 ? '（按 0 生效）' : ''}\n每波结算金币：+${Math.round(stats.effHarvest * 0.80)}G\n每波收获成长：${isHarvestGrowthStopped ? '已停止（20波后无尽不再自然成长）' : `+${harvestGrowthPct}%`}`
             }
         ];
         statsBox.innerHTML = '';
@@ -31781,7 +32013,8 @@
         keeperY: 0,
         keeperFacing: -1,
         introTimer: 0,
-        introDuration: 0.85,
+        introDuration: 1.65,
+        introPauseDuration: 0.45,
         walkAnimTime: 0,
         worldParticles: [],
         // Galgame 打字机
@@ -31975,16 +32208,25 @@
         if (!player || gameState === 'GAME_OVER') return;
         resetMysteryTavernState();
         snapshotAutoCruiseBeforeModal();
+        // 波次完成后立即静止全场并清零残留震屏与镜头后坐，保证稳定观赏商人走近
+        screenShake = 0;
+        camPunchX = 0;
+        camPunchY = 0;
+        hitStopTimer = 0;
+        postUpgradeFreezeTimer = 0;
+        if (typeof keys !== 'undefined' && keys) {
+            keys.w = false; keys.a = false; keys.s = false; keys.d = false;
+        }
         tavernState.active = true;
         tavernState.fromTraining = Boolean(fromTraining);
         tavernState.keeperVisible = true;
         tavernState.introTimer = 0;
         tavernState.walkAnimTime = 0;
-        // 选择较宽敞的一侧走近玩家，避免贴墙穿模
-        const spawnOnRight = player.x < (HALF_MAP - 220);
+        // 选择较宽敞的一侧从容走近玩家，避免贴墙穿模
+        const spawnOnRight = player.x < (HALF_MAP - 250);
         const dirSign = spawnOnRight ? 1 : -1;
-        tavernState.keeperStartX = clampVal(player.x + dirSign * 165, -HALF_MAP + 60, HALF_MAP - 60);
-        tavernState.keeperStartY = clampVal(player.y - 10, -HALF_MAP + 60, HALF_MAP - 60);
+        tavernState.keeperStartX = clampVal(player.x + dirSign * 205, -HALF_MAP + 60, HALF_MAP - 60);
+        tavernState.keeperStartY = clampVal(player.y - 12, -HALF_MAP + 60, HALF_MAP - 60);
         tavernState.keeperTargetX = clampVal(player.x + dirSign * 56, -HALF_MAP + 60, HALF_MAP - 60);
         tavernState.keeperTargetY = clampVal(player.y + 4, -HALF_MAP + 60, HALF_MAP - 60);
         tavernState.keeperX = tavernState.keeperStartX;
@@ -32007,22 +32249,30 @@
 
     function updateTavernIntro(dt) {
         if (!tavernState.active || gameState !== 'TAVERN_INTRO') return;
+        screenShake = 0;
+        camPunchX = 0;
+        camPunchY = 0;
         tavernState.introTimer += dt;
-        tavernState.walkAnimTime += dt;
-        const t = Math.min(1, tavernState.introTimer / tavernState.introDuration);
-        const ease = 1 - Math.pow(1 - t, 3);
+        const walkDur = Math.max(0.4, tavernState.introDuration || 1.65);
+        const pauseDur = Math.max(0, tavernState.introPauseDuration || 0.45);
+        const t = Math.min(1, tavernState.introTimer / walkDur);
+        if (t < 1) {
+            tavernState.walkAnimTime += dt;
+        }
+        // 平缓起止步态（smoothstep），从容步入视野后短暂停顿对视
+        const ease = t * t * (3 - 2 * t);
         tavernState.keeperX = tavernState.keeperStartX + (tavernState.keeperTargetX - tavernState.keeperStartX) * ease;
         tavernState.keeperY = tavernState.keeperStartY + (tavernState.keeperTargetY - tavernState.keeperStartY) * ease;
 
         // 暖色提灯火星粒子
-        if (Math.random() < 0.45) {
+        if (Math.random() < 0.40) {
             tavernState.worldParticles.push({
                 x: tavernState.keeperX + (tavernState.keeperFacing > 0 ? 18 : -18) + (Math.random() - 0.5) * 8,
                 y: tavernState.keeperY + 4 + (Math.random() - 0.5) * 6,
-                vx: (Math.random() - 0.5) * 18,
-                vy: -16 - Math.random() * 22,
-                life: 0.45 + Math.random() * 0.35,
-                maxLife: 0.8,
+                vx: (Math.random() - 0.5) * 14,
+                vy: -14 - Math.random() * 18,
+                life: 0.55 + Math.random() * 0.35,
+                maxLife: 0.9,
                 size: 2 + Math.random() * 2
             });
         }
@@ -32034,14 +32284,15 @@
             if (p.life <= 0) tavernState.worldParticles.splice(i, 1);
         }
 
-        if (t >= 1) {
+        if (tavernState.introTimer >= walkDur + pauseDur) {
             openTavernDialogueModal();
         }
     }
 
     function drawMysteryTavernKeeperInWorld(ctx) {
         if (!tavernState.keeperVisible || (gameState !== 'TAVERN_INTRO' && gameState !== 'TAVERN')) return;
-        const frameIdx = gameState === 'TAVERN_INTRO' ? (Math.floor(tavernState.walkAnimTime * 7) % 2) : 0;
+        const isWalkingIn = gameState === 'TAVERN_INTRO' && tavernState.introTimer < (tavernState.introDuration || 1.65);
+        const frameIdx = isWalkingIn ? (Math.floor(tavernState.walkAnimTime * 4.5) % 2) : 0;
         const spr = SPRITES.tavernKeeper && SPRITES.tavernKeeper[frameIdx];
         if (!spr) return;
         const kx = tavernState.keeperX;
@@ -32099,15 +32350,44 @@
         ctx.restore();
     }
 
+    function getTavernLeaveBtnInfo(played) {
+        if (tavernState.fromTraining) {
+            return {
+                html: played ? '<span>返回训练营 ▶</span>' : '<span>返回训练营</span>',
+                isBoss: false
+            };
+        }
+        const meta = getNextWavePromptMeta();
+        if (!played) {
+            return {
+                html: `${meta.bossIconHtml}<span>放弃 · ${meta.waveLabel}</span>`,
+                isBoss: meta.isBossWave
+            };
+        }
+        return {
+            html: `${meta.bossIconHtml}<span>黑市 · ${meta.waveLabel} ▶</span>`,
+            isBoss: meta.isBossWave
+        };
+    }
+
     function openTavernDialogueModal() {
         gameState = 'TAVERN';
         drawTavernPortraitToCanvas('tavernDlgPortraitCanvas');
         const goldEl = document.getElementById('tavernDlgGold');
         const hpEl = document.getElementById('tavernDlgHp');
+        const declineBtn = document.getElementById('btnTavernDecline');
+        const declineMain = document.getElementById('tavernDeclineMain');
         const declineSub = document.getElementById('tavernDeclineSub');
         const diceSub = document.getElementById('tavernDiceChoiceSub');
         if (goldEl && player) goldEl.textContent = `${Math.floor(player.gold || 0)}G`;
         if (hpEl && player) hpEl.textContent = `HP ${fmt1(player.hp)}/${fmt1(player.maxHp)}`;
+        const leaveInfo = getTavernLeaveBtnInfo(false);
+        if (declineMain) declineMain.innerHTML = leaveInfo.html;
+        if (declineBtn) {
+            declineBtn.className = leaveInfo.isBoss
+                ? 'tavern-btn-slate py-2 px-2 text-rose-100 font-bold text-xs sm:text-sm flex flex-col items-center justify-center gap-0.5 cursor-pointer touch-manipulation border-rose-500/75 bg-rose-950/60 shadow-[0_0_10px_rgba(244,63,94,0.22)]'
+                : 'tavern-btn-slate py-2 px-2 text-stone-200 font-bold text-xs sm:text-sm flex flex-col items-center justify-center gap-0.5 cursor-pointer touch-manipulation';
+        }
         if (declineSub) declineSub.textContent = tavernState.fromTraining ? '返回训练营战场' : '直接前往黑市商店';
         if (diceSub) {
             const hpInfo = getTavernDiceHpStakeInfo();
@@ -32383,7 +32663,8 @@
     function renderRevolverFooter() {
         const footer = document.getElementById('tavernStageFooter');
         if (!footer) return;
-        const exitLabel = tavernState.fromTraining ? '返回训练营 ▶' : '前往黑市商店 ▶';
+        const exitInfo = getTavernLeaveBtnInfo(true);
+        const exitBossExtraCls = exitInfo.isBoss ? ' ring-1 ring-rose-400/80 shadow-[0_0_10px_rgba(244,63,94,0.28)]' : '';
         const curseCfg = getTavernRevolverCurseParams(player);
         if (tavernState.revPhase === 'choose') {
             const count = tavernState.revBullets;
@@ -32400,7 +32681,10 @@
                     <span class="text-[8px] sm:text-[9px] text-stone-300/80">胜率 ${wPct}%</span>
                 </button>`;
             }
-            const leaveTxt = tavernState.playedAnyThisVisit ? exitLabel : '放弃离开';
+            const leaveInfo = getTavernLeaveBtnInfo(Boolean(tavernState.playedAnyThisVisit));
+            const leaveBtnCls = leaveInfo.isBoss
+                ? 'tavern-btn-slate px-3 py-1.5 text-xs font-bold text-rose-100 border-rose-500/75 bg-rose-950/60 shadow-[0_0_10px_rgba(244,63,94,0.22)] inline-flex items-center justify-center gap-1 cursor-pointer'
+                : 'tavern-btn-slate px-3 py-1.5 text-xs font-bold text-stone-300 inline-flex items-center justify-center gap-1 cursor-pointer';
             footer.innerHTML = `
                 <div class="grid grid-cols-5 gap-1.5">${btns}</div>
                 <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-amber-900/60">
@@ -32408,7 +32692,7 @@
                         胜率 <b class="text-emerald-300 font-mono">${winPct}%</b> · 赢取 <b class="text-yellow-300 font-mono">+${payout}G</b> · 败则下波 <b class="text-rose-400">${curseCfg.hpPctText}血 + 整波禁血瓶 + ${curseCfg.noHealSec}秒禁疗</b>${curseCfg.hasWatch ? ' <span class="text-sky-300">(防弹怀表)</span>' : ''}
                     </div>
                     <div class="flex items-center gap-2 ml-auto">
-                        <button onclick="window.leaveMysteryTavern()" class="tavern-btn-slate px-3 py-1.5 text-xs font-bold text-stone-300 cursor-pointer">${leaveTxt}</button>
+                        <button onclick="window.leaveMysteryTavern()" class="${leaveBtnCls}">${leaveInfo.html}</button>
                         <button onclick="window.fireTavernRevolver()" class="tavern-btn-crimson px-4 py-1.5 text-xs sm:text-sm font-bold text-white tracking-wide cursor-pointer">拨动弹巢 · 扣动扳机!</button>
                     </div>
                 </div>
@@ -32433,7 +32717,7 @@
                         </div>
                         <div class="flex items-center gap-2 ml-auto flex-wrap">
                             ${vipSwitchBtn}
-                            <button onclick="window.leaveMysteryTavern()" class="tavern-btn-amber px-4 py-2 text-xs sm:text-sm font-bold text-amber-50 cursor-pointer">${exitLabel}</button>
+                            <button onclick="window.leaveMysteryTavern()" class="${exitInfo.isBoss ? 'tavern-btn-crimson text-rose-50' : 'tavern-btn-amber text-amber-50'}${exitBossExtraCls} px-4 py-2 text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-1 cursor-pointer">${exitInfo.html}</button>
                         </div>
                     </div>
                 `;
@@ -32446,7 +32730,7 @@
                         </div>
                         <div class="flex items-center gap-2 ml-auto flex-wrap">
                             ${vipSwitchBtn}
-                            <button onclick="window.leaveMysteryTavern()" class="tavern-btn-crimson px-4 py-2 text-xs sm:text-sm font-bold text-white cursor-pointer">${exitLabel}</button>
+                            <button onclick="window.leaveMysteryTavern()" class="tavern-btn-crimson${exitBossExtraCls} px-4 py-2 text-xs sm:text-sm font-bold text-white inline-flex items-center justify-center gap-1 cursor-pointer">${exitInfo.html}</button>
                         </div>
                     </div>
                 `;
@@ -32715,7 +32999,8 @@
     function renderDiceFooter() {
         const footer = document.getElementById('tavernStageFooter');
         if (!footer || !player) return;
-        const exitLabel = tavernState.fromTraining ? '返回训练营 ▶' : '前往黑市商店 ▶';
+        const exitInfo = getTavernLeaveBtnInfo(true);
+        const exitBossExtraCls = exitInfo.isBoss ? ' ring-1 ring-rose-400/80 shadow-[0_0_10px_rgba(244,63,94,0.28)]' : '';
         if (tavernState.dicePhase === 'stake') {
             const goldStake = getTavernDiceGoldStake();
             const curGold = Math.floor(player.gold || 0);
@@ -32725,7 +33010,10 @@
             const canRoll = isGold ? canGold : hpInfo.canPay;
             const chipTag = hpInfo.hasChip ? ' <span class="text-sky-300 text-[10px]">(-30%)</span>' : '';
             const cupHint = tavernState.diceRerollAvailable ? ' · <b class="text-sky-300">灌铅骰盅(可免费重投1次)</b>' : '';
-            const leaveTxt = tavernState.playedAnyThisVisit ? exitLabel : '放弃离开';
+            const leaveInfo = getTavernLeaveBtnInfo(Boolean(tavernState.playedAnyThisVisit));
+            const leaveBtnCls = leaveInfo.isBoss
+                ? 'tavern-btn-slate px-3 py-1.5 text-xs font-bold text-rose-100 border-rose-500/75 bg-rose-950/60 shadow-[0_0_10px_rgba(244,63,94,0.22)] inline-flex items-center justify-center gap-1 cursor-pointer'
+                : 'tavern-btn-slate px-3 py-1.5 text-xs font-bold text-stone-300 inline-flex items-center justify-center gap-1 cursor-pointer';
             footer.innerHTML = `
                 <div class="grid grid-cols-2 gap-2">
                     <button onclick="window.selectTavernDiceStake('gold')" ${canGold ? '' : 'disabled'} class="${isGold ? 'tavern-btn-amber text-amber-50 ring-2 ring-yellow-300' : 'tavern-btn-slate text-stone-200'} ${canGold ? 'cursor-pointer' : 'opacity-45 cursor-not-allowed'} py-2 px-2.5 flex items-center justify-between gap-2 touch-manipulation">
@@ -32746,7 +33034,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-amber-900/60">
                     <div class="text-[11px] text-amber-100/85">大豹子送<b class="text-yellow-300">传说饰品</b> · 豹子送<b class="text-purple-300">史诗饰品</b> · 顺子/对子送<b class="text-sky-300">蓝/白卡三选一</b> · ≥13退本金+<b class="text-slate-100">白饰品</b>${cupHint}</div>
                     <div class="flex items-center gap-2 ml-auto">
-                        <button onclick="window.leaveMysteryTavern()" class="tavern-btn-slate px-3 py-1.5 text-xs font-bold text-stone-300 cursor-pointer">${leaveTxt}</button>
+                        <button onclick="window.leaveMysteryTavern()" class="${leaveBtnCls}">${leaveInfo.html}</button>
                         <button onclick="window.rollTavernDice()" ${canRoll ? '' : 'disabled'} class="tavern-btn-amber ${canRoll ? 'cursor-pointer' : 'opacity-45 cursor-not-allowed'} px-4 py-1.5 text-xs sm:text-sm font-bold text-amber-50 tracking-wide">掷出三颗骰子!</button>
                     </div>
                 </div>
@@ -32864,7 +33152,7 @@
                     </div>
                     <div class="flex items-center gap-2 ml-auto flex-wrap shrink-0">
                         ${vipSwitchBtn}
-                        <button onclick="window.leaveMysteryTavern()" class="tavern-btn-amber px-4 py-2 text-xs sm:text-sm font-bold text-amber-50 cursor-pointer shrink-0">${exitLabel}</button>
+                        <button onclick="window.leaveMysteryTavern()" class="${exitInfo.isBoss ? 'tavern-btn-crimson text-rose-50' : 'tavern-btn-amber text-amber-50'}${exitBossExtraCls} px-4 py-2 text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-1 cursor-pointer shrink-0">${exitInfo.html}</button>
                     </div>
                 </div>
             `;
