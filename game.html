@@ -443,7 +443,7 @@
         .pixel-play-btn:hover { filter: brightness(1.08); }
         .pixel-play-btn:active { transform: translateY(5px); box-shadow: 0 2px 0 #78350f; }
     </style>
-</head>
+<script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
 <body class="relative w-full h-full overflow-hidden select-none">
 
     <!-- =================== GitHub 国内多路加速·双轨自适应更新引擎（像素战术终端版） =================== -->
@@ -17059,15 +17059,33 @@
                 candidates.sort((a, b) => a.d - b.d);
                 const pickCnt = Math.min(ricoLv, candidates.length);
                 const bounceRawDmg = Math.max(1, round1(dealtDamage * 0.50));
-                sfx.playTone({ type: 'triangle', freq: 720, endFreq: 1180, duration: 0.08, gain: 0.05 });
+                sfx.playTone({ type: 'sine', freq: 660, endFreq: 1320, duration: 0.11, gain: 0.065 });
+                sfx.playTone({ type: 'triangle', freq: 990, endFreq: 1480, duration: 0.09, gain: 0.045, delay: 0.025 });
+                spawnPixelParticles(z.x, z.y - 6, '#10b981', 8, 120, 3.2, 0.24);
+                const pickedTargets = [];
                 for (let k = 0; k < pickCnt; k++) {
                     const tgt = candidates[k].z;
-                    lightningBolts.push({
-                        x1: z.x, y1: z.y - 6, x2: tgt.x, y2: tgt.y - 6,
-                        life: 0.20, maxLife: 0.20, color: '#34d399'
+                    pickedTargets.push(tgt);
+                    const dx = tgt.x - z.x, dy = tgt.y - z.y;
+                    const dist = Math.hypot(dx, dy) || 1;
+                    const nx = -dy / dist, ny = dx / dist;
+                    const curveSide = (k % 2 === 0 ? 1 : -1) * (24 + Math.min(26, dist * 0.18));
+                    hazardZones.push({
+                        type: 'summon_ricochet_fx',
+                        x1: z.x, y1: z.y - 6,
+                        x2: tgt.x, y2: tgt.y - 6,
+                        ctrlX: (z.x + tgt.x) * 0.5 + nx * curveSide,
+                        ctrlY: (z.y - 6 + tgt.y - 6) * 0.5 + ny * curveSide,
+                        timer: 0, duration: 0.34
                     });
-                    spawnPixelParticles(tgt.x, tgt.y - 4, '#6ee7b7', 6, 110, 3, 0.22);
-                    damageZombie(tgt, bounceRawDmg, 0, 0, '#6ee7b7', false);
+                    spawnPixelParticles(tgt.x, tgt.y - 6, '#34d399', 8, 135, 3.4, 0.26);
+                    spawnPixelParticles(tgt.x, tgt.y - 6, '#ecfdf5', 4, 100, 2.4, 0.18);
+                }
+                for (let k = 0; k < pickedTargets.length; k++) {
+                    const tgt = pickedTargets[k];
+                    if (tgt && tgt.hp > 0) {
+                        damageZombie(tgt, bounceRawDmg, 0, 0, '#6ee7b7', false);
+                    }
                 }
             }
         }
@@ -17121,11 +17139,18 @@
                 x: src.x, y: src.y,
                 vx: Math.cos(ang) * 560, vy: Math.sin(ang) * 560,
                 speed: 560,
-                radius: 4.5, damage: critRes.damage, isCrit: critRes.isCrit,
+                radius: 6, damage: critRes.damage, isCrit: critRes.isCrit,
                 pierce: 1, knockback: 18, type: 'summon_salvo',
-                targetUid: best.uid, hitIds: new Set(), life: 1.35, isSummonDamage: true
+                targetUid: best.uid, hitIds: new Set(), life: 1.35, isSummonDamage: true,
+                trail: [{ x: src.x, y: src.y }]
             });
-            spawnPixelParticles(src.x, src.y, '#34d399', 4, 75, 2.5, 0.18);
+            hazardZones.push({
+                type: 'summon_salvo_launch_fx',
+                x: src.x, y: src.y, angle: ang,
+                timer: 0, duration: 0.24
+            });
+            spawnPixelParticles(src.x, src.y, '#10b981', 6, 115, 3.2, 0.22);
+            spawnPixelParticles(src.x, src.y, '#a7f3d0', 4, 85, 2.4, 0.16);
             firedAny = true;
         }
         if (firedAny && typeof sfx.salvoLaunch === 'function') sfx.salvoLaunch();
@@ -18167,10 +18192,10 @@
     function endKohakuMount(startFormalCd = true, keepWolfState = false) {
         if (!player || player.heroId !== 'kohaku') return;
         const stats = getPlayerStats(player);
-        const wasMounted = (player.kohakuMountTimer || 0) > 0;
+        const wolf = ensureKohakuWolf(player);
+        const wasMounted = (player.kohakuMountTimer || 0) > 0 || wolf.state === 'mounted';
         player.kohakuMountTimer = 0;
         player.kohakuRecallActive = false;
-        const wolf = ensureKohakuWolf(player);
         if (!keepWolfState) {
             wolf.state = 'follow';
             wolf.x = clampVal(player.x - (player.facing || 1) * 32, -HALF_MAP + 20, HALF_MAP - 20);
@@ -18246,7 +18271,7 @@
         applyKohakuWindowLifesteal(dealt || finalDmg, isCrit, stats);
         applyNormalBulletOnHitEffects(tgt, true, 1, null);
         if (tgt.hp > 0) {
-            tgt.bleedStacks = Math.min(5, Math.max(1, tgt.bleedStacks || 0));
+            tgt.bleedStacks = Math.min(10, Math.max(1, tgt.bleedStacks || 0));
             tgt.bleedDecayTimer = 2.5;
             if (!tgt.bleedTickTimer || tgt.bleedTickTimer <= 0) tgt.bleedTickTimer = 0.5;
             tgt.wolfBleedBonus = true;
@@ -18460,6 +18485,7 @@
             }
             if (player.kohakuMountTimer <= 0) {
                 endKohakuMount(true, false);
+                updateHUD(true);
             }
             return;
         }
@@ -28184,10 +28210,13 @@
                     b.vy = Math.sin(newAng) * spd;
                 }
                 if (b.type === 'summon_salvo') {
+                    if (!Array.isArray(b.trail)) b.trail = [];
+                    b.trail.push({ x: b.x, y: b.y });
+                    if (b.trail.length > 9) b.trail.shift();
                     b._trailT = (b._trailT || 0) + dt;
-                    if (b._trailT >= 0.03) {
+                    if (b._trailT >= 0.022) {
                         b._trailT = 0;
-                        spawnPixelParticles(b.x, b.y, '#34d399', 1, 30, 2.4, 0.14);
+                        spawnPixelParticles(b.x, b.y, Math.random() < 0.65 ? '#34d399' : '#a7f3d0', 2, 48, 2.8, 0.18);
                     }
                 }
             }
@@ -28313,7 +28342,11 @@
                         sfx.sniperHit(isCrit, piercedCountBeforeHit);
                         hazardZones.push({ type: 'sniper_pierce_fx', x: z.x, y: z.y, angle: ang, isCrit, timer: 0, duration: 0.20, radius: 34 });
                         spawnPixelParticles(z.x, z.y, isCrit ? '#facc15' : '#38bdf8', isCrit ? 12 : 9, 175, 3.8, 0.25);
-                    } else if (b.type === 'kohaku_spear' || b.type === 'summon_salvo') {
+                    } else if (b.type === 'summon_salvo') {
+                        hazardZones.push({ type: 'summon_salvo_hit_fx', x: z.x, y: z.y - 4, isCrit, timer: 0, duration: 0.24 });
+                        spawnPixelParticles(b.x, b.y, isCrit ? '#facc15' : '#10b981', isCrit ? 12 : 9, 155, 3.6, 0.26);
+                        spawnPixelParticles(b.x, b.y, '#ecfdf5', 5, 115, 2.5, 0.18);
+                    } else if (b.type === 'kohaku_spear') {
                         spawnPixelParticles(b.x, b.y, isCrit ? '#facc15' : '#34d399', isCrit ? 9 : 6, 120, 3.2, 0.22);
                     } else {
                         spawnPixelParticles(b.x, b.y, isCrit ? '#facc15' : (b.isXinglanSword || b.type === 'reload_strike' ? '#38bdf8' : '#fde047'), isCrit ? 7 : 4, 90, 3, 0.2);
@@ -35405,13 +35438,14 @@
                         ctx.lineWidth = 2;
                         ctx.beginPath(); ctx.arc(player.x, player.y - 2, 20 + Math.sin(globalTime * 16) * 1.5, 0, Math.PI * 2); ctx.stroke();
 
-                        // 与敌人头顶灼烧同款的火焰液位图标 + 层数数字（自动避让大招读条与换弹读条）
+                        // 与敌人头顶灼烧同款的火焰液位图标 + 层数数字（自动避让大招读条、骑乘读条与换弹读条）
                         const hasUltTopBar = (player.heroId !== 'lingxi') && (player.ultActiveTimer || 0) > 0.02;
+                        const hasMountTopBar = (player.heroId === 'kohaku') && (player.kohakuMountTimer || 0) > 0.02;
                         const hasMainReloadBar = !MELEE_HERO_IDS.includes(player.heroId) && player.isReloading;
                         const hasOffReloadBar = player.heroId === 'rinne' && (player.ultActiveTimer || 0) > 0 && player.secondGun && player.secondGun.isReloading;
-                        const topBarCnt = (hasUltTopBar ? 1 : 0) + (hasMainReloadBar ? 1 : 0) + (hasOffReloadBar ? 1 : 0);
+                        const topBarCnt = (hasUltTopBar ? 1 : 0) + (hasMountTopBar ? 1 : 0) + (hasMainReloadBar ? 1 : 0) + (hasOffReloadBar ? 1 : 0);
                         const pBurnX = player.x - 4;
-                        const pBurnY = player.y - (topBarCnt >= 2 ? 60 : (topBarCnt === 1 ? 51 : 38));
+                        const pBurnY = player.y - (hasMountTopBar ? 62 : (topBarCnt >= 2 ? 60 : (topBarCnt === 1 ? 51 : 38)));
                         const pFillLevel = Math.min(5, player.burnStacks);
 
                         ctx.beginPath();
@@ -36020,13 +36054,27 @@
             ctx.restore();
         }
 
-        // 英雄头顶读条错层布局（除凌汐外：大招读条置最下方 y-38 醒目亮黄；换弹条自动向上错开独立一层，绝不重叠）
+        // 英雄头顶读条错层布局（除凌汐外：大招读条置最下方 y-38 醒目亮黄；琥珀骑乘读条置 y-48 翡翠亮绿；换弹条自动向上错开独立一层，绝不重叠）
         if (!isEditPreview) {
             const rw = 38, rx = player.x - rw * 0.5;
             const hasUltBar = (player.heroId !== 'lingxi') && (player.ultActiveTimer || 0) > 0.02;
+            const hasMountBar = (player.heroId === 'kohaku') && (player.kohakuMountTimer || 0) > 0.02;
             const hasMainReload = !MELEE_HERO_IDS.includes(player.heroId) && player.isReloading;
             const hasOffReload = player.heroId === 'rinne' && (player.ultActiveTimer || 0) > 0 && player.secondGun && player.secondGun.isReloading;
-            let nextBarY = player.y - 38;
+            let nextBarY = hasMountBar ? (player.y - 48) : (player.y - 38);
+            if (hasMountBar) {
+                const mh = 5;
+                const mountPct = clampVal((player.kohakuMountTimer || 0) / Math.max(0.1, player.kohakuMountMax || 4.0), 0, 1);
+                ctx.fillStyle = '#090d16'; ctx.fillRect(rx - 1, nextBarY - 1, rw + 2, mh + 2);
+                ctx.fillStyle = '#1e293b'; ctx.fillRect(rx, nextBarY, rw, mh);
+                const fillW = Math.max(0, rw * mountPct);
+                if (fillW > 0) {
+                    ctx.fillStyle = '#10b981'; ctx.fillRect(rx, nextBarY, fillW, mh);
+                    ctx.fillStyle = '#6ee7b7'; ctx.fillRect(rx, nextBarY, fillW, 2);
+                    ctx.fillStyle = '#ecfdf5'; ctx.fillRect(rx, nextBarY, fillW, 1);
+                }
+                nextBarY -= 8;
+            }
             if (hasUltBar) {
                 const uh = 5;
                 const ultPct = clampVal((player.ultActiveTimer || 0) / Math.max(0.1, player.ultDuration || 6.0), 0, 1);
@@ -36062,6 +36110,24 @@
 
         for (let i = 0; i < bullets.length; i++) {
             const b = bullets[i];
+            if (b.type === 'summon_salvo' && Array.isArray(b.trail) && b.trail.length >= 2) {
+                // 协同齐射：高辨识度弧形翡翠灵能彗尾（世界坐标平滑追踪拖带）
+                ctx.save();
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                const tr = b.trail;
+                for (let t = 1; t < tr.length; t++) {
+                    const frac = t / (tr.length - 1);
+                    const p0 = tr[t - 1], p1 = tr[t];
+                    ctx.strokeStyle = b.isCrit ? `rgba(250, 204, 21, ${(0.22 + frac * 0.55).toFixed(2)})` : `rgba(16, 185, 129, ${(0.22 + frac * 0.62).toFixed(2)})`;
+                    ctx.lineWidth = 2.5 + frac * 6.5;
+                    ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+                    ctx.strokeStyle = b.isCrit ? `rgba(254, 240, 138, ${(0.28 + frac * 0.68).toFixed(2)})` : `rgba(167, 243, 208, ${(0.30 + frac * 0.68).toFixed(2)})`;
+                    ctx.lineWidth = 1.2 + frac * 3.0;
+                    ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+                }
+                ctx.restore();
+            }
             ctx.save();
             ctx.translate(b.x, b.y); ctx.rotate(Math.atan2(b.vy, b.vx));
             if (b.isXinglanSword) {
@@ -36211,17 +36277,31 @@
                 ctx.fillStyle = '#fef08a';
                 ctx.fillRect(23, -0.8, 3, 1.6);
             } else if (b.type === 'summon_salvo') {
-                // 召唤战技【协同齐射】翡翠追踪魂弹（像素菱形光核 + 拖尾）
-                ctx.fillStyle = 'rgba(16, 185, 129, 0.38)';
-                ctx.fillRect(-14, -3, 14, 6);
+                // 召唤战技【协同齐射】高能翡翠灵能飞矢（外发光晕 + 暗色描边双翼菱晶弹体 + 炽白魂核）
+                const mainCol = b.isCrit ? '#facc15' : '#10b981';
+                const hiCol = b.isCrit ? '#fef08a' : '#6ee7b7';
+                const glowCol = b.isCrit ? 'rgba(250, 204, 21, 0.34)' : 'rgba(16, 185, 129, 0.38)';
+                ctx.fillStyle = glowCol;
+                ctx.fillRect(-16, -7, 28, 14);
+                ctx.fillStyle = 'rgba(167, 243, 208, 0.55)';
+                ctx.fillRect(-20, -2.5, 16, 5);
+                // 暗色像素轮廓（双灵翼 + 锐利菱形弹头）
                 ctx.fillStyle = '#090d16';
-                ctx.fillRect(-6, -4.5, 12, 9);
-                ctx.fillStyle = b.isCrit ? '#facc15' : '#10b981';
-                ctx.fillRect(-5, -3.5, 10, 7);
-                ctx.fillStyle = '#6ee7b7';
-                ctx.fillRect(-3, -2, 7, 4);
+                ctx.fillRect(-9, -7, 7, 14);
+                ctx.fillRect(-6, -5.5, 14, 11);
+                ctx.fillRect(8, -3.5, 4, 7);
+                ctx.fillRect(11, -1.8, 3, 3.6);
+                // 翡翠/耀金晶核与双翼
+                ctx.fillStyle = mainCol;
+                ctx.fillRect(-8, -6, 5, 12);
+                ctx.fillRect(-5, -4.5, 12, 9);
+                ctx.fillRect(7, -2.5, 4, 5);
+                ctx.fillStyle = hiCol;
+                ctx.fillRect(-4, -3, 11, 6);
+                ctx.fillRect(7, -1.5, 3, 3);
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, -1, 4, 2);
+                ctx.fillRect(-1, -1.6, 8, 3.2);
+                ctx.fillRect(7, -0.9, 5, 1.8);
             } else if (b.isKurohaBullet) {
                 // 玄羽突击步枪高速曳光弹（每第3发法球弹强化绯红金芒）
                 if (b.isKurohaOnHitShot) {
@@ -36264,6 +36344,161 @@
             ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.6;
             ctx.beginPath(); ctx.moveTo(bolt.x1, bolt.y1); ctx.lineTo(midX, midY); ctx.lineTo(bolt.x2, bolt.y2); ctx.stroke();
             ctx.restore();
+        }
+
+        // 上层召唤战技专属特效（魂能弹射弧形灵球 + 协同齐射发射/命中星芒，绘制在怪物与子弹之上确保高可见度）
+        for (let i = 0; i < hazardZones.length; i++) {
+            const hz = hazardZones[i];
+            if (!hz) continue;
+            if (hz.type === 'summon_ricochet_fx') {
+                const p = clampVal(hz.timer / Math.max(0.05, hz.duration || 0.34), 0, 1);
+                const travelP = clampVal(p / 0.52, 0, 1);
+                const fadeAlpha = p < 0.45 ? 1.0 : Math.max(0, 1 - (p - 0.45) / 0.55);
+                const x1 = hz.x1, y1 = hz.y1, x2 = hz.x2, y2 = hz.y2;
+                const cx = hz.ctrlX, cy = hz.ctrlY;
+                const qPt = (t) => {
+                    const inv = 1 - t;
+                    return {
+                        x: inv * inv * x1 + 2 * inv * t * cx + t * t * x2,
+                        y: inv * inv * y1 + 2 * inv * t * cy + t * t * y2
+                    };
+                };
+                ctx.save();
+                // 1) 起点亡魂逸散脉冲环
+                if (p < 0.65) {
+                    const oP = p / 0.65;
+                    ctx.globalAlpha = (1 - oP) * 0.85;
+                    ctx.strokeStyle = '#34d399';
+                    ctx.lineWidth = 2.6;
+                    ctx.beginPath(); ctx.arc(x1, y1, 7 + oP * 20, 0, Math.PI * 2); ctx.stroke();
+                }
+                // 2) 弧形翡翠青焰魂带（平滑曲线弹射轨迹 + 阶梯像素魂尘，彻底区别于折线电弧）
+                ctx.globalAlpha = fadeAlpha;
+                ctx.lineCap = 'round';
+                const segs = 12;
+                const maxSegT = Math.min(1, travelP * 1.15);
+                const minSegT = Math.max(0, (p - 0.25) / 0.75);
+                if (maxSegT > minSegT + 0.02) {
+                    ctx.strokeStyle = 'rgba(16, 185, 129, 0.52)';
+                    ctx.lineWidth = 9 * fadeAlpha;
+                    ctx.beginPath();
+                    for (let s = 0; s <= segs; s++) {
+                        const tt = minSegT + (maxSegT - minSegT) * (s / segs);
+                        const pt = qPt(tt);
+                        if (s === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
+                    }
+                    ctx.stroke();
+
+                    ctx.strokeStyle = '#34d399';
+                    ctx.lineWidth = 4.5 * fadeAlpha;
+                    ctx.beginPath();
+                    for (let s = 0; s <= segs; s++) {
+                        const tt = minSegT + (maxSegT - minSegT) * (s / segs);
+                        const pt = qPt(tt);
+                        if (s === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
+                    }
+                    ctx.stroke();
+
+                    ctx.strokeStyle = '#ecfdf5';
+                    ctx.lineWidth = 1.8 * fadeAlpha;
+                    ctx.beginPath();
+                    for (let s = 0; s <= segs; s++) {
+                        const tt = minSegT + (maxSegT - minSegT) * (s / segs);
+                        const pt = qPt(tt);
+                        if (s === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
+                    }
+                    ctx.stroke();
+
+                    // 沿轨迹漂浮像素灵火微粒
+                    for (let m = 1; m <= 4; m++) {
+                        const mt = minSegT + (maxSegT - minSegT) * (m / 5);
+                        const mp = qPt(mt);
+                        ctx.fillStyle = m % 2 === 0 ? '#a7f3d0' : '#2dd4bf';
+                        ctx.fillRect(Math.round(mp.x) - 2, Math.round(mp.y) - 2, 4, 4);
+                    }
+                }
+                // 3) 飞行中的像素菱形魂珠头（前半程疾速弹射到目标）
+                if (p < 0.62) {
+                    const headPt = qPt(travelP);
+                    ctx.save();
+                    ctx.translate(Math.round(headPt.x), Math.round(headPt.y));
+                    ctx.rotate(Math.PI * 0.25 + p * 4.5);
+                    ctx.globalAlpha = Math.min(1, (0.62 - p) / 0.16);
+                    ctx.fillStyle = 'rgba(16, 185, 129, 0.45)';
+                    ctx.fillRect(-9, -9, 18, 18);
+                    ctx.fillStyle = '#090d16';
+                    ctx.fillRect(-6, -6, 12, 12);
+                    ctx.fillStyle = '#10b981';
+                    ctx.fillRect(-5, -5, 10, 10);
+                    ctx.fillStyle = '#a7f3d0';
+                    ctx.fillRect(-3, -3, 6, 6);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(-1.5, -1.5, 3, 3);
+                    ctx.restore();
+                }
+                // 4) 目标处魂能爆裂星芒与菱形震波
+                if (p >= 0.34) {
+                    const hitP = clampVal((p - 0.34) / 0.66, 0, 1);
+                    const hitAlpha = 1 - hitP;
+                    ctx.save();
+                    ctx.translate(Math.round(x2), Math.round(y2));
+                    ctx.globalAlpha = hitAlpha;
+                    const burstR = 7 + hitP * 24;
+                    ctx.strokeStyle = '#34d399';
+                    ctx.lineWidth = 3 * hitAlpha;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -burstR); ctx.lineTo(burstR, 0); ctx.lineTo(0, burstR); ctx.lineTo(-burstR, 0); ctx.closePath();
+                    ctx.stroke();
+                    // 十字灵能星芒
+                    const armL = Math.round(16 * (1 - hitP * 0.35));
+                    ctx.fillStyle = '#6ee7b7';
+                    ctx.fillRect(-armL, -2, armL * 2, 4);
+                    ctx.fillRect(-2, -armL, 4, armL * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(-Math.round(armL * 0.65), -1, Math.round(armL * 1.3), 2);
+                    ctx.fillRect(-1, -Math.round(armL * 0.65), 2, Math.round(armL * 1.3));
+                    ctx.restore();
+                }
+                ctx.restore();
+            } else if (hz.type === 'summon_salvo_launch_fx') {
+                const p = clampVal(hz.timer / Math.max(0.05, hz.duration || 0.24), 0, 1);
+                const alpha = 1 - p;
+                ctx.save();
+                ctx.translate(Math.round(hz.x), Math.round(hz.y));
+                ctx.globalAlpha = alpha;
+                const r = 8 + p * 22;
+                ctx.strokeStyle = '#34d399';
+                ctx.lineWidth = 3 * alpha;
+                ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+                ctx.rotate(hz.angle || 0);
+                const flashL = Math.round(14 * (1 - p * 0.4));
+                ctx.fillStyle = '#a7f3d0';
+                ctx.fillRect(-3, -3, flashL + 6, 6);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(-2, -1.5, flashL + 4, 3);
+                ctx.restore();
+            } else if (hz.type === 'summon_salvo_hit_fx') {
+                const p = clampVal(hz.timer / Math.max(0.05, hz.duration || 0.24), 0, 1);
+                const alpha = 1 - p;
+                const mainCol = hz.isCrit ? '#facc15' : '#10b981';
+                const hiCol = hz.isCrit ? '#fef08a' : '#6ee7b7';
+                ctx.save();
+                ctx.translate(Math.round(hz.x), Math.round(hz.y));
+                ctx.globalAlpha = alpha;
+                const r = 6 + p * 20;
+                ctx.strokeStyle = mainCol;
+                ctx.lineWidth = 3 * alpha;
+                ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+                ctx.rotate(Math.PI * 0.25);
+                const arm = Math.round(13 * (1 - p * 0.35));
+                ctx.fillStyle = hiCol;
+                ctx.fillRect(-arm, -2, arm * 2, 4);
+                ctx.fillRect(-2, -arm, 4, arm * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(-Math.round(arm * 0.55), -1, Math.round(arm * 1.1), 2);
+                ctx.fillRect(-1, -Math.round(arm * 0.55), 2, Math.round(arm * 1.1));
+                ctx.restore();
+            }
         }
 
         for (let i = 0; i < enemyProjectiles.length; i++) {
