@@ -2296,7 +2296,7 @@
                     <span id="wheelDot_training" class="w-2 h-1.5 bg-slate-700 transition-all"></span>
                 </div>
                 <div id="modeSelectActionRow" class="w-full flex items-stretch gap-2">
-                    <button id="btnModeResumeSave" onclick="window.resumeSavedRun && window.resumeSavedRun(selectedGameMode)" class="hidden flex-1 min-w-0 pixel-box px-2.5 sm:px-3.5 py-2 sm:py-2.5 border-2 border-emerald-400 bg-[#10201a] hover:bg-[#152d24] active:translate-y-0.5 text-emerald-200 font-bold text-xs sm:text-sm tracking-wide flex items-center justify-center gap-1.5 cursor-pointer transition">
+                    <button id="btnModeResumeSave" onclick="window.resumeSavedRun && window.resumeSavedRun()" class="hidden flex-1 min-w-0 pixel-box px-2.5 sm:px-3.5 py-2 sm:py-2.5 border-2 border-emerald-400 bg-[#10201a] hover:bg-[#152d24] active:translate-y-0.5 text-emerald-200 font-bold text-xs sm:text-sm tracking-wide flex items-center justify-center gap-1.5 cursor-pointer transition">
                         <canvas class="ui-px-icon w-3.5 h-3.5 shrink-0" data-icon="play_sm" width="14" height="14"></canvas>
                         <span id="btnModeResumeSaveText" class="truncate">继续存档</span>
                     </button>
@@ -2342,7 +2342,7 @@
                     <button id="btnStartBack" onclick="window.handleStartModalBack && window.handleStartModalBack()" class="pixel-icon-btn px-2.5 py-1 text-xs font-bold text-slate-200 flex items-center gap-1">
                         <canvas class="ui-px-icon w-3.5 h-3.5" data-icon="back" width="14" height="14"></canvas><span id="btnStartBackText">模式选择</span>
                     </button>
-                    <button id="heroSelectModeBadge" type="button" onclick="if ((selectedGameMode === 'endless' || selectedGameMode === 'boss_rush') && !window.__trainingHeroSwitchPending && window.openDifficultySelectModal) window.openDifficultySelectModal()" class="bg-sky-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold cursor-pointer">无尽尸潮</button>
+                    <button id="heroSelectModeBadge" type="button" onclick="window.onClickHeroSelectModeBadge && window.onClickHeroSelectModeBadge()" class="bg-sky-400 text-slate-950 font-pixel-en text-[9px] px-1.5 py-0.5 font-bold cursor-pointer">无尽尸潮</button>
                     <h2 class="text-sm sm:text-xl font-bold text-white tracking-wide">选择出战特工</h2>
                 </div>
                 <div class="text-[11px] text-slate-400 hidden sm:block">点击左侧头像切换英雄，单击技能图标查看详情</div>
@@ -2831,9 +2831,9 @@
             id: 'extreme', tierTag: 'TIER IV · EXTREME', name: '极限', shortName: '极限',
             desc: '1级白板无升级无商店无战后回血，纯靠操作与机制死斗五连首领（允许复活）',
             hpMult: 1.00, dmgMult: 1.00,
-            hpLabel: '1.00x（标准）', dmgLabel: '1.00x（标准）',
-            bonusText: '标准血量 1.0x · 伤害 1.0x · 1级白板无升级无黑市',
-            subText: '1.0x / 1.0x · 白板',
+            hpLabel: '极限低血微增', dmgLabel: '1.00x（标准）',
+            bonusText: '首领低血微增 · 伤害 1.0x · 1级白板无升级无黑市',
+            subText: '低血微增 / 1.0x',
             medalName: '猩红徽章',
             medalPillCls: 'bg-[#1c0a10] text-amber-300 border-rose-500',
             badgeCls: 'bg-gradient-to-r from-rose-600 to-amber-500 text-white',
@@ -2866,9 +2866,9 @@
             buildLabel: '10选卡+黑市(1免刷)'
         },
         extreme: {
-            hpMult: 1.00, dmgMult: 1.00, healMissingPct: 0, resetCooldowns: false, freeRerolls: 0, noUpgradeNoShop: true, disablePotion: true,
-            desc: '1级白板无升级无黑市且禁用血瓶，以普通首领血量与1.0x伤害五连死斗（允许复活再战）',
-            bonusText: '标准血量 1.0x · 伤害 1.0x · 白板无黑市·禁血瓶',
+            hpMult: 1.00, dmgMult: 1.00, hpTable: [3000, 3250, 3500, 3800, 4200], healMissingPct: 0, resetCooldowns: false, freeRerolls: 0, noUpgradeNoShop: true, disablePotion: true,
+            desc: '1级白板无升级无黑市且禁用血瓶，首领血量大幅压低并仅随关微增、1.0x伤害五连死斗（允许复活再战）',
+            bonusText: '首领低血微增 · 伤害 1.0x · 白板无黑市·禁血瓶',
             recoverLabel: '0%回血 · 禁血瓶',
             buildLabel: '1级白板 · 无黑市'
         }
@@ -4027,8 +4027,15 @@
         if (menuEl) menuEl.classList.remove('hidden');
     };
 
+    window.onClickHeroSelectModeBadge = function () {
+        if ((selectedGameMode === 'endless' || selectedGameMode === 'boss_rush') && !window.__trainingHeroSwitchPending && window.openDifficultySelectModal) {
+            window.openDifficultySelectModal();
+        }
+    };
+
     window.resumeSavedRun = function (targetMode = null) {
-        const saved = loadRunResumeSnapshot(targetMode);
+        const resolvedMode = targetMode || ((selectedGameMode === 'endless' || selectedGameMode === 'boss_rush') ? selectedGameMode : null);
+        const saved = loadRunResumeSnapshot(resolvedMode);
         if (!saved) {
             updateModeSelectSaveRow();
             return;
@@ -22264,8 +22271,8 @@
             const bossOrder = ['boss', 'frost_boss', 'flame_boss', 'void_boss', 'seraphim_boss'];
             const idx = Math.max(0, Math.min(4, (waveState.wave || 1) - 1));
             if (!bossKind) bossKind = bossOrder[idx];
-            const rushHpTable = [3200, 6200, 10500, 15000, 24000];
             const rushRules = getActiveBossRushRules();
+            const rushHpTable = Array.isArray(rushRules.hpTable) ? rushRules.hpTable : [3200, 6200, 10500, 15000, 24000];
             bossHp = Math.round((rushHpTable[idx] || 3600) * (rushRules.hpMult || 1.0));
         } else {
             const qCfg = getWaveQuotaConfig(waveState.wave || 4);
@@ -22727,7 +22734,9 @@
                     const chosen = boss.actionState;
                     if (chosen === 'summon_obelisks') {
                         boss.voidShieldActive = true;
-                        const obHp = Math.max(750, round1(boss.maxHp * 0.052));
+                        const obHp = isBossRushExtremeMode()
+                            ? Math.max(240, round1(boss.maxHp * 0.08))
+                            : Math.max(750, round1(boss.maxHp * 0.052));
                         for (let k = 0; k < 3; k++) {
                             const baseAng = (Math.PI * 2 * k) / 3 + 0.3;
                             let ox = boss.x + Math.cos(baseAng) * 165;
