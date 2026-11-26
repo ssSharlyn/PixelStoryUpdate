@@ -495,7 +495,7 @@
         .pixel-play-btn:hover { filter: brightness(1.08); }
         .pixel-play-btn:active { transform: translateY(5px); box-shadow: 0 2px 0 #78350f; }
     </style>
-<script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
+</head>
 <body class="relative w-full h-full overflow-hidden select-none">
 
     <!-- =================== GitHub 国内多路加速·双轨自适应更新引擎（像素战术终端版） =================== -->
@@ -4054,6 +4054,7 @@
         restoredWaveState.waveCleared = false;
         restoredWaveState.pendingWaveShop = shouldOpenPostVictoryShop;
         restoredWaveState.pendingWaveStartSnapshot = false;
+        restoredWaveState.pendingBossRushAdvance = false;
         restoredWaveState.shopOffers = rehydrateShopOffersFromRunSave(restoredWaveState.shopOffers);
         restoredWaveState.careerReportedKills = Math.max(0, Math.floor(restoredWaveState.careerReportedKills || restoredWaveState.totalKills || 0));
         restoredWaveState.careerReportedBossKills = Math.max(0, Math.floor(restoredWaveState.careerReportedBossKills || restoredWaveState.careerBossKillsThisRun || 0));
@@ -4080,6 +4081,12 @@
         player.upgradeInvulnTimer = 0.45;
         zombies = restoredZombies;
         waveState = restoredWaveState;
+        if (waveState.mode === 'boss_rush' && !waveState.pendingWaveShop && !waveState.bossKilled) {
+            if (!zombies.some(z => z && z.hp > 0 && z.isBoss)) {
+                waveState.bossSpawned = false;
+                waveState.bossEnraged = false;
+            }
+        }
         if (shouldOpenPostVictoryShop && waveState.mode === 'endless') {
             applyWaveQuotaToState(waveState.wave || 21);
             waveState.pendingWaveShop = true;
@@ -17227,7 +17234,7 @@
     let waveState = {
         mode: 'endless', wave: 1, waveTimer: 0, spawnTimer: 0.5, bossSpawned: false, bossKilled: false,
         postBossSpawnedCount: 0, maxPostBossSpawns: 50, waveClearBannerTimer: 0, totalKills: 0, totalTime: 0,
-        reviveCount: 0, pendingWaveStartSnapshot: false,
+        reviveCount: 0, pendingWaveStartSnapshot: false, pendingBossRushAdvance: false,
         eliteGlobalCastLock: 0, pendingWaveShop: false, shopRerollCount: 0, shopOffers: []
     };
 
@@ -17350,6 +17357,7 @@
         wsClone.waveCleared = false;
         wsClone.pendingWaveShop = false;
         wsClone.pendingWaveStartSnapshot = false;
+        wsClone.pendingBossRushAdvance = false;
         waveStartSnapshot = {
             player: clonePlayerForWaveSnapshot(player),
             zombies: carryoverZombies,
@@ -19489,6 +19497,7 @@
         if (!nextTarget) {
             finishSakuraShadowStrike();
             if (levelUpState.pendingLevels > 0 && gameState === 'PLAYING') triggerLevelUpCelebration(false);
+            else if (waveState && waveState.pendingWaveShop && gameState === 'PLAYING') openWaveShopModal();
             return;
         }
         const prevX = player.x, prevY = player.y;
@@ -19522,6 +19531,7 @@
             if (!hasMoreNearby) {
                 finishSakuraShadowStrike();
                 if (levelUpState.pendingLevels > 0 && gameState === 'PLAYING') triggerLevelUpCelebration(false);
+                else if (waveState && waveState.pendingWaveShop && gameState === 'PLAYING') openWaveShopModal();
                 return;
             }
         }
@@ -24053,7 +24063,8 @@
                     hazardZones.push({ type: 'flame_boss_death_nova', x: z.x, y: z.y, radius: 195, timer: 0, duration: 0.90, playerDamage: round1(46 * scale), zombieDamage: round1(320 * scale), bossUid: z.uid, xpDropCount: 0, triggerBossRushAdvance: true });
                     spawnFloatingText(z.x, z.y - 46, '烈焰暴君熔核即将自爆!', '#fb923c', 16, -32);
                 } else {
-                    advanceBossRushStage();
+                    // 延迟至本帧全部战斗循环结束后再切换下一首领，防止中途清空 zombies/bullets/hazardZones 误删新首领或越界报错
+                    waveState.pendingBossRushAdvance = true;
                 }
                 return;
             }
@@ -24304,6 +24315,7 @@
 
     function advanceBossRushStage() {
         if (gameState === 'GAME_OVER') return;
+        waveState.pendingBossRushAdvance = false;
         const completedStage = Math.max(1, Number(waveState.wave) || 1);
         if (completedStage >= BOSS_RUSH_TOTAL_BOSSES) { triggerBossRushVictory(); return; }
         const rushRules = getActiveBossRushRules();
@@ -29085,6 +29097,13 @@
     }
 
     function updateGame(dt) {
+        if (waveState && waveState.mode === 'boss_rush' && waveState.pendingBossRushAdvance && gameState === 'PLAYING' && player && player.hp > 0) {
+            waveState.pendingBossRushAdvance = false;
+            advanceBossRushStage();
+            updateHUD(false);
+            drawRadarMinimap();
+            return;
+        }
         globalTime += dt;
         waveState.totalTime += dt;
         if ((waveState.eliteGlobalCastLock || 0) > 0) waveState.eliteGlobalCastLock = Math.max(0, waveState.eliteGlobalCastLock - dt);
@@ -30074,6 +30093,7 @@
         // 重装哨戒炮台更新逻辑
         for (let tIdx = sentryTurrets.length - 1; tIdx >= 0; tIdx--) {
             const tur = sentryTurrets[tIdx];
+            if (!tur) continue;
             tur.life -= dt;
             if (tur.life <= 0) {
                 spawnPixelParticles(tur.x, tur.y, '#94a3b8', 8, 90, 3, 0.25);
@@ -30112,6 +30132,7 @@
         // 自爆工蜂集群 AI 索敌与撞击引爆更新逻辑
         for (let dIdx = suicideDrones.length - 1; dIdx >= 0; dIdx--) {
             const dr = suicideDrones[dIdx];
+            if (!dr) continue;
             dr.life -= dt;
             let target = null;
             if (dr.targetUid) {
@@ -30536,12 +30557,43 @@
         if (waveState.mode !== 'training') {
             waveState.waveTimer += dt;
             if (waveState.mode === 'boss_rush') {
-                if (!waveState.bossSpawned) { waveState.bossSpawned = true; spawnTyrantBoss(); }
+                const readyForBossFight = !waveState.pendingWaveShop && !waveState.pendingBossRushAdvance && (levelUpState.pendingLevels || 0) <= 0;
+                if (readyForBossFight) {
+                    if (!waveState.bossSpawned) {
+                        waveState.bossSpawned = true;
+                        waveState.bossKilled = false;
+                        waveState.bossEnraged = false;
+                        spawnTyrantBoss();
+                    } else if (!waveState.bossKilled) {
+                        const hasAliveBoss = zombies.some(z => z && z.hp > 0 && z.isBoss);
+                        if (!hasAliveBoss) {
+                            waveState.bossEnraged = false;
+                            spawnTyrantBoss();
+                        }
+                    } else {
+                        const hasDeathNova = hazardZones.some(hz => hz && (hz.type === 'flame_boss_death_nova' || hz.type === 'flame_nova_blast_fx'));
+                        if (!hasDeathNova) {
+                            waveState.pendingBossRushAdvance = true;
+                        }
+                    }
+                }
             } else {
                 // 20波定额投送 + 全歼通关循环
-                if (waveState.isBossWave && !waveState.bossSpawned && waveState.waveTimer >= 2.0) {
-                    waveState.bossSpawned = true;
-                    spawnTyrantBoss();
+                if (waveState.isBossWave && !waveState.waveCleared) {
+                    if (!waveState.bossSpawned && waveState.waveTimer >= 2.0) {
+                        waveState.bossSpawned = true;
+                        waveState.bossKilled = false;
+                        waveState.bossEnraged = false;
+                        spawnTyrantBoss();
+                    } else if (waveState.bossSpawned && !waveState.bossKilled) {
+                        const hasAliveBoss = zombies.some(z => z && z.hp > 0 && z.isBoss);
+                        if (!hasAliveBoss) {
+                            waveState.bossEnraged = false;
+                            spawnTyrantBoss();
+                        }
+                    } else if (waveState.bossSpawned && waveState.bossKilled) {
+                        checkAndTriggerWaveClear();
+                    }
                 }
                 if ((waveState.spawnedCount || 0) < (waveState.totalQuota || 0)) {
                     const baseInterval = Math.max(0.18, (waveState.spawnDuration || 25) / Math.max(1, waveState.totalQuota || 28));
@@ -30585,17 +30637,20 @@
 
         for (let i = pendingRadialWaves.length - 1; i >= 0; i--) {
             const rw = pendingRadialWaves[i];
+            if (!rw) continue;
             rw.timer -= dt;
             if (rw.timer <= 0) {
                 const ox = rw.followPlayer ? player.x : rw.originX;
                 const oy = rw.followPlayer ? player.y : rw.originY;
                 spawnRadialCoreWave(ox, oy, rw.cnt, rw.rawDmg, rw.waveIdx, rw.radialCastState, stats);
-                pendingRadialWaves.splice(i, 1);
+                if (pendingRadialWaves[i] === rw) pendingRadialWaves.splice(i, 1);
+                else { const rIdx = pendingRadialWaves.indexOf(rw); if (rIdx >= 0) pendingRadialWaves.splice(rIdx, 1); }
             }
         }
 
         for (let i = bullets.length - 1; i >= 0; i--) {
             const b = bullets[i];
+            if (!b) continue;
             if (b.isXinglanUltSword || b.type === 'summon_salvo') {
                 let tgt = b.targetUid ? zombies.find(z => z && z.hp > 0 && !z.isHidden && z.uid === b.targetUid) : null;
                 if (!tgt) {
@@ -30779,6 +30834,7 @@
 
         for (let i = thrownOrdance.length - 1; i >= 0; i--) {
             const ord = thrownOrdance[i];
+            if (!ord) continue;
             ord.elapsed += dt;
             const t = Math.min(1, ord.elapsed / ord.duration);
             ord.x = ord.startX + (ord.targetX - ord.startX) * t;
@@ -30789,13 +30845,15 @@
                     spawnPixelParticles(ord.targetX, ord.targetY, '#fda4af', 12, 160, 4, 0.35);
                     hazardZones.push({ type: 'rinne_grenade_fire', x: ord.targetX, y: ord.targetY, radius: ord.blastRadius, timer: 0, duration: 5.0, tickTimer: 1.0 });
                 }
-                thrownOrdance.splice(i, 1);
+                if (thrownOrdance[i] === ord) thrownOrdance.splice(i, 1);
+                else { const oIdx = thrownOrdance.indexOf(ord); if (oIdx >= 0) thrownOrdance.splice(oIdx, 1); }
             }
         }
 
         const isSakuraVanished = Boolean(player.sakuraVanishState && player.sakuraVanishState.active);
         for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
             const ep = enemyProjectiles[i];
+            if (!ep) continue;
             if (!ep._smokeStamped) {
                 ep._smokeStamped = true;
                 const smk = getKurohaSmokeAt(ep.x, ep.y);
@@ -30875,6 +30933,7 @@
         let rinneFireZoneStandCount = 0;
         for (let i = hazardZones.length - 1; i >= 0; i--) {
             const hz = hazardZones[i];
+            if (!hz) continue;
             hz.timer += dt;
             if (hz.type === 'kuroha_smoke_zone') {
                 const r = hz.radius || 160;
@@ -31518,9 +31577,10 @@
                     }
                     const shouldAdvanceBossRush = Boolean(hz.triggerBossRushAdvance);
                     const shouldAdvanceEndlessWave = Boolean(hz.triggerEndlessWaveAdvance);
-                    hazardZones.splice(i, 1);
+                    const novaIdx = hazardZones[i] === hz ? i : hazardZones.indexOf(hz);
+                    if (novaIdx >= 0) hazardZones.splice(novaIdx, 1);
                     for (let k = hazardZones.length - 1; k >= 0; k--) {
-                        if (hazardZones[k].type === 'boss_fire_patch' || hazardZones[k].type === 'boss_hollow_fire_ring') hazardZones.splice(k, 1);
+                        if (hazardZones[k] && (hazardZones[k].type === 'boss_fire_patch' || hazardZones[k].type === 'boss_hollow_fire_ring')) hazardZones.splice(k, 1);
                     }
                     hazardZones.push({
                         type: 'flame_nova_blast_fx',
@@ -31537,9 +31597,10 @@
                 } else if (hz.type === 'flame_nova_blast_fx') {
                     const shouldAdvanceBossRush = Boolean(hz.triggerBossRushAdvance);
                     const shouldAdvanceEndlessWave = Boolean(hz.triggerEndlessWaveAdvance);
-                    hazardZones.splice(i, 1);
+                    const fxIdx = hazardZones[i] === hz ? i : hazardZones.indexOf(hz);
+                    if (fxIdx >= 0) hazardZones.splice(fxIdx, 1);
                     if (shouldAdvanceBossRush && gameState === 'PLAYING' && player.hp > 0) {
-                        advanceBossRushStage();
+                        waveState.pendingBossRushAdvance = true;
                         break;
                     } else if (waveState.mode === 'endless' && gameState === 'PLAYING' && player.hp > 0) {
                         if (shouldAdvanceEndlessWave && !waveState.waveCleared) {
@@ -31617,7 +31678,8 @@
                         resolvePlayerBoneWallsCollision(player, player.x, player.y, true);
                     }
                 }
-                hazardZones.splice(i, 1);
+                const hzRmIdx = hazardZones[i] === hz ? i : hazardZones.indexOf(hz);
+                if (hzRmIdx >= 0) hazardZones.splice(hzRmIdx, 1);
             }
         }
 
@@ -31628,7 +31690,8 @@
 
         for (let i = zombies.length - 1; i >= 0; i--) {
             const z = zombies[i];
-            if (z.hp <= 0) { zombies.splice(i, 1); continue; }
+            if (!z) continue;
+            if (z.hp <= 0) { if (zombies[i] === z) zombies.splice(i, 1); continue; }
             if (z.hitFlashTimer > 0) z.hitFlashTimer = Math.max(0, z.hitFlashTimer - dt);
             if ((z.spawnEmergeTimer || 0) > 0) z.spawnEmergeTimer = Math.max(0, z.spawnEmergeTimer - dt);
             if (z.freezeTimer > 0) z.freezeTimer = Math.max(0, z.freezeTimer - dt);
@@ -31650,7 +31713,7 @@
                     spawnPixelParticles(z.x, z.y, '#e11d48', 4, 70, 3, 0.22);
                     if (z.hp <= 0) break;
                 }
-                if (z.hp <= 0) { zombies.splice(i, 1); continue; }
+                if (z.hp <= 0) { if (zombies[i] === z) zombies.splice(i, 1); continue; }
             }
             if ((z.armorBreakTimer || 0) > 0) {
                 z.armorBreakTimer = Math.max(0, z.armorBreakTimer - dt);
@@ -31667,7 +31730,7 @@
                     const burnDmg = Math.max(0.1, round1(player.maxHp * (0.10 * burnLv) * plagueMult));
                     spawnPixelParticles(z.x + (Math.random() - 0.5) * 14, z.y - 6, '#f97316', 5, 75, 3, 0.28);
                     damageZombie(z, burnDmg, 0, 0, '#fb923c');
-                    if (z.hp <= 0) { zombies.splice(i, 1); continue; }
+                    if (z.hp <= 0) { if (zombies[i] === z) zombies.splice(i, 1); continue; }
                 }
                 if (z.burnActiveTimer <= 0) { z.burnActiveTimer = 0; z.burnStacks = 0; z.burnDecayTimer = 0; }
             } else if ((z.burnStacks || 0) > 0) {
@@ -31687,7 +31750,7 @@
                         const bleedDmg = round1(z.bleedStacks * bleedLv * plagueMult * wolfBleedMult);
                         spawnPixelParticles(z.x, z.y, z.wolfBleedBonus ? '#be123c' : '#e11d48', 3, 65, 3, 0.24);
                         damageZombie(z, bleedDmg, 0, 0, z.wolfBleedBonus ? '#fb7185' : '#f43f5e');
-                        if (z.hp <= 0) { zombies.splice(i, 1); continue; }
+                        if (z.hp <= 0) { if (zombies[i] === z) zombies.splice(i, 1); continue; }
                     }
                 }
             }
@@ -32160,6 +32223,14 @@
                 evaluateSakuraSlashHitbox(sf);
             }
             if (sf.timer >= sf.duration) swordSlashEffects.splice(i, 1);
+        }
+
+        if (waveState && waveState.mode === 'boss_rush' && waveState.pendingBossRushAdvance && gameState === 'PLAYING' && player && player.hp > 0) {
+            waveState.pendingBossRushAdvance = false;
+            advanceBossRushStage();
+            updateHUD(false);
+            drawRadarMinimap();
+            return;
         }
 
         updateHUD(false);
@@ -39916,7 +39987,7 @@
             wave: 1,
             waveTimer: 0, spawnTimer: 0.35, bossSpawned: false, bossKilled: false, bossEnraged: false,
             postBossSpawnedCount: 0, maxPostBossSpawns: 50, waveClearBannerTimer: 0, totalKills: 0, totalTime: 0,
-            reviveCount: 0, pendingWaveStartSnapshot: false,
+            reviveCount: 0, pendingWaveStartSnapshot: false, pendingBossRushAdvance: false,
             eliteGlobalCastLock: 0, pendingWaveShop: isBossRush && !isExtremeBossRush, shopRerollCount: 0, shopOffers: [], endlessContinued: false,
             lastCompletedWave: 0, lastCompletedWaveWasBoss: false, tavernCooldownWaves: 0, tavernMissStreak: 0, tavernEvaluatedForWave: 0,
             careerReportedKills: 0, careerReportedBossKills: 0, careerReportedTime: 0, careerBossKillsThisRun: 0, careerW20Recorded: false, careerBossRushClearedRecorded: false
@@ -41338,6 +41409,14 @@
         waveState.waveCleared = false;
         waveState.pendingWaveShop = false;
         waveState.pendingWaveStartSnapshot = false;
+        waveState.pendingBossRushAdvance = false;
+        if (waveState.mode === 'boss_rush' && !waveState.pendingWaveShop && !waveState.bossKilled) {
+            const hasAliveBossOnRevive = zombies.some(z => z && z.hp > 0 && z.isBoss);
+            if (!hasAliveBossOnRevive) {
+                waveState.bossSpawned = false;
+                waveState.bossEnraged = false;
+            }
+        }
         if (waveStartSnapshot && waveStartSnapshot.waveState) {
             waveStartSnapshot.waveState.totalTime = preservedTotalTime;
             waveStartSnapshot.waveState.reviveCount = nextReviveCount;
