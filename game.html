@@ -8908,13 +8908,13 @@
                     name: '终焉升空 · 护翼参战与三大神罚',
                     badge: 'P2 升空无敌',
                     iconMatrix: ["..yyyyyy..", ".ywwwwwwy.", "yw.b..p.wy", "y..yyyy..y", ".y.ywwy.y.", ".y.ywwy.y.", "y..yyyy..y", "yw.p..b.wy", ".ywwwwwwy.", "..yyyyyy.."],
-                    desc: '100%/65%/30% 血量三次升空展开绝对护盾并召唤 2/3/4 名圣堂护翼卫兵（错峰脉冲扇射 + 双星高能光链；每击破 1 名可清除 120px 敌方弹幕并使剩余卫兵加速 15%）。升空期间轮流施放【旧日投影·四王幻影依次施放原版位移技（烈焰单段炎冲）】【天穹星雨·3波饱和轰炸】【终焉神罚·旋转十字激光+10×2双旋弹幕网】，全灭卫兵后坠地破防 1.77 秒。'
+                    desc: '100%/65%/30% 血量三次升空展开绝对护盾并召唤 2/3/4 名圣堂护翼卫兵（错峰脉冲扇射与追踪光球；每击破 1 名可清除 120px 敌方弹幕并使剩余卫兵加速 15%）。升空期间轮流施放【旧日投影·四王幻影依次施放原版位移技（烈焰单段炎冲）】【天穹星雨·3波饱和轰炸】【终焉神罚·旋转十字激光+10×2双旋弹幕网】，全灭卫兵后坠地破防 1.77 秒。'
                 },
                 {
                     name: '六翼围杀 · 圣辉万华镜',
                     badge: 'P2 常态弹幕',
                     iconMatrix: ["..b....p..", ".bwy..ywp.", "b..ywwy..p", "....yy....", "..yywwyy..", "....yy....", "p..ywwy..b", ".pwy..ywb.", "..p....b..", ".........."],
-                    desc: '【六翼围杀】6 片浮游翼绕玩家持续公转缩圈，分 3 波轮射青色脉冲光针、偏角紫红光球与 18 发金色六芒星光针笼；【圣辉万华镜】脚下展开双层金色六芒星法阵，持续喷射 6 青 + 6 紫红双旋花瓣弹幕并穿插高速金色扇形针。'
+                    desc: '【六翼围杀】6 片浮游翼绕玩家持续公转缩圈，分 3 波轮射青色脉冲光针、偏角紫红光球与 18 发金色六芒星光针笼；【圣辉万华镜】振翼滑翔归位至结界中心开阔处展开双层金色六芒星法阵，持续喷射 6 青 + 6 紫红双旋花瓣弹幕并穿插中远距金色扇形针。'
                 },
                 {
                     name: '圣枪三连突刺 · 瞬闪十字圣痕',
@@ -23621,7 +23621,7 @@
                             }
                             zombies.push({
                                 uid: nextZombieUid++, kind: 'void_obelisk', isBoss: false, isElite: true, isMinion: true, parentBossUid: boss.uid,
-                                x: ox, y: oy, radius: 26, hp: obHp, maxHp: obHp, speed: 0, contactDamage: round1(14 * scale), xpValue: 0,
+                                x: ox, y: oy, radius: 26, hp: obHp, maxHp: obHp, speed: 0, contactDamage: 0, xpValue: 0,
                                 facing: 1, animTimer: 0, animFrame: 0, hitFlashTimer: 0, freezeTimer: 0, freezeVuln: 0, knockVx: 0, knockVy: 0,
                                 spawnEmergeTimer: 0.45, spawnEmergeMax: 0.45
                             });
@@ -23986,7 +23986,7 @@
                 hp: guardHp, maxHp: guardHp,
                 guardMaxHitDmg,
                 speed: 0,
-                contactDamage: round1(16 * scale),
+                contactDamage: 0,
                 xpValue: 0,
                 facing: Math.cos(ang) >= 0 ? -1 : 1,
                 animTimer: g * 0.15, animFrame: g % 2,
@@ -24016,7 +24016,6 @@
             spawnPixelParticles(gx, gy, '#facc15', 16, 165, 3.8, 0.38);
             spawnPixelParticles(gx, gy, g % 2 === 0 ? '#38bdf8' : '#e879f9', 10, 140, 3.0, 0.32);
         }
-        boss.p2GuardLinkCd = 2.6;
         sfx.seraphimGuardChain();
         spawnFloatingText(boss.x, boss.y - 84, `圣堂护翼卫兵 x${guardCount} 参战供能！`, '#facc15', 14, -36);
     }
@@ -24034,7 +24033,7 @@
         boss.knockVy = 0;
         for (let k = hazardZones.length - 1; k >= 0; k--) {
             const t = hazardZones[k] && hazardZones[k].type;
-            if (t === 'seraphim_six_wing_orbit' || t === 'seraphim_lance_warn' || t === 'seraphim_stigmata_cross' || t === 'seraphim_guard_twin_link') {
+            if (t === 'seraphim_six_wing_orbit' || t === 'seraphim_lance_warn' || t === 'seraphim_stigmata_cross') {
                 hazardZones.splice(k, 1);
             }
         }
@@ -24057,7 +24056,6 @@
         boss.p2AirActiveSkill = null;
         boss.p2AirSubStep = 0;
         boss.p2AirSubTimer = 0;
-        boss.p2GuardLinkCd = 2.6;
         boss.p2AirSkillIndex = (ascendStage - 1) % 3;
         boss.p2AirSkillCd = 0.24;
         sfx.seraphimAscend();
@@ -24079,7 +24077,7 @@
             const hz = hazardZones[k];
             const t = hz && hz.type;
             if (t === 'seraphim_old_king_proj' && hz.kingKind === 'frost' && hz.phase === 'vanish') hadFrostProj = true;
-            if (t === 'seraphim_punish_cross_laser' || t === 'seraphim_star_rain_comet' || t === 'seraphim_guard_twin_link' || t === 'seraphim_holo_bone_prison' || t === 'seraphim_old_king_proj' || (hz && hz.fromSeraphimProj)) {
+            if (t === 'seraphim_punish_cross_laser' || t === 'seraphim_star_rain_comet' || t === 'seraphim_holo_bone_prison' || t === 'seraphim_old_king_proj' || (hz && hz.fromSeraphimProj)) {
                 hazardZones.splice(k, 1);
             }
         }
@@ -24194,7 +24192,7 @@
             return;
         }
 
-        // 3) 升空无敌态：悬浮圆心，卫兵双星供能连线 + 三大神罚技能轮换，直到全灭卫兵
+        // 3) 升空无敌态：悬浮圆心，三大神罚技能轮换 + 卫兵协同参战，直到全灭卫兵
         if (boss.actionState === 'p2_airborne') {
             boss.x = seraphimArena.x;
             boss.y = seraphimArena.y;
@@ -24208,46 +24206,14 @@
             }
 
             // 升空期弹幕智能调度器（Boss ↔ 圣堂护翼卫兵协同）：
-            // - 终焉神罚 / 天穹星雨期间：卫兵进入供能停火态（hold），暂停连线与额外弹幕，避免两头堵死与星雨画面混杂；
-            // - 旧日投影期间：卫兵降为低频点射（light）且暂停双星连线，不抢四王幻影位移节奏；
-            // - Boss 技能空窗期：卫兵恢复全速错峰开火（full）并释放双星供能连线，形成清晰的「首领回合 ↔ 卫兵回合」交替节奏。
+            // - 终焉神罚 / 天穹星雨期间：卫兵进入供能停火态（hold），暂停额外弹幕，避免两头堵死与星雨画面混杂；
+            // - 旧日投影期间：卫兵降为低频点射（light），不抢四王幻影位移节奏；
+            // - Boss 技能空窗期：卫兵恢复全速错峰开火（full），形成清晰的「首领回合 ↔ 卫兵回合」交替节奏。
             const hasActivePunish = boss.p2AirActiveSkill === 'punish_laser' || hazardZones.some(h => h && h.type === 'seraphim_punish_cross_laser');
             const hasActiveStarRain = boss.p2AirActiveSkill === 'star_rain' || hazardZones.some(h => h && h.type === 'seraphim_star_rain_comet');
             const hasActiveOldKing = boss.p2AirActiveSkill === 'old_kings' || hazardZones.some(h => h && h.type === 'seraphim_old_king_proj');
             boss.p2GuardDirectorMode = (hasActivePunish || hasActiveStarRain) ? 'hold' : (hasActiveOldKing ? 'light' : 'full');
             boss.p2GuardGlobalFireLock = Math.max(0, (boss.p2GuardGlobalFireLock || 0) - dt);
-
-            // 双星供能连线：仅在 Boss 空窗期（full）且无现有光链时触发，绝不与旋转激光/星雨/旧日投影重叠封路
-            if (aliveGuards.length >= 2 && boss.p2GuardDirectorMode === 'full') {
-                const hasTwinLink = hazardZones.some(h => h && h.type === 'seraphim_guard_twin_link' && h.bossUid === boss.uid);
-                if (!hasTwinLink) {
-                    boss.p2GuardLinkCd = (typeof boss.p2GuardLinkCd === 'number' ? boss.p2GuardLinkCd : 1.1) - dt;
-                    if (boss.p2GuardLinkCd <= 0) {
-                        boss.p2GuardLinkCd = 3.2;
-                        const sorted = aliveGuards.slice().sort((a, b) => (a.guardOrbitAngle || 0) - (b.guardOrbitAngle || 0));
-                        const pickIdx = Math.floor(Math.random() * sorted.length);
-                        const gA = sorted[pickIdx];
-                        const gB = sorted[(pickIdx + 1) % sorted.length];
-                        if (gA && gB && gA.uid !== gB.uid) {
-                            hazardZones.push({
-                                type: 'seraphim_guard_twin_link',
-                                bossUid: boss.uid,
-                                guardAUid: gA.uid,
-                                guardBUid: gB.uid,
-                                x1: gA.x, y1: gA.y,
-                                x2: gB.x, y2: gB.y,
-                                warnDur: 0.85,
-                                timer: 0,
-                                duration: 1.95,
-                                damage: round1(26 * scale),
-                                firedSfx: false,
-                                lastHitTime: -10
-                            });
-                            sfx.seraphimGuardLinkWarn();
-                        }
-                    }
-                }
-            }
 
             if (boss.p2AirActiveSkill === 'old_kings') {
                 // 旧日投影 · 四王幻影：严格串行，依次按 末日 -> 寒霜 -> 烈焰(仅1段) -> 虚空 施放与真实四王完全一致的位移技；
@@ -24703,14 +24669,43 @@
                     sfx.seraphimWingDeploy();
                     spawnFloatingText(boss.x, boss.y - boss.radius - 32, '！六翼围杀 · 公转轮射！', '#facc15', 14, -36);
                 } else if (chosen === 'holy_kaleidoscope') {
-                    // 常态技2：圣辉万华镜 · 全向螺旋花瓣（0.50s 双层六芒星蓄力 -> 1.95s 共 15 轮 6青+6紫红反向花瓣螺旋 + 每4轮3发高速金针）
+                    // 常态技2：圣辉万华镜 · 全向螺旋花瓣（施法前自动振翼滑翔回结界中央开阔区，避免贴边把玩家堵死）
+                    const distFromCenter = Math.hypot(boss.x - seraphimArena.x, boss.y - seraphimArena.y);
+                    const needReposition = distFromCenter > 110 || distToPlayer < 175;
+                    let castX = boss.x, castY = boss.y;
+                    if (needReposition) {
+                        const pDistFromCenter = Math.hypot(tPos.x - seraphimArena.x, tPos.y - seraphimArena.y);
+                        if (pDistFromCenter >= 165) {
+                            castX = seraphimArena.x;
+                            castY = seraphimArena.y;
+                        } else {
+                            // 玩家位于圆心附近时，向背离玩家的一侧偏移 115px，保持四周充足穿梭走位空间
+                            const awayAng = pDistFromCenter > 8
+                                ? Math.atan2(seraphimArena.y - tPos.y, seraphimArena.x - tPos.x)
+                                : Math.atan2(boss.y - tPos.y, boss.x - tPos.x);
+                            castX = seraphimArena.x + Math.cos(awayAng) * 115;
+                            castY = seraphimArena.y + Math.sin(awayAng) * 115;
+                        }
+                    }
+                    const moveDist = Math.hypot(castX - boss.x, castY - boss.y);
+                    const windupDur = moveDist > 36 ? 0.72 : 0.55;
                     boss.actionState = 'p2_kaleidoscope_windup';
-                    boss.stateTimer = 0.50;
-                    boss.windupTotal = 0.50;
+                    boss.stateTimer = windupDur;
+                    boss.windupTotal = windupDur;
+                    boss.p2KaleidoStartX = boss.x;
+                    boss.p2KaleidoStartY = boss.y;
+                    boss.p2KaleidoTargetX = castX;
+                    boss.p2KaleidoTargetY = castY;
+                    boss.p2KaleidoNeedMove = moveDist > 36;
+                    boss.p2KaleidoTrailTick = 0;
                     boss.p2KaleidoStep = 0;
                     boss.p2KaleidoTick = 0;
                     boss.p2KaleidoBaseAng = Math.random() * Math.PI * 2;
                     sfx.seraphimBladeCharge();
+                    if (moveDist > 36) {
+                        dodgeAfterimages.push({ x: boss.x, y: boss.y, heroId: 'seraphim_p2', facing: boss.facing, alpha: 0.72, life: 0.34, maxLife: 0.34 });
+                        spawnPixelParticles(boss.x, boss.y, '#facc15', 14, 165, 3.6, 0.32);
+                    }
                     spawnFloatingText(boss.x, boss.y - boss.radius - 32, '！圣辉万华镜 · 螺旋花瓣！', '#e879f9', 14, -36);
                 } else if (chosen === 'holy_lance_triple') {
                     // 常态技3：圣枪三连突刺（0.58s / 0.46s / 0.46s 红色长条预警 -> 3 段中高速突刺 + 中段光雷 + 急停/爆破垂直溅射光球）
@@ -24747,9 +24742,21 @@
                     dodgeAfterimages.push({ x: boss.x, y: boss.y, heroId: 'seraphim_p2', facing: boss.facing, alpha: 0.82, life: 0.48, maxLife: 0.48 });
                     spawnPixelParticles(boss.x, boss.y, '#e879f9', 16, 165, 3.8, 0.34);
                     spawnPixelParticles(boss.x, boss.y, '#facc15', 10, 145, 3.2, 0.28);
-                    const flankAng = Math.atan2(tPos.y - boss.y, tPos.x - boss.x) + (Math.random() < 0.5 ? Math.PI * 0.45 : -Math.PI * 0.45);
-                    let bx = tPos.x + Math.cos(flankAng) * 145;
-                    let by = tPos.y + Math.sin(flankAng) * 145;
+                    const baseFlankAng = Math.atan2(tPos.y - boss.y, tPos.x - boss.x);
+                    const cand1A = baseFlankAng + Math.PI * 0.45, cand2A = baseFlankAng - Math.PI * 0.45;
+                    const c1x = tPos.x + Math.cos(cand1A) * 145, c1y = tPos.y + Math.sin(cand1A) * 145;
+                    const c2x = tPos.x + Math.cos(cand2A) * 145, c2y = tPos.y + Math.sin(cand2A) * 145;
+                    let bx, by;
+                    if (Math.hypot(tPos.x - seraphimArena.x, tPos.y - seraphimArena.y) > 240) {
+                        // 玩家靠近结界边缘时，优先瞬移至更靠近场地内侧的侧翼，避免把玩家堵死在边缘
+                        const d1 = Math.hypot(c1x - seraphimArena.x, c1y - seraphimArena.y);
+                        const d2 = Math.hypot(c2x - seraphimArena.x, c2y - seraphimArena.y);
+                        if (d1 <= d2) { bx = c1x; by = c1y; } else { bx = c2x; by = c2y; }
+                    } else if (Math.random() < 0.5) {
+                        bx = c1x; by = c1y;
+                    } else {
+                        bx = c2x; by = c2y;
+                    }
                     const bCenterD = Math.hypot(bx - seraphimArena.x, by - seraphimArena.y);
                     const maxBR = (seraphimArena.radius || 480) - boss.radius - 14;
                     if (bCenterD > maxBR) {
@@ -24791,6 +24798,28 @@
             }
         } else if (boss.actionState === 'p2_kaleidoscope_windup') {
             boss.stateTimer -= dt;
+            const totalW = boss.windupTotal || 0.55;
+            const prog = clampVal(1 - boss.stateTimer / totalW, 0, 1);
+            if (boss.p2KaleidoNeedMove) {
+                const moveP = clampVal(prog / 0.78, 0, 1);
+                const ease = moveP < 0.5 ? (4 * moveP * moveP * moveP) : (1 - Math.pow(-2 * moveP + 2, 3) / 2);
+                const sx = typeof boss.p2KaleidoStartX === 'number' ? boss.p2KaleidoStartX : boss.x;
+                const sy = typeof boss.p2KaleidoStartY === 'number' ? boss.p2KaleidoStartY : boss.y;
+                const tx = typeof boss.p2KaleidoTargetX === 'number' ? boss.p2KaleidoTargetX : seraphimArena.x;
+                const ty = typeof boss.p2KaleidoTargetY === 'number' ? boss.p2KaleidoTargetY : seraphimArena.y;
+                boss.x = sx + (tx - sx) * ease;
+                boss.y = sy + (ty - sy) * ease;
+                boss.jumpHeight = Math.sin(moveP * Math.PI) * 18;
+                if (moveP < 0.98) {
+                    boss.p2KaleidoTrailTick = (boss.p2KaleidoTrailTick || 0) - dt;
+                    if (boss.p2KaleidoTrailTick <= 0) {
+                        boss.p2KaleidoTrailTick = 0.055;
+                        dodgeAfterimages.push({ x: boss.x, y: boss.y - boss.jumpHeight, heroId: 'seraphim_p2', facing: boss.facing, alpha: 0.52, life: 0.26, maxLife: 0.26 });
+                    }
+                } else {
+                    boss.jumpHeight = 0;
+                }
+            }
             boss.facing = tPos.x >= boss.x ? 1 : -1;
             if (Math.random() < 0.75) {
                 const a = Math.random() * Math.PI * 2;
@@ -24803,8 +24832,13 @@
                 });
             }
             if (boss.stateTimer <= 0) {
+                if (boss.p2KaleidoNeedMove) {
+                    boss.x = boss.p2KaleidoTargetX;
+                    boss.y = boss.p2KaleidoTargetY;
+                }
+                boss.jumpHeight = 0;
                 boss.actionState = 'p2_kaleidoscope_fire';
-                boss.stateTimer = 1.98;
+                boss.stateTimer = 2.08;
                 boss.p2KaleidoStep = 0;
                 boss.p2KaleidoTick = 0;
             }
@@ -24812,13 +24846,13 @@
             boss.stateTimer -= dt;
             boss.p2KaleidoTick = (boss.p2KaleidoTick || 0) - dt;
             boss.facing = tPos.x >= boss.x ? 1 : -1;
-            while (boss.p2KaleidoTick <= 0 && (boss.p2KaleidoStep || 0) < 15) {
+            while (boss.p2KaleidoTick <= 0 && (boss.p2KaleidoStep || 0) < 13) {
                 const step = boss.p2KaleidoStep || 0;
                 const baseA = (boss.p2KaleidoBaseAng || 0);
                 const armCnt = 6;
-                const spd = 225 + (step % 3) * 10; // 225 ~ 245 px/s
-                const cwOff = baseA + step * 0.19;
-                const ccwOff = baseA - step * 0.19 + Math.PI / armCnt;
+                const spd = 205 + (step % 3) * 10; // 205 ~ 225 px/s，花瓣缝隙更易穿梭读弹
+                const cwOff = baseA + step * 0.20;
+                const ccwOff = baseA - step * 0.20 + Math.PI / armCnt;
                 for (let k = 0; k < armCnt; k++) {
                     const a1 = cwOff + (Math.PI * 2 * k) / armCnt;
                     enemyProjectiles.push({
@@ -24837,15 +24871,15 @@
                         ignoreWalls: true, life: 3.0, useTrail: true, trail: []
                     });
                 }
-                // 每隔 4 轮额外朝玩家方向补射 3 发扇形高速金色光针（380px/s）
-                if (step > 0 && step % 4 === 0) {
+                // 每隔 4 轮且玩家位于中远距离（> 150px）时，补射 3 发扇形金色光针（345px/s），避免贴身瞬间难以反应
+                if (step > 0 && step % 4 === 0 && Math.hypot(tPos.x - boss.x, tPos.y - boss.y) > 150) {
                     const aimA = Math.atan2(tPos.y - boss.y, tPos.x - boss.x);
                     for (let j = -1; j <= 1; j++) {
-                        const na = aimA + j * 0.17;
+                        const na = aimA + j * 0.20;
                         enemyProjectiles.push({
                             kind: 'seraphim_needle', colorType: 'gold',
                             x: boss.x + Math.cos(na) * 32, y: boss.y + Math.sin(na) * 32,
-                            vx: Math.cos(na) * 380, vy: Math.sin(na) * 380,
+                            vx: Math.cos(na) * 345, vy: Math.sin(na) * 345,
                             angle: na, radius: 5.2, damage: round1(25 * scale),
                             ignoreWalls: true, life: 2.0, useTrail: true, trail: []
                         });
@@ -24853,9 +24887,9 @@
                 }
                 sfx.seraphimKaleidoscopeNote(step);
                 boss.p2KaleidoStep = step + 1;
-                boss.p2KaleidoTick += 0.13;
+                boss.p2KaleidoTick += 0.155;
             }
-            if (boss.stateTimer <= 0 || (boss.p2KaleidoStep || 0) >= 15) {
+            if (boss.stateTimer <= 0 || (boss.p2KaleidoStep || 0) >= 13) {
                 boss.actionState = 'chase';
                 boss.skillCd = computeSmartBossCooldown(boss, 3.1);
             }
@@ -25594,7 +25628,7 @@
     }
 
     function damagePlayer(rawAmount, hitType = 'physical', srcX = null, srcY = null, smokeMissChance = 0) {
-        if (!player || isPlayerInvulnerable(player) || gameState !== 'PLAYING') return;
+        if (!player || !rawAmount || rawAmount <= 0 || isPlayerInvulnerable(player) || gameState !== 'PLAYING') return;
         const stats = getPlayerStats(player);
 
         // 玄羽烟雾区失手判定（与自身闪避率独立计算：敌人位于烟雾区内发起攻击/弹幕时有 35%~55% 概率失手 MISS）
@@ -33438,37 +33472,6 @@
                 if (hz.timer >= hz.duration) hazardZones.splice(i, 1);
                 continue;
             }
-            if (hz.type === 'seraphim_guard_twin_link') {
-                const gA = zombies.find(zb => zb && zb.hp > 0 && zb.uid === hz.guardAUid);
-                const gB = zombies.find(zb => zb && zb.hp > 0 && zb.uid === hz.guardBUid);
-                if (!gA || !gB) {
-                    const mx = ((hz.x1 || 0) + (hz.x2 || 0)) * 0.5;
-                    const my = ((hz.y1 || 0) + (hz.y2 || 0)) * 0.5;
-                    spawnPixelParticles(mx, my, '#facc15', 10, 145, 3.2, 0.28);
-                    hazardZones.splice(i, 1);
-                    continue;
-                }
-                hz.x1 = gA.x; hz.y1 = gA.y;
-                hz.x2 = gB.x; hz.y2 = gB.y;
-                const warnD = hz.warnDur || 0.85;
-                if (hz.timer >= warnD) {
-                    if (!hz.firedSfx) {
-                        hz.firedSfx = true;
-                        sfx.seraphimGuardLinkFire();
-                    }
-                    if (!isSakuraVanished && !isPlayerInvulnerable(player) && (globalTime - (hz.lastHitTime || -10)) >= 0.36) {
-                        const vx = hz.x2 - hz.x1, vy = hz.y2 - hz.y1, len2 = vx * vx + vy * vy || 1;
-                        const projT = clampVal(((player.x - hz.x1) * vx + (player.y - hz.y1) * vy) / len2, 0, 1);
-                        const cx = hz.x1 + vx * projT, cy = hz.y1 + vy * projT;
-                        if (Math.hypot(player.x - cx, player.y - cy) <= 9.5 + player.radius * 0.7) {
-                            hz.lastHitTime = globalTime;
-                            damagePlayer(hz.damage || 26, 'neon', cx, cy);
-                        }
-                    }
-                }
-                if (hz.timer >= hz.duration) hazardZones.splice(i, 1);
-                continue;
-            }
             if (hz.type === 'seraphim_holo_bone_prison') {
                 if (!isSakuraVanished) {
                     const distFromCenter = Math.hypot(player.x - hz.x, player.y - hz.y);
@@ -34958,7 +34961,8 @@
             z.x = clampVal(z.x, -HALF_MAP + z.radius, HALF_MAP - z.radius);
             z.y = clampVal(z.y, -HALF_MAP + z.radius, HALF_MAP - z.radius);
             const isKohakuMounted = player.heroId === 'kohaku' && (player.kohakuMountTimer || 0) > 0;
-            if (!isSakuraVanished && !isKohakuMounted && Math.hypot(player.x - z.x, player.y - z.y) <= player.radius + z.radius) {
+            const isBossSummonMinion = Boolean(z.parentBossUid || z.kind === 'void_obelisk' || z.kind === 'seraphim_guard');
+            if (!isSakuraVanished && !isKohakuMounted && !isBossSummonMinion && (z.contactDamage || 0) > 0 && Math.hypot(player.x - z.x, player.y - z.y) <= player.radius + z.radius) {
                 const contactHitType = z.isFrostBoss ? 'frost'
                     : (z.isFlameBoss ? 'flame'
                     : (z.isVoidBoss ? 'void'
@@ -37193,59 +37197,6 @@
                         const sx = Math.round(hz.x + Math.cos(a) * rr), sy = Math.round(hz.y + Math.sin(a) * rr);
                         ctx.fillStyle = st === 3 ? '#ffffff' : '#fef08a';
                         ctx.fillRect(sx - 2, sy - 2, 4, 4);
-                    }
-                }
-                ctx.restore();
-            } else if (hz.type === 'seraphim_guard_twin_link') {
-                // 卫兵双星供能连线：0.85s 紫金像素虚线预警 -> 1.10s 像素方块锯齿高能电链
-                ctx.save();
-                const warnD = hz.warnDur || 0.85;
-                const isWarn = hz.timer < warnD;
-                const dx = hz.x2 - hz.x1, dy = hz.y2 - hz.y1;
-                const dist = Math.hypot(dx, dy) || 1;
-                const nx = -dy / dist, ny = dx / dist;
-                if (isWarn) {
-                    const wp = clampVal(hz.timer / warnD, 0, 1);
-                    const steps = Math.max(10, Math.floor(dist / 14));
-                    const shift = Math.floor(globalTime * 16) % 2;
-                    for (let s = 0; s <= steps; s++) {
-                        const frac = s / steps;
-                        const px = Math.round(hz.x1 + dx * frac), py = Math.round(hz.y1 + dy * frac);
-                        ctx.fillStyle = `rgba(232, 121, 249, ${(0.22 + wp * 0.28).toFixed(2)})`;
-                        ctx.fillRect(px - 6, py - 6, 12, 12);
-                        if ((s + shift) % 2 === 0) {
-                            ctx.fillStyle = wp > 0.75 ? '#ffffff' : '#facc15';
-                            ctx.fillRect(px - 2, py - 2, 5, 5);
-                        }
-                    }
-                    for (const pt of [{ x: hz.x1, y: hz.y1 }, { x: hz.x2, y: hz.y2 }]) {
-                        const rr = Math.round(14 + wp * 8);
-                        ctx.fillStyle = '#e879f9';
-                        for (let k = 0; k < 12; k++) {
-                            const a = (Math.PI * 2 * k) / 12 + globalTime * 4;
-                            ctx.fillRect(Math.round(pt.x + Math.cos(a) * rr) - 2, Math.round(pt.y + Math.sin(a) * rr) - 2, 4, 4);
-                        }
-                    }
-                } else {
-                    const endFade = clampVal((hz.duration - hz.timer) / 0.18, 0, 1);
-                    ctx.globalAlpha = endFade;
-                    const steps = Math.max(14, Math.floor(dist / 10));
-                    for (let s = 0; s <= steps; s++) {
-                        const frac = s / steps;
-                        const bx = Math.round(hz.x1 + dx * frac), by = Math.round(hz.y1 + dy * frac);
-                        ctx.fillStyle = 'rgba(232, 121, 249, 0.45)'; ctx.fillRect(bx - 8, by - 8, 16, 16);
-                        ctx.fillStyle = '#090d16'; ctx.fillRect(bx - 5, by - 5, 10, 10);
-                        ctx.fillStyle = '#facc15'; ctx.fillRect(bx - 4, by - 4, 8, 8);
-                        ctx.fillStyle = '#ffffff'; ctx.fillRect(bx - 2, by - 2, 4, 4);
-                        // 两侧锯齿像素电弧块
-                        const amp = Math.round(Math.sin(s * 2.1 + globalTime * 40) * 9 * Math.sin(frac * Math.PI));
-                        ctx.fillStyle = s % 2 === 0 ? '#e879f9' : '#38bdf8';
-                        ctx.fillRect(Math.round(bx + nx * amp) - 2, Math.round(by + ny * amp) - 2, 4, 4);
-                    }
-                    for (const pt of [{ x: hz.x1, y: hz.y1 }, { x: hz.x2, y: hz.y2 }]) {
-                        ctx.fillStyle = '#090d16'; ctx.fillRect(Math.round(pt.x) - 8, Math.round(pt.y) - 8, 16, 16);
-                        ctx.fillStyle = '#facc15'; ctx.fillRect(Math.round(pt.x) - 6, Math.round(pt.y) - 6, 12, 12);
-                        ctx.fillStyle = '#ffffff'; ctx.fillRect(Math.round(pt.x) - 3, Math.round(pt.y) - 3, 6, 6);
                     }
                 }
                 ctx.restore();
